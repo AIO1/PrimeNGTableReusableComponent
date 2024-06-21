@@ -12,19 +12,58 @@ public partial class primengTableReusableComponentContext : DbContext
     {
     }
 
-    public virtual DbSet<Test1Table> Test1Tables { get; set; }
+    public virtual DbSet<EmploymentStatusCategory> EmploymentStatusCategories { get; set; }
+
+    public virtual DbSet<TestTable> TestTables { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
-        modelBuilder.Entity<Test1Table>(entity =>
+        modelBuilder.Entity<EmploymentStatusCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("EmploymentStatusCategories_PK");
+
+            entity.ToTable(tb => tb.HasComment("Contains a list of employment categories."));
+
+            entity.HasIndex(e => e.StatusName, "EmploymentStatusCategories_statusName_UNIQUE").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("(newid())")
+                .HasComment("The PK of the table.")
+                .HasColumnName("ID");
+            entity.Property(e => e.ColorB)
+                .HasComment("The blue component of the color used to draw the tag.")
+                .HasColumnName("colorB");
+            entity.Property(e => e.ColorG)
+                .HasComment("The green component of the color used to draw the tag.")
+                .HasColumnName("colorG");
+            entity.Property(e => e.ColorR)
+                .HasComment("The red component of the color used to draw the tag.")
+                .HasColumnName("colorR");
+            entity.Property(e => e.DateCreated)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasComment("The date the record was created.")
+                .HasColumnName("dateCreated");
+            entity.Property(e => e.DateUpdated)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasComment("The date the record was last updated.")
+                .HasColumnName("dateUpdated");
+            entity.Property(e => e.StatusName)
+                .HasMaxLength(255)
+                .HasComment("The name of the employment status.")
+                .HasColumnName("statusName");
+        });
+
+        modelBuilder.Entity<TestTable>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("Test1Table_PK");
 
-            entity.ToTable("Test1Table", tb =>
+            entity.ToTable("TestTable", tb =>
                 {
-                    tb.HasComment("The table used for the 1st test.");
+                    tb.HasComment("The table used for the test.");
                     tb.HasTrigger("Test1Table_tg_dateUpdated");
                 });
 
@@ -51,6 +90,9 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasDefaultValueSql("(getutcdate())")
                 .HasComment("The date the record was last updated.")
                 .HasColumnName("dateUpdated");
+            entity.Property(e => e.EmploymentStatusId)
+                .HasComment("The current employment status of the user.")
+                .HasColumnName("employmentStatusID");
             entity.Property(e => e.PayedTaxes)
                 .HasComment("Indicates if the user payed its taxes or not.")
                 .HasColumnName("payedTaxes");
@@ -58,6 +100,11 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasMaxLength(255)
                 .HasComment("The username.")
                 .HasColumnName("username");
+
+            entity.HasOne(d => d.EmploymentStatus).WithMany(p => p.TestTables)
+                .HasForeignKey(d => d.EmploymentStatusId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("TestTable_EmploymentStatusCategories_FK");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -11,16 +11,19 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute("Age", dataType: "numeric")]
         public byte? age { get; set; }
 
-        [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left")]
+        [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter")]
+        public string? employmentStatusName { get; set; }
+
+        [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left", startHidden: true)]
         public DateTime? birthdate { get; set; }
 
-        [PrimeNGAttribute("Payed taxes?", dataType: "boolean")]
+        [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true)]
         public bool payedTaxes { get; set; }
-
-        [PrimeNGAttribute("Created date", dataType: "date", dataAlign: "left", startHidden: true)]
-        public DateTime dateCreated { get; set; }
-
-        [PrimeNGAttribute("Created date", dataType: "date", dataAlign: "left", startHidden: true)]
-        public DateTime dateUpdated { get; set; }
+    }
+    public class EmploymentStatusDTO {
+        public string StatusName { get; set; } = null!;
+        public byte ColorR { get; set; }
+        public byte ColorG { get; set; }
+        public byte ColorB { get; set; }
     }
 }

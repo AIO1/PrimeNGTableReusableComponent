@@ -4,8 +4,8 @@ using PrimeNG.DTOs;
 using PrimeNG.HelperFunctions;
 using PrimeNGTableReusableComponent.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Data.Entity;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace PrimeNGTableReusableComponent.Controllers {
     [ApiController]
@@ -15,15 +15,15 @@ namespace PrimeNGTableReusableComponent.Controllers {
 
         private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), new[] { typeof(DateTime), typeof(string), typeof(string), typeof(string) })!; // Needed import for being able to perform global search on dates
 
-        #region HttpGet - Test1GetCols
+        #region HttpGet - TestGetCols
         [HttpGet("[action]")]
         [SwaggerOperation(
-            "Retrieves all information needed to init the table for Test 1.",
-            "This API function will get all the table columns data for Test 1 needed, and some additional information like the date format and allowed items per page."
+            "Retrieves all information needed to init the table for Test.",
+            "This API function will get all the table columns data for Test needed, and some additional information like the date format and allowed items per page."
             )]
         [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(PrimeNGTableColsAndAllowedPagination))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
-        public IActionResult Test1GetCols() {
+        public IActionResult TestGetCols() {
             try {
                 return Ok(PrimeNGHelper.GetColumnsInfo<TestDTO>()); // Get all the columns information to be returned
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
@@ -31,30 +31,34 @@ namespace PrimeNGTableReusableComponent.Controllers {
             }
         }
         #endregion
-        #region HttpPost - Test1GetData
+        #region HttpPost - TestGetData
         [HttpPost("[action]")]
         [SwaggerOperation(
-            "Retrieves all information to be show in the table for Test 1.",
-            "This API function will get all the data that needs to be shown in Test 1 applying all requested rules."
+            "Retrieves all information to be show in the table for Test.",
+            "This API function will get all the data that needs to be shown in Test applying all requested rules."
             )]
         [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(List<PrimeNGPostReturn>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Returned if the items per page is not allowed or no columns have been specified.", typeof(string))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
-        public IActionResult Test1GetData([FromBody] PrimeNGPostRequest inputData) {
+        public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
             try {
                 if(!PrimeNGHelper.ValidateItemsPerPageSizeAndCols(inputData.pageSize, inputData.columns)) { // Validate the items per page size and columns
                     return BadRequest("Invalid page size or no columns for selection have been specified.");
                 }
-                IQueryable<TestDTO> baseQuery = _context.Test1Tables
+                IQueryable<TestDTO> baseQuery = _context.TestTables
                     .Select(
                         u => new TestDTO {
                             id = u.Id,
                             username = u.Username,
                             age = u.Age,
+                            employmentStatusName =
+                                u.EmploymentStatusId != null ?
+                                    _context.EmploymentStatusCategories
+                                        .Where(d => d.Id == u.EmploymentStatusId)
+                                        .Select(d => d.StatusName).FirstOrDefault() 
+                                    : null,
                             birthdate = u.Birthdate,
-                            payedTaxes = u.PayedTaxes,
-                            dateCreated = u.DateCreated,
-                            dateUpdated = u.DateUpdated
+                            payedTaxes = u.PayedTaxes
                         }
                     ).AsNoTracking();
                 return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1, ["id"]));
@@ -63,6 +67,27 @@ namespace PrimeNGTableReusableComponent.Controllers {
             }
         }
         #endregion
-
+        #region HttpGet - GetEmploymentStatus
+        [HttpGet("[action]")]
+        [SwaggerOperation(
+            "Retrieves all possible employment status.",
+            "This API function will return all employment status."
+            )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(EmploymentStatusDTO))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
+        public async Task<IActionResult> GetEmploymentStatus() {
+            try {
+                List<EmploymentStatusDTO> data = await _context.EmploymentStatusCategories.OrderBy(t => t.StatusName).Select(t => new EmploymentStatusDTO {
+                    StatusName = t.StatusName,
+                    ColorR = t.ColorR,
+                    ColorG = t.ColorG,
+                    ColorB = t.ColorB
+                }).AsNoTracking().ToListAsync();
+                return Ok(data);
+            } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+            }
+        }
+        #endregion
     }
 }

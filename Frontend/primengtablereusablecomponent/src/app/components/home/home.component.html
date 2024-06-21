@@ -1,6 +1,12 @@
 <h1>PrimeNG table reusable component</h1>
 <p>Hello!</p>
-<P>This is a demo project to show how to use the PrimeNG tables, delegating the query logic to the database engine. The following links provide different examples on how it could be used:</P>
-<ecs-primeng-table
-    columnsSourceURL="Main/Test1GetCols"
-    dataSoureURL="Main/Test1GetData"/>
+<P>This is a demo project to show how to use the PrimeNG tables, delegating the query logic to the database engine. The following table is an example of how it could be used.</P>
+<p>This table has "canPerformActions" to false which means that upon entering the table won't try to fetch data unless told to do so by calling "updateDataExternal()"</p>
+<p></p>
+<ecs-primeng-table #dt
+    [canPerformActions]="false"
+    columnsSourceURL="Main/TestGetCols"
+    dataSoureURL="Main/TestGetData"
+    [predifinedFiltersCollection]="predifinedFiltersCollection"
+    [headerActionButtons]="headerActionButtons"
+    [rowActionButtons]="rowActionButtons"/>

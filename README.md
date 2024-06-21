@@ -5,7 +5,7 @@ A solution that shows how to use a PrimeNG table with advace filters delegating 
 ## Table of contents
 - [1 Required software](#1-required-software)
 - [2 Setup the environment](#2-setup-the-environment)
-- [2.1 a](#2.1-a)
+  - [2.1 a](#21-a)
 
 
 ## 1 Required software
@@ -17,4 +17,4 @@ To run this example, the following software is needed and needs to be setup:
 - (Optional) [DBeaver](https://dbeaver.io/download/): Used for being able to manage the databases with a virtual interface. Works with a wide variety of database engines. Other database management softwares should work, but this is the one I normally use.
 
 ## 2 Setup the environment
-### 2.1 a
+### 2.1 Database

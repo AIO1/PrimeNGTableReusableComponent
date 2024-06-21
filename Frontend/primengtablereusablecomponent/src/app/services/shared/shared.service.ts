@@ -36,8 +36,7 @@ export class SharedService {
             if(clearPrevious){//If we have to clear the previous toasts
                 this.clearToasts();
             }
-            if(severity==="success" || severity==="info" || severity==="warn" || severity==="error"){//If severity is not an expected value
-            }else{//Severity is an expected value
+            if(severity==="success" || severity==="info" || severity==="warn" || severity==="error"){
                 this.messageService.add({severity: severity, summary: title, detail: message, life: duration, sticky: keepToast, closable: closable});
             }
         }

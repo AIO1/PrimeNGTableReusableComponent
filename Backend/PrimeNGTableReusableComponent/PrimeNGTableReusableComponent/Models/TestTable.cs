@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Models.PrimengTableReusableComponent;
 
 /// <summary>
-/// The table used for the 1st test.
+/// The table used for the test.
 /// </summary>
-public partial class Test1Table
+public partial class TestTable
 {
     /// <summary>
     /// The PK of the table.
@@ -42,4 +42,11 @@ public partial class Test1Table
     /// Indicates if the user payed its taxes or not.
     /// </summary>
     public bool PayedTaxes { get; set; }
+
+    /// <summary>
+    /// The current employment status of the user.
+    /// </summary>
+    public Guid? EmploymentStatusId { get; set; }
+
+    public virtual EmploymentStatusCategory? EmploymentStatus { get; set; }
 }
