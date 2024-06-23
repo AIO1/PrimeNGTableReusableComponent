@@ -16,6 +16,7 @@ builder.Services.AddSwaggerGen(options => {
             Email = "eternalcodestudio@gmail.com"
         }
     });
+    options.EnableAnnotations();
 });
 
 #region CONFIGURE DB CONTEXT

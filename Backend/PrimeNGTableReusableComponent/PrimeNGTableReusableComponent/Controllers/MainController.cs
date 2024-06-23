@@ -37,7 +37,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
             "Retrieves all information to be show in the table for Test.",
             "This API function will get all the data that needs to be shown in Test applying all requested rules."
             )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(List<PrimeNGPostReturn>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(PrimeNGPostReturn))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Returned if the items per page is not allowed or no columns have been specified.", typeof(string))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
@@ -73,7 +73,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
             "Retrieves all possible employment status.",
             "This API function will return all employment status."
             )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(EmploymentStatusDTO))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(List<EmploymentStatusDTO>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public async Task<IActionResult> GetEmploymentStatus() {
             try {
