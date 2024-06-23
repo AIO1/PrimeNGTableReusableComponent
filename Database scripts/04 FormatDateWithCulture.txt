@@ -1,0 +1,15 @@
+CREATE FUNCTION primengtablereusablecomponent.dbo.FormatDateWithCulture (
+    @inputDate DATETIME,
+    @format NVARCHAR(100),
+    @timezone NVARCHAR(6),
+    @culture NVARCHAR(10)
+)
+RETURNS NVARCHAR(100)
+AS
+BEGIN
+    DECLARE @formattedDate NVARCHAR(100);
+    SET @formattedDate = FORMAT(SWITCHOFFSET(@inputDate, @timeZone), @format, @culture); -- Perform timezone conversion
+ 	SET @formattedDate = REPLACE(@formattedDate, '.', ''); -- Mainly used for months that add '.' at the end. DO NOT USE DATE FORMATS WITH '.'
+	SET @formattedDate = STUFF(@formattedDate, CHARINDEX('+', @formattedDate), 0, 'GMT'); -- Adds the GMT prefix before the '+'
+    RETURN @formattedDate;
+END;
