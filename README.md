@@ -8,7 +8,7 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
 - [2 Setup the environment](#2-setup-the-environment)
   - [2.1 Database (MSSQL)](#21-database-mssql)
   - [2.2 Backend (API in ASP.NET)](#22-backend-api-in-aspnet)
-  - [2.3 Frontend (Angular project that uses PrimeNG component)](#23-frontend-angular-project-that-uses-primeng-component)
+  - [2.3 Frontend (Angular project that uses PrimeNG components)](#23-frontend-angular-project-that-uses-primeng-components)
 
 
 ## 1 Required software
@@ -30,8 +30,12 @@ Once you have created the database and its schema, you must download all the dat
 - 02 Create TestTable: Script that generates the table used for the test. Contains the general data that will be displayed in the frontend.
 - 03 Populate TestTable: A script that can be slightly altered and generates random data in the "TestTable".
 
+Once all scripts have been executed OK, you should end up with 2 tables that are populated with data. The following image shows the ER diagram of the 2 tables:
+![primengtablereusablecomponent - dbo - ER diagram](https://github.com/AIO1/PrimeNGTableReusableComponent/assets/17305493/2c6f1b8c-d57c-4d23-ba21-5d1024764168)
+
 
 ### 2.2 Backend (API in ASP.NET)
+Using Visual Studio 2022, open the backend solution located in [this path](Backend/PrimeNGTableReusableComponent).
 
 
-### 2.3 Frontend (Angular project that uses PrimeNG component)
+### 2.3 Frontend (Angular project that uses PrimeNG components)
