@@ -1,3 +1,4 @@
+# WIP - I'm still updating this readme file :) Please, be patient :P
 # PrimeNG Table reusable component
 A solution that shows how to use a PrimeNG table with advace filters delegating all logic to the database engine. This solution is designed to use Angular for the frontend and a .NET API (ASP.NET) for the backend. As database engine Microsoft SQL Server has been used, but other database engines should work with small modifications in the code.
 Currently it uses in the backend .NET 8, and in the frontend Angular 18 with PrimeNG 17.18.X components.
