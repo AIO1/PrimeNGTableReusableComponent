@@ -1,0 +1,14 @@
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Contract', 100, 200, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Intern', 0, 150, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Freelance', 0, 150, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Retired', 0, 50, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Student', 0, 100, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Unemployed', 200, 0, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Self-employed', 0, 200, 50);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'On leave', 200, 200, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Part-time', 50, 200, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Volunteer', 0, 200, 50);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Military', 0, 200, 100);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Temporary', 150, 200, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Other', 200, 125, 0);
+INSERT INTO primengtablereusablecomponent.dbo.EmploymentStatusCategories (statusName, colorR, colorG, colorB) VALUES(N'Full-time', 0, 200, 0);
