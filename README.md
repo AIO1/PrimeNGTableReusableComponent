@@ -6,7 +6,9 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
 ## Table of contents
 - [1 Required software](#1-required-software)
 - [2 Setup the environment](#2-setup-the-environment)
-  - [2.1 a](#21-a)
+  - [2.1 Database (MSSQL)](#21-database-mssql)
+  - [2.2 Backend (API in ASP.NET)](#22-backend-api-in-aspnet)
+  - [2.3 Frontend (Angular project that uses PrimeNG component)](#23-frontend-angular-project-that-uses-primeng-component)
 
 
 ## 1 Required software
@@ -22,7 +24,7 @@ To run this example, the following software is needed and needs to be setup:
 ### 2.1 Database (MSSQL)
 This example has been setup using MSSQL. Any other database engine should work with some modifications, but this example only covers the use of MSSQL.
 The first step is to create a new database and name it "primengtablereusablecomponent". The newly created database should have been created with an schema named "dbo". You can use other database and schema name, but you will have to adapt the backend and database scripts afterwards for everything to work as expected.
-Once you have created the database and its schema, you must download all the database scripts located under [this path](a). These scripts must be executed in order (starting at 00).
+Once you have created the database and its schema, you must download all the database scripts located under [this path](Database%20scripts). These scripts must be executed in order (starting at 00).
 - 00 Create EmploymentStatusCategories.txt: Script to create the table "EmploymentStatusCategories". This table contains a list of all the possible employment categories.
 - 01 Populate EmploymentStatusCategories.txt: Script that generates some intial records for the table "EmploymentStatusCategories".
 - 02 Create TestTable: Script that generates the table used for the test. Contains the general data that will be displayed in the frontend.
