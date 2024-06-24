@@ -429,10 +429,10 @@ export class PrimengTableComponent {
   }
 
   /**
-   * Formats a date value to a specific string format including UTC.
+   * Formats a date value to a specific string format. Provided date will be assumed to be in UTC
    *
    * @param {any} value - The date value to be formatted.
-   * @returns {string} - The formatted date string in 'dd-MMM-yyyy HH:mm:ss' format followed by 'UTC', or empty string if the value is invalid.
+   * @returns {string} - The formatted date string in 'dd-MMM-yyyy HH:mm:ss' format followed by the timezone, or empty string if the provided value is invalid or undefined.
    * 
    * @example
    * // Example date value
@@ -444,8 +444,11 @@ export class PrimengTableComponent {
    * // Output might be: '18-Jun-2024 14:30:00 GMT+0000'
    */
   formatDate(value: any): string{
-    const formattedDate = this.datePipe.transform(value, this.dateFormat, this.dateTimezone, this.dateCulture);
-    return formattedDate || ''; // Returns the date formatted, or as empty string if an issue was found.
+    let formattedDate = undefined; // By default, formattedDate will be undefined
+    if(value){ // If value is not undefined
+      formattedDate = this.datePipe.transform(value + 'Z', this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
+    }
+    return formattedDate || ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
   }
 
   /**

@@ -1,4 +1,4 @@
-import { LOCALE_ID, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; // Needed by PrimeNG for browser animations
 
@@ -14,10 +14,10 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { PaginatorModule } from 'primeng/paginator';
 import { TagModule } from 'primeng/tag';
 import { RippleModule } from 'primeng/ripple';
-import { DatePipe, registerLocaleData } from '@angular/common';
+import { DatePipe, registerLocaleData } from '@angular/common'; // registerLocaleData import is optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
 
-import es from '@angular/common/locales/es'; // Needed for scenarios were you would like to manage different locales from "en", like "es-ES"
-registerLocaleData(es);
+import es from '@angular/common/locales/es'; // Optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
+registerLocaleData(es); // Optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -46,7 +46,6 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     RippleModule
   ],
   providers: [
-    { provide: LOCALE_ID, useValue: 'es-*' },
     provideHttpClient(withInterceptorsFromDi()), // Http provider
     MessageService,
     DatePipe

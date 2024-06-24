@@ -11,6 +11,18 @@ CREATE TABLE primengtablereusablecomponent.dbo.EmploymentStatusCategories (
 	CONSTRAINT EmploymentStatusCategories_statusName_UNIQUE UNIQUE (statusName)
 );
 
+
+CREATE TRIGGER [EmploymentStatusCategories_tg_dateUpdated]
+    ON [EmploymentStatusCategories]
+    AFTER UPDATE 
+    AS BEGIN
+       UPDATE [EmploymentStatusCategories]
+       SET dateUpdated = getutcdate()
+       FROM INSERTED i
+       WHERE i.ID = [EmploymentStatusCategories].ID
+    END;
+
+
 -- Extended properties
 EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Contains a list of employment categories.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'EmploymentStatusCategories';
 EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The PK of the table.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'EmploymentStatusCategories', @level2type=N'Column', @level2name=N'ID';

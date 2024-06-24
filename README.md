@@ -239,7 +239,6 @@ This section describes step by step what you need to implement the PrimeNG Table
     - primeicons
   - Follow the setup guide of PrimeNG (you will need to make some changes to the "styles.css" and maybe to the "app.module.ts" and "angular.json").
   - In the "app.module.ts":
-    - From "@angular/core" you need to import "LOCALE_ID" (which is used for the date masking in the frontend).
     - You need all these other additional imports:
       ```ts
       // PrimeNG modules (and some of angular/common) that are needed by the reusable table component
@@ -257,6 +256,7 @@ This section describes step by step what you need to implement the PrimeNG Table
       import es from '@angular/common/locales/es'; // Needed for scenarios were you would like to manage different locales from "en", like "es-ES"
       registerLocaleData(es);
       ```
+      The "registerLocaleData", "import es from '@angular/common/locales/es'" and "registerLocaleData(es)" are optional. Its an example to show you how to import locales different from the default en-US used by datepipe.
     - You will need to modify the "@NgModule" imports to add all the PrimeNG components that are needed by the "PrimeNG Table reusable component":
       ```ts
       imports: [
@@ -275,7 +275,6 @@ This section describes step by step what you need to implement the PrimeNG Table
     - In the "@NgModule" providers, you will need to add the following:
       ```ts
       providers: [
-        { provide: LOCALE_ID, useValue: 'es-*' },
         MessageService,
         DatePipe
       ]

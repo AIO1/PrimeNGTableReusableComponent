@@ -8,10 +8,22 @@ CREATE TABLE primengtablereusablecomponent.dbo.TestTable (
 	birthdate datetime2(0) NULL,
 	payedTaxes bit DEFAULT 0 NOT NULL,
 	employmentStatusID uniqueidentifier NULL,
-	CONSTRAINT Test1Table_PK PRIMARY KEY (ID),
-	CONSTRAINT Test1Table_username_UNIQUE UNIQUE (username),
+	CONSTRAINT TestTable_PK PRIMARY KEY (ID),
+	CONSTRAINT TestTable_username_UNIQUE UNIQUE (username),
 	CONSTRAINT TestTable_EmploymentStatusCategories_FK FOREIGN KEY (employmentStatusID) REFERENCES primengtablereusablecomponent.dbo.EmploymentStatusCategories(ID) ON DELETE SET NULL
 );
+
+
+CREATE TRIGGER [TestTable_tg_dateUpdated]
+    ON [TestTable]
+    AFTER UPDATE 
+    AS BEGIN
+       UPDATE [TestTable]
+       SET dateUpdated = getutcdate()
+       FROM INSERTED i
+       WHERE i.ID = [TestTable].ID
+    END;
+
 
 -- Extended properties
 EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The table used for the test.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable';
