@@ -9,7 +9,7 @@
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--CHOOSE COLUMNS TO SHOW-->
                 <p-multiSelect [options]="columnsSelectable" [(ngModel)]="columnsSelected" optionLabel="header"
-                    [selectedItemsLabel]="'{0} ' + selectedColumnsDropdownSelectedPlaceholder" [style]="{minWidth: '400px'}" [placeholder]="selectedColumnsDropdownPlaceholder" [showToggleAll]=true (onChange)="columnsChanged($event)"></p-multiSelect>
+                    [selectedItemsLabel]="'{0} ' + selectedColumnsDropdownSelectedPlaceholder" [style]="{minWidth: '400px'}" [placeholder]="selectedColumnsDropdownPlaceholder" [showToggleAll]=true (onChange)="columnsChanged()"></p-multiSelect>
                 
                 <!--CLEAR SORTS AND FILTERS-->
                 <button pButton pRipple (click)="clearSortsAndFilters(dt)" style="height: 50px;" [disabled]="!hasToClearSortsAndFilters(dt, globalSearchText)">

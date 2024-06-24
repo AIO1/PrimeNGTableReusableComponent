@@ -6,6 +6,7 @@ import { SharedService } from '../../services/shared/shared.service';
 import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
 import { IEmploymentStatus } from '../../interfaces/iemployment-status';
 import { IprimengRowActionButtons } from '../../interfaces/primeng/iprimeng-row-action-buttons';
+import { Constants } from '../../../constants';
 
 @Component({
   selector: 'app-home',
@@ -51,6 +52,9 @@ export class HomeComponent implements OnInit{
     this.getEmploymentStatus(); // Retrieve the possible employment status
   }
   private getEmploymentStatus(){
+    setTimeout(() => {
+      Constants.waitingHTTP = true; // To indicate that we are waiting an HTTP call. Perform it after one frame so we don't get the warning of ExpressionChangedAfterItHasBeenCheckedError
+    }, 1);
     this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
       next: (responseData: IEmploymentStatus[]) => {
         responseData.forEach((data) => {

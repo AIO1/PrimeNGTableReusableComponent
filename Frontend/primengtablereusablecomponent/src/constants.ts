@@ -2,8 +2,8 @@
 const isDevelopment = window.location.hostname === 'localhost'; // To determine if we are not in development
 export const Constants: any = {
     APIbaseURL: getApiBaseUrl(),
-    timeoutTime: 60000,
-    waitingHTTP: false
+    timeoutTime: 60000, // The maximun allowed time to consider an HTTP call as timedout
+    waitingHTTP: false // Used to show a modal with a spinner if we are waiting for an HTTP response
 };
 //#region getApiBaseUrl
     /**

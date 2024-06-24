@@ -48,10 +48,10 @@ export class SharedService {
         clearToasts(){
             this.messageService.clear();
         }
-        dataFecthError(title: string, err: Error, routeToHome: boolean = true): void{
+        dataFecthError(title: string, err: Error, routeToOther: boolean = true): void{
           this.showToast("error", title, err.message);
-          if(routeToHome){
-            this.router.navigate(['/']);
+          if(routeToOther){
+            this.router.navigate(['/error']);
           }
           Constants.waitingHTTP = false;
         }

@@ -19,7 +19,6 @@ import { Constants } from '../../../constants';
 import { FilterMetadata } from 'primeng/api';
 import { DatePipe } from '@angular/common';
 import { PaginatorState } from 'primeng/paginator';
-import { MultiSelectChangeEvent } from 'primeng/multiselect';
 
 @Component({
   selector: 'ecs-primeng-table', // Component selector used in HTML to render this component
@@ -251,14 +250,27 @@ export class PrimengTableComponent {
   }
 
   /**
-   * Handles the change of selected columns in the table.
-   * 
-   * @param {MultiSelectChangeEvent} event - The event object containing the selected column values.
+   * Handles the change of selected columns in the table, keeping the order of the columns that were already present, and adding the new ones at the end.
    */
-  columnsChanged(event: MultiSelectChangeEvent): void {
-    this.columnsSelected = event.value ? JSON.parse(JSON.stringify(event.value)) : []; // Update the selected columns based on the event value, or set to an empty array if null
-    this.columnsToShow = this.columnsNonSelectable.concat(this.columnsSelected); // Combine non-selectable columns with selected columns to determine columns to show
-    this.clearSortsAndFilters(this.dt, true); // Clear sorts and filters in the table, forcing the clear operation
+  columnsChanged(): void {
+    const existingColumns = this.dt.columns!; // Get the currently selected columns (will be used to determine the final order)
+    const columnsToKeep = new Set<string>(); // Used to track all the columns that must be kept
+    this.columnsNonSelectable.concat(this.columnsSelected).forEach(column => {
+        columnsToKeep.add(column.field);
+    }); // Add columns from this.columnsNonSelectable.concat(this.columnsSelected) to columnsToKeep
+    const finalColumns: IprimengColumnsMetadata[] = []; // Used to store the final result of columns (ordered)
+    existingColumns.forEach(column => {
+        if (columnsToKeep.has(column.field)) {
+            finalColumns.push(column);
+        }
+    }); // Filter the existing columns to only keep those ones that are in columnsToKeep
+    this.columnsNonSelectable.concat(this.columnsSelected).forEach(column => {
+        if (!finalColumns.find(c => c.field === column.field)) {
+            finalColumns.push(column);
+        }
+    }); // Add the new columns that are in columnsToKeep but not in finalColumns
+    this.columnsToShow=finalColumns; // Set the columnsToShow to the finalColumns
+    this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
   }
 
   /**

@@ -19,9 +19,15 @@ import { DatePipe, registerLocaleData } from '@angular/common'; // registerLocal
 import es from '@angular/common/locales/es'; // Optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
 registerLocaleData(es); // Optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
 
+// Optional imports to show the loading indicator
+import { DialogModule } from 'primeng/dialog';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+
+// Component imports
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
+import { ErrorComponent } from './components/error/error.component';
 import { PrimengTableComponent } from './components/primeng-table/primeng-table.component';
 
 @NgModule({
@@ -29,7 +35,8 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     AppComponent,
 
     PrimengTableComponent,
-    HomeComponent
+    HomeComponent,
+    ErrorComponent
   ],
   imports: [
     BrowserModule,
@@ -43,7 +50,10 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     MultiSelectModule,
     PaginatorModule,
     TagModule,
-    RippleModule
+    RippleModule,
+
+    DialogModule, // Optional import to show the loading indicator in HTTP calls
+    ProgressSpinnerModule // Optional import to show the loading indicator in HTTP calls
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()), // Http provider

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PrimeNGConfig } from 'primeng/api'; // To enable the ripple effect (optional)
+import { Constants } from '../constants';
 
 @Component({
   selector: 'app-root',
@@ -11,4 +12,5 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.primengConfig.ripple = true; // Enable ripple effect (optional)
   }
+  Constants = Constants;
 }
