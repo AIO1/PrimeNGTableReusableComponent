@@ -300,14 +300,34 @@ My personal reccomendation, always store in your databases dates in UTC and (if 
 
 The database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt) that must be created in your database is used when trying to search with the global filter. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use (you should obviously use the same in here and in the frontend). The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is done, this function can be called with no issues.
 
-If you would like to implement a customization to fetch an specific date format, timezone and culture that the user has for example in its own configuration, it could be easily implemented when fetching the column data that must be sent to the frontend by providing the additional optional arguments to the function "PrimeNGHelper.GetColumnsInfo". In the example project, in the [Main controller](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) on the "TestGetCols" function, you could implement a way to retrieve the data formating values for the user that made the request, and then pass the values to the "PrimeNGHelper.GetColumnsInfo". With this, everything related to date formating should be already be customized and working with no issues with the global filter.
+If you would like to implement a customization to fetch an specific date format, timezone and culture that the user has for example in its own configuration, it could be easily implemented when fetching the column data that must be sent to the frontend by providing the additional optional arguments to the function "PrimeNGHelper.GetColumnsInfo". In the example project, in the [Main controller](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) on the "TestGetCols" function, you could implement a way to retrieve the data formating values for the user that made the request, and then pass the values to the "PrimeNGHelper.GetColumnsInfo".
+
+With this, everything related to date formating should be already be customized and working with no issues with the global filter.
+
 
 ### 4.2 Preparing what is going to be shown in the frontend
+
+
 ### 4.3 Fetching columns
+
+
 ### 4.4 Retrieving table data with filter, global filter, pagination and just the requested columns
+
+
 ### 4.5 Predifined filters
+
+
 ### 4.6 Implementing a new table in the frontend
+
+
 ### 4.7 Declaring header action buttons
+
+
 ### 4.8 Declaring row action buttons
+
+
 ### 4.9 Saving table state (database solution)
+
+
 ### 4.10 Customizing default texts
+
