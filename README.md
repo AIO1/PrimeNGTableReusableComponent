@@ -4,21 +4,6 @@ A solution that shows how to use a PrimeNG table with advance filters delegating
 Currently it uses in the backend .NET 8, and in the frontend Angular 18 with PrimeNG 17.18.X components.
 
 
-## Table of contents
-- [Introduction](#introduction)
-- [1 Required software](#1-required-software)
-- [2 Setup the environment to try the demo](#2-setup-the-environment-to-try-the-demo)
-  - [2.1 Database (MSSQL)](#21-database-mssql)
-  - [2.2 Backend (API in ASP.NET)](#22-backend-api-in-aspnet)
-    - [2.2.1 Open the project](#221-open-the-project)
-    - [2.2.2 Verify packages](#222-verify-packages)
-    - [2.2.3 Update the database connection string](#223-update-the-database-connection-string)
-    - [2.2.4 Scafolding the database](#224-scafolding-the-database)
-    - [2.2.5 API first run](#225-api-first-run)
-  - [2.3 Frontend (Angular project that uses PrimeNG components)](#23-frontend-angular-project-that-uses-primeng-components)
-- [3 How to implement in existing projects](#3-how-to-implement-in-existing-projects)
-- [4 How to use the "PrimeNG Table reusable component" and what is included](#4-how-to-use-the-primeng-table-reusable-component-and-what-is-included)
-
 ## Introduction
 Hello! My name is Alex Ibrahim Ojea.
 
@@ -315,13 +300,14 @@ My personal reccomendation, always store in your databases dates in UTC and (if 
 
 The database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt) that must be created in your database is used when trying to search with the global filter. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use (you should obviously use the same in here and in the frontend). The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is done, this function can be called with no issues.
 
-Currently in this example, the format, timezone and locale are hardcoded in the [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs) at the begining:
-```c#
-public static readonly string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz"; // The date format used to represent dates in the tables (and for global search in dates). DO NOT USE "." SEPARATOR
-public static readonly string dateTimezone = "+00:00"; // The timezone used in the representation of dates. Timezone conversion is also done during the process. Database dates shall be in GMT+00:00 (UTC)
-public static readonly string dateCulture = "en-US";  // The culture used in the representation of dates.
-```
+If you would like to implement a customization to fetch an specific date format, timezone and culture that the user has for example in its own configuration, it could be easily implemented when fetching the column data that must be sent to the frontend by providing the additional optional arguments to the function "PrimeNGHelper.GetColumnsInfo". In the example project, in the [Main controller](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) on the "TestGetCols" function, you could implement a way to retrieve the data formating values for the user that made the request, and then pass the values to the "PrimeNGHelper.GetColumnsInfo". With this, everything related to date formating should be already be customized and working with no issues with the global filter.
 
-These values can be modified and the changes should be reflected in the frontend with no issues. 
-
-If you would like to implement a customization to fetch an specific date format, timezone and culture that the user has for example in its own configuration, you could make some modifications performing the fecth PENDING.....
+### 4.2 Preparing what is going to be shown in the frontend
+### 4.3 Fetching columns
+### 4.4 Retrieving table data with filter, global filter, pagination and just the requested columns
+### 4.5 Predifined filters
+### 4.6 Implementing a new table in the frontend
+### 4.7 Declaring header action buttons
+### 4.8 Declaring row action buttons
+### 4.9 Saving table state (database solution)
+### 4.10 Customizing default texts
