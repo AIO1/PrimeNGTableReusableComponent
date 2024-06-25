@@ -460,7 +460,7 @@ export class PrimengTableComponent {
     if(value){ // If value is not undefined
       formattedDate = this.datePipe.transform(value + 'Z', this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
     }
-    return formattedDate || ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
+    return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
   }
 
   /**
@@ -482,7 +482,7 @@ export class PrimengTableComponent {
    * <img [src]="imageUrl" alt="Image">
    */
   getBlobIconAsUrl(blob: Blob): SafeUrl {
-    let objectURL = 'data:image/jpeg;base64,' + blob; // Create a base64 encoded string from the blob data
+    let objectURL = `data:image/jpeg;base64,${blob}`; // Create a base64 encoded string from the blob data
     return this.sanitizer.bypassSecurityTrustUrl(objectURL); // Bypass Angular's security mechanisms to create a SafeUrl
   }
 }

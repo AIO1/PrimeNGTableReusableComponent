@@ -11,12 +11,6 @@ import { Constants } from '../../../constants';
 })
 export class SharedService {
   constructor(private messageService: MessageService, private http: HttpClient, private router: Router) {}
-  private readonly httpOptions = {
-    headers: new HttpHeaders({
-      'accept': 'application/json',
-      'Content-Type': 'application/json'
-    }),
-  };
     // #region showToast
     /**
      * Shows a customizable toast message. Can also close all toast messages before showing the current one.
@@ -57,42 +51,40 @@ export class SharedService {
         }
     //#endregion
 
-
-    handleHttpGetRequest<T>(servicePoint: string, httpOptions: any = null, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
-      return this.http.get<T>(`${Constants.APIbaseURL}${servicePoint}`, { ...this.httpOptions, observe: 'response' }).pipe(
+    private getHttpOptions(customhttpOptions?: HttpHeaders | null): HttpHeaders {
+      let httpOptions = new HttpHeaders({
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+      });
+      if (customhttpOptions) {
+        httpOptions = customhttpOptions;
+      }
+      return httpOptions;
+    }
+    handleHttpGetRequest<T>(servicePoint: string, httpOptions: HttpHeaders | null = null, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
+      return this.http.get<T>(`${Constants.APIbaseURL}${servicePoint}`, { ...this.getHttpOptions(httpOptions), observe: 'response' }).pipe(
         timeout(Constants.timeoutTime) as OperatorFunction<HttpResponse<T>, HttpResponse<T>>,
-        catchError(error => {
-          if (error.name === 'TimeoutError') {
-            return throwError(() => new Error('Exceeded max timeout time of request.'));
-          } else {
-            if (customErrorHandler) { 
-              return customErrorHandler(error);
-            }
-            if (showAPIError) {
-              return throwError(() => new Error(error.error));
-            } 
-            return throwError(() => new Error('Unexpected error'));
-          }
-        })
+        catchError(error => this.handleHttpError(error, customErrorHandler, showAPIError))
       );
     }
-    handleHttpPostRequest<T>(servicePoint: string, data: any, httpOptions: any = null, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
-      return this.http.post<T>(`${Constants.APIbaseURL}${servicePoint}`, data, { ...this.httpOptions, observe: 'response' }).pipe(
+    handleHttpPostRequest<T>(servicePoint: string, data: any, httpOptions: HttpHeaders | null = null, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
+      return this.http.post<T>(`${Constants.APIbaseURL}${servicePoint}`, data, { ...this.getHttpOptions(httpOptions), observe: 'response' }).pipe(
         timeout(Constants.timeoutTime) as OperatorFunction<HttpResponse<T>, HttpResponse<T>>,
-        catchError(error => {
-          if (error.name === 'TimeoutError') {
-            return throwError(() => new Error('Exceeded max timeout time of request.'));
-          } else {
-            if (customErrorHandler) { 
-              return customErrorHandler(error);
-            }
-            if (showAPIError) {
-              return throwError(() => new Error(error.error));
-            }
-            return throwError(() => new Error('Unexpected error'));
-          }
-        })
+        catchError(error => this.handleHttpError(error, customErrorHandler, showAPIError))
       );
+    }
+    private handleHttpError(error: any, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError = false): Observable<any> {
+      if (error.name === 'TimeoutError') {
+        return throwError(() => new Error('Exceeded max timeout time of request.'));
+      } else {
+        if (customErrorHandler) {
+          return customErrorHandler(error);
+        }
+        if (showAPIError) {
+          return throwError(() => new Error(error.error));
+        }
+        return throwError(() => new Error('Unexpected error'));
+      }
     }
     handleHttpResponse<T>(observable: Observable<HttpResponse<T>>, okStatusCode = 200, checkBody = true): Observable<T> {
       return observable.pipe(

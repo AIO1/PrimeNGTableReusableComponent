@@ -25,7 +25,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public IActionResult TestGetCols() {
             try {
-                return Ok(PrimeNGHelper.GetColumnsInfo<TestDTO>()); // Get all the columns information to be returned
+                return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>()); // Get all the columns information to be returned
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
@@ -45,9 +45,9 @@ namespace PrimeNGTableReusableComponent.Controllers {
                 if(!PrimeNGHelper.ValidateItemsPerPageSizeAndCols(inputData.pageSize, inputData.columns)) { // Validate the items per page size and columns
                     return BadRequest("Invalid page size or no columns for selection have been specified.");
                 }
-                IQueryable<TestDTO> baseQuery = _context.TestTables
+                IQueryable<TestDto> baseQuery = _context.TestTables
                     .Select(
-                        u => new TestDTO {
+                        u => new TestDto {
                             id = u.Id,
                             username = u.Username,
                             age = u.Age,
@@ -73,11 +73,11 @@ namespace PrimeNGTableReusableComponent.Controllers {
             "Retrieves all possible employment status.",
             "This API function will return all employment status."
             )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(List<EmploymentStatusDTO>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(List<EmploymentStatusDto>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public async Task<IActionResult> GetEmploymentStatus() {
             try {
-                List<EmploymentStatusDTO> data = await _context.EmploymentStatusCategories.OrderBy(t => t.StatusName).Select(t => new EmploymentStatusDTO {
+                List<EmploymentStatusDto> data = await _context.EmploymentStatusCategories.OrderBy(t => t.StatusName).Select(t => new EmploymentStatusDto {
                     StatusName = t.StatusName,
                     ColorR = t.ColorR,
                     ColorG = t.ColorG,

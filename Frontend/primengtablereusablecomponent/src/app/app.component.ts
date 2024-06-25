@@ -4,8 +4,7 @@ import { Constants } from '../constants';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
   constructor(private primengConfig: PrimeNGConfig) {}

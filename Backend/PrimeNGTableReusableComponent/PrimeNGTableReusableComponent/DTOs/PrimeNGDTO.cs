@@ -6,12 +6,12 @@
         /// <summary>
         /// Gets or sets the current page number.
         /// </summary>
-        public int page { get; set; }
+        public required int page { get; set; }
 
         /// <summary>
         /// Gets or sets the number of items to display per page.
         /// </summary>
-        public byte pageSize { get; set; }
+        public required byte pageSize { get; set; }
 
         /// <summary>
         /// Gets or sets a list of sorting configurations for the table.

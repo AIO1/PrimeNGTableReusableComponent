@@ -6,12 +6,15 @@ using Microsoft.EntityFrameworkCore;
 using PrimeNG.DTOs;
 using PrimeNG.Attributes;
 using System.Text.Json;
+using System;
 namespace PrimeNG.HelperFunctions {
     public static class PrimeNGHelper {
         public static readonly int[] allowedItemsPerPage = [10, 25, 50, 75, 100]; // The number of items per page allowed
         public static readonly string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz"; // The date format used to represent dates in the tables (and for global search in dates). DO NOT USE "." SEPARATOR
         public static readonly string dateTimezone = "+00:00"; // The timezone used in the representation of dates. Timezone conversion is also done during the process. Database dates shall be in GMT+00:00 (UTC)
         public static readonly string dateCulture = "en-US";  // The culture used in the representation of dates.
+
+        private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
         public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, string? defaultSortColumnName=null, int defaultSortOrder = 1, List<string>? additionalColumnsToReturn = null) {
             baseQuery = ApplySorting(baseQuery, inputData.sort, defaultSortColumnName, defaultSortOrder); // Apply the sorting
@@ -21,10 +24,9 @@ namespace PrimeNG.HelperFunctions {
             long totalRecords = baseQuery.Count(); // Count all the available records (after applying filters)
             int currentPage = inputData.page; // Get the current page that the user is viewing
             IQueryable<T> pagedItems = PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.pageSize); // Perform the pagination
-            inputData.page = currentPage; // Update the page that the user is viewing
             List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.columns!, additionalColumnsToReturn); // Limit the columns that are going to be selected
             return new PrimeNGPostReturn {
-                Page = inputData.page,
+                Page = currentPage,
                 TotalRecords = totalRecords,
                 TotalRecordsNotFiltered = totalRecordsNotFiltered,
                 Data = dataResult
@@ -183,48 +185,46 @@ namespace PrimeNG.HelperFunctions {
         private static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<PrimeNGTableFilterModel>> columnFilters, List<string> visibleColumns, MethodInfo stringDateFormatMethod) {
             foreach(var entry in columnFilters) { // Iterate through the column filters
                 string key = entry.Key; // Get the key of the current column filter
-                if(visibleColumns.Contains(key)) { // Check if the column is visible
-                    List<PrimeNGTableFilterModel> values = entry.Value; // Get the filter values for the column
-                    bool andPredicateOperator = values[0].Operator == "and"; // Used to determine if the predicate operator is "AND" or "OR"
-                    var combinedPredicate = PredicateBuilder.New<T>(true); // Create a predicate to combine filter conditions
-                    foreach(var value in values) { // Iterate through filter values for the column
-                        if(!object.ReferenceEquals(value.Value, null) && !string.IsNullOrWhiteSpace(value.Value?.ToString())) { // Check if the filter value is not null or whitespace
-                            if(value.MatchMode == "in") {
-                                PropertyInfo property = typeof(T).GetProperty(key) ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not exist in type '{typeof(T).FullName}'."); // Retrieve the property
-                                PrimeNGAttribute? attribute = (PrimeNGAttribute?)property.GetCustomAttributes(typeof(PrimeNGAttribute), false).FirstOrDefault() ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not have the PrimeNGAttributes attribute in type '{typeof(T).FullName}'."); // Retrieve PrimeNGAttributes attribute and if its null throw error
-                                if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
-                                    List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
-                                    foreach(var item in items) {
-                                        var filterPredicate = PrimeNGHelper.GetColumnFilterPredicate<T>(property.Name, item, attribute.DataType, "equals", stringDateFormatMethod); // Get the filter predicate for the column
-                                        if(filterPredicate != null) {
-                                            if(combinedPredicate.Body.NodeType == ExpressionType.Constant) {
-                                                combinedPredicate = filterPredicate;
-                                            } else {
-                                                combinedPredicate = andPredicateOperator ? combinedPredicate.And(filterPredicate) : combinedPredicate.Or(filterPredicate);
-                                            }
-                                        }
-                                    }
-                                }
-                            } else { 
-                                PropertyInfo property = typeof(T).GetProperty(key) ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not exist in type '{typeof(T).FullName}'."); // Retrieve the property
-                                PrimeNGAttribute? attribute = (PrimeNGAttribute?)property.GetCustomAttributes(typeof(PrimeNGAttribute), false).FirstOrDefault() ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not have the PrimeNGAttributes attribute in type '{typeof(T).FullName}'."); // Retrieve PrimeNGAttributes attribute and if its null throw error
-                                var filterPredicate = PrimeNGHelper.GetColumnFilterPredicate<T>(property.Name, value.Value, attribute.DataType, value.MatchMode, stringDateFormatMethod); // Get the filter predicate for the column
-                                if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using AND or OR
-                                    if(combinedPredicate.Body.NodeType == ExpressionType.Constant) { // If the combined predicate is initially a constant expression, replace it with the filter predicate
-                                        combinedPredicate = filterPredicate;
-                                    } else { // If the combined predicate already contains conditions, combine it with the new filter predicate using AND or OR
-                                        combinedPredicate = andPredicateOperator ? combinedPredicate.And(filterPredicate) : combinedPredicate.Or(filterPredicate);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    query = query.Where(combinedPredicate); // Apply the combined predicate to filter the list   
+                if(!visibleColumns.Contains(key)) { // If the column is not visible
+                    continue; // Skip processing if the column is not visible
                 }
+                List<PrimeNGTableFilterModel> values = entry.Value; // Get the filter values for the column
+                bool andPredicateOperator = values[0].Operator == "and"; // Used to determine if the predicate operator is "AND" or "OR"
+                ExpressionStarter<T>? combinedPredicate = PredicateBuilder.New<T>(true); // Create a predicate to combine filter conditions
+                foreach(PrimeNGTableFilterModel value in values) { // Iterate through filter values for the column
+                    if(value.Value is null || string.IsNullOrWhiteSpace(value.Value?.ToString())) { // Check if the filter value is null or whitespace
+                        continue; // Skip to the next iteration if filter value is null or whitespace
+                    }
+                    PropertyInfo property = typeof(T).GetProperty(key) ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not exist in type '{typeof(T).FullName}'."); // Retrieve the property
+                    PrimeNGAttribute? attribute = (PrimeNGAttribute?)property.GetCustomAttributes(typeof(PrimeNGAttribute), false).FirstOrDefault() ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not have the PrimeNGAttributes attribute in type '{typeof(T).FullName}'."); // Retrieve PrimeNGAttributes attribute and if its null throw error
+                    if(value.MatchMode == "in") {
+                        FilterPredicateInClauseBuilder<T>(value, property, attribute, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                    } else {
+                        FilterPredicateBuilder(property, attribute, value.Value, value.MatchMode, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                    }
+                }
+                query = query.Where(combinedPredicate); // Apply the combined predicate to filter the list   
             }
             return query;
         }
-
+        private static void FilterPredicateBuilder<T>(PropertyInfo property, PrimeNGAttribute attribute, dynamic val, string matchMode, MethodInfo stringDateFormatMethod, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate) {
+            dynamic filterPredicate = GetColumnFilterPredicate<T>(property.Name, val, attribute.DataType, matchMode, stringDateFormatMethod); // Get the filter predicate for the column
+            if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using AND or OR
+                if(combinedPredicate.Body.NodeType == ExpressionType.Constant) { // If the combined predicate is initially a constant expression, replace it with the filter predicate
+                    combinedPredicate = filterPredicate;
+                } else { // If the combined predicate already contains conditions, combine it with the new filter predicate using AND or OR
+                    combinedPredicate = andPredicateOperator ? combinedPredicate.And(filterPredicate) : combinedPredicate.Or(filterPredicate);
+                }
+            }
+        }
+        private static void FilterPredicateInClauseBuilder<T>(PrimeNGTableFilterModel value, PropertyInfo property, PrimeNGAttribute attribute, MethodInfo stringDateFormatMethod, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate) {
+            if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
+                List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
+                foreach(object item in items) {
+                    FilterPredicateBuilder(property, attribute, item, MatchModeEquals, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                }
+            }
+        }
         /// <summary>
         /// Gets a global filter predicate for the specified property name, filter value, and filter data type.
         /// </summary>
@@ -260,7 +260,7 @@ namespace PrimeNG.HelperFunctions {
         /// <returns>An Expression<Func<T, bool>> predicate for filtering entities.</returns>
         /// <exception cref="ArgumentException">Thrown when the filterDataType is not supported.</exception>
         private static Expression<Func<T, bool>>? GetColumnFilterPredicate<T>(string propertyName, dynamic filterValue, string filterDataType, string matchMode, MethodInfo stringDateFormatMethod) {
-            Expression<Func<T, bool>>? predicate = null; // Initialize the predicate as null
+            Expression<Func<T, bool>>? predicate; // Initialize the predicate as null
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x");  // Create an expression parameter to represent the generic entity T
             MemberExpression property = Expression.Property(parameter, propertyName);  // Get the specific property of the entity using the provided property name
             predicate = filterDataType switch {
@@ -317,7 +317,7 @@ namespace PrimeNG.HelperFunctions {
                 "contains" => Expression.Call(toUpperMethod, "Contains", null, Expression.Constant(filterValue)),
                 "notContains" => Expression.Not(Expression.Call(toUpperMethod, "Contains", null, Expression.Constant(filterValue))),
                 "endsWith" => Expression.Call(toUpperMethod, "EndsWith", null, Expression.Constant(filterValue)),
-                "equals" => Expression.Equal(toUpperMethod, Expression.Constant(filterValue)),
+                MatchModeEquals => Expression.Equal(toUpperMethod, Expression.Constant(filterValue)),
                 "notEquals" => Expression.NotEqual(toUpperMethod, Expression.Constant(filterValue)),
                 _ => throw new ArgumentException("Invalid filtering option value for text predicate", nameof(matchMode)),
             };
@@ -349,7 +349,7 @@ namespace PrimeNG.HelperFunctions {
         /// <exception cref="ArgumentException">Thrown when an unsupported match mode is specified.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the property is null.</exception>
         private static Expression<Func<T, bool>>? CreateDateFilterPredicate<T>(MemberExpression property, ParameterExpression parameter, dynamic filterValue, string matchMode = "dateIs") {
-            Expression<Func<T, bool>>? predicate = null; // Initialize the predicate as null since it will be set later
+            Expression<Func<T, bool>>? predicate; // Initialize the predicate as null since it will be set later
             MemberExpression dateProperty = null!; // Initialize the dateProperty as null since it will be set later
             if(!DateTime.TryParse(filterValue.ToString(), out DateTime filterDateTime)) { // Try parsing the filter value as a DateTime
                 return null; // Early return if provided filter value is not a date
@@ -395,13 +395,13 @@ namespace PrimeNG.HelperFunctions {
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown when an unsupported match mode is specified.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the property is null.</exception>
-        private static Expression<Func<T, bool>> CreateNumericFilterPredicate<T>(MemberExpression property, ParameterExpression parameter, dynamic filterValue, string matchMode = "equals") {
-            Expression<Func<T, bool>> predicate = null!; // Initialize the predicate as null since it will be set later
+        private static Expression<Func<T, bool>> CreateNumericFilterPredicate<T>(MemberExpression property, ParameterExpression parameter, dynamic filterValue, string matchMode = MatchModeEquals) {
+            Expression<Func<T, bool>> predicate; // Initialize the predicate as null since it will be set later
             MemberExpression valueExpression; // Declare a member expression for the property value
             dynamic constantValue = null!; // Initialize the constant value as null since it will be set later
             MemberExpression conditionExpression; // Declare a member expression for the condition (for nullable types)
             dynamic convertedValue; // Declare a dynamic variable for the converted filter value
-            bool isNullableNumber = property.Type.IsGenericType && property.Type.GetGenericTypeDefinition() == typeof(Nullable<>); // Check if the property type is nullable
+            bool isNullableNumber = IsNullableNumber(property); // Check if the property type is nullable
             if(isNullableNumber) { // If the property type is nullable
                 convertedValue = Convert.ChangeType(filterValue.ToString(), Nullable.GetUnderlyingType(property.Type)); // Convert the filter value to the underlying type of the nullable property
                 valueExpression = Expression.Property(property, "Value"); // Create an expression representing the "Value" property of the original property
@@ -413,7 +413,7 @@ namespace PrimeNG.HelperFunctions {
                 conditionExpression = null!; // Set the condition expression to null since it's not needed for non-nullable types
             }
             predicate = matchMode switch { // Create the predicate based on the match mode
-                "equals" => Expression.Lambda<Func<T, bool>>(isNullableNumber ? Expression.AndAlso(conditionExpression, Expression.Equal(valueExpression, constantValue))
+                MatchModeEquals => Expression.Lambda<Func<T, bool>>(isNullableNumber ? Expression.AndAlso(conditionExpression, Expression.Equal(valueExpression, constantValue))
                                         : Expression.Equal(property, Expression.Constant(convertedValue)), parameter),
                 "notEquals" => Expression.Lambda<Func<T, bool>>(isNullableNumber ? Expression.OrElse(Expression.AndAlso(conditionExpression, Expression.NotEqual(valueExpression, constantValue)),
                                         Expression.Equal(property, Expression.Constant(null, property.Type)))
@@ -434,7 +434,9 @@ namespace PrimeNG.HelperFunctions {
             };
             return predicate;
         }
-
+        private static bool IsNullableNumber(MemberExpression property) {
+            return property.Type.IsGenericType && property.Type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
         /// <summary>
         /// Creates a boolean filter predicate for the specified property taking into account the passed filter value.
         /// </summary>

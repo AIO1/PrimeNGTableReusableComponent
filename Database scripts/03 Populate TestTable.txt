@@ -5,7 +5,10 @@ BEGIN
 	INSERT INTO primengtablereusablecomponent.dbo.TestTable (username, age, birthdate, payedTaxes, employmentStatusID)
 	VALUES (
 		NEWID(),
-		CAST(RAND() * 100 AS TINYINT),
+		CASE
+			WHEN RAND() < 0.25 THEN NULL -- 25% chance of being null
+			ELSE CAST(RAND() * 100 AS TINYINT)
+		END,
 		CASE 
 			WHEN RAND() < 0.25 THEN NULL -- 25% chance of being null
 			ELSE (DATEADD(DAY, -ABS(CHECKSUM(NEWID()) % (CAST(RAND()*40000 AS INT))), GETDATE()))

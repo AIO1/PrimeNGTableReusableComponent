@@ -1,7 +1,7 @@
 ﻿using PrimeNG.Attributes;
 
 namespace PrimeNGTableReusableComponent.DTOs {
-    public class TestDTO {
+    public class TestDto {
         [PrimeNGAttribute(sendColumn: false)]
         public Guid id { get; set; }
 
@@ -20,7 +20,7 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true)]
         public bool payedTaxes { get; set; }
     }
-    public class EmploymentStatusDTO {
+    public class EmploymentStatusDto {
         public string StatusName { get; set; } = null!;
         public byte ColorR { get; set; }
         public byte ColorG { get; set; }

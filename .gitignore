@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# SONAR EXLCUDE
+sonar-project.*
+.sonar/
+.sonarqube/

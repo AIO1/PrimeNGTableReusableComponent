@@ -24,7 +24,11 @@ public partial class primengTableReusableComponentContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("EmploymentStatusCategories_PK");
 
-            entity.ToTable(tb => tb.HasComment("Contains a list of employment categories."));
+            entity.ToTable(tb =>
+                {
+                    tb.HasComment("Contains a list of employment categories.");
+                    tb.HasTrigger("EmploymentStatusCategories_tg_dateUpdated");
+                });
 
             entity.HasIndex(e => e.StatusName, "EmploymentStatusCategories_statusName_UNIQUE").IsUnique();
 
