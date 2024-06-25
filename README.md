@@ -5,6 +5,7 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
 
 
 ## Table of contents
+- [Introduction](#introduction)
 - [1 Required software](#1-required-software)
 - [2 Setup the environment to try the demo](#2-setup-the-environment-to-try-the-demo)
   - [2.1 Database (MSSQL)](#21-database-mssql)
@@ -17,6 +18,17 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
   - [2.3 Frontend (Angular project that uses PrimeNG components)](#23-frontend-angular-project-that-uses-primeng-components)
 - [3 How to implement in existing projects](#3-how-to-implement-in-existing-projects)
 - [4 How to use the "PrimeNG Table reusable component" and what is included](#4-how-to-use-the-primeng-table-reusable-component-and-what-is-included)
+
+## Introduction
+Hello! My name is Alex Ibrahim Ojea.
+
+This project started because I needed an efficient and reusable way to handle tables on my Angular web applications. On my own webpage of [Eternal Code Studio (ECS)](https://eternalcodestudio.com/) I wanted to create multiple projects that required the used of tables with advance filter options. PrimeNG offers a simple solution in the frontend (which is not optimal since it forces you to bring all the data to the frontend) and this is what started my motivation to find a solution.
+
+This project show how to do a full implementation of the PrimeNG table delegating all the filter logic to the database engine and how the table can be easily reused throughout your application.
+
+I hope this helps you to create very efficient and good looking tables in your web applications :)
+
+Take into account that I'm not an expert programmer, so there will be possibly some things that could be done better of how I made them. Also, I'm not an expert in CSS, so basically this solution uses a simple design given by PrimeNG and you will have to make it prettier yourself.
 
 
 ## 1 Required software
@@ -46,6 +58,8 @@ Once all scripts have been executed OK, you should end up with 2 tables that are
 
 
 ### 2.2 Backend (API in ASP.NET)
+**NOTE:** You can use other .NET version with its corresponding packages and the solution should still work with no issues.
+
 #### 2.2.1 Open the project
 Using Visual Studio 2022, open the backend solution located in [this path](Backend/PrimeNGTableReusableComponent). Make sure that you have the ASP.NET component and the .NET 8 framework. If you don't have both, you will have to use Visual Studio Installer to include whatever is missing.
 
@@ -189,6 +203,8 @@ In the URL of your API, please, take notes of the port that appears, since we wi
 
 
 ### 2.3 Frontend (Angular project that uses PrimeNG components)
+**NOTE:** You can use other Angular and primeNG versions with its corresponding updates in the package.json and the solution should still work with no issues.
+
 This section assumes that you have completed the two previous sections to setup your database and API. 
 
 Before proceding, please, make sure that you have installed Node.js (trough and .msi package or .exe or using NVM), since this will be needed to execute the frontend application from your PC.
@@ -289,3 +305,23 @@ With all these steps done, you should have succesfully imported all required fil
 
 
 ## 4 How to use the "PrimeNG Table reusable component" and what is included
+The aim of this chapter is to explain all the things that have to be taken into account and what different functionalities are included (and how to implement them).
+
+
+### 4.1 Date formating
+Something that a first glance might sound simple but I've seen lots of developers struggle with this. Its important to know how you should handle your date storage and how you should display it to the end user.
+
+My personal reccomendation, always store in your databases dates in UTC and (if using MSSQL) as a datetime2 type, even if you are not interested in saving the time part. Its a way to guarantee consistency when working with dates. This solution assumes that all your dates are stored in the database as datetime2 in UTC timezone.
+
+The database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt) that must be created in your database is used when trying to search with the global filter. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use (you should obviously use the same in here and in the frontend). The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is done, this function can be called with no issues.
+
+Currently in this example, the format, timezone and locale are hardcoded in the [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs) at the begining:
+```c#
+public static readonly string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz"; // The date format used to represent dates in the tables (and for global search in dates). DO NOT USE "." SEPARATOR
+public static readonly string dateTimezone = "+00:00"; // The timezone used in the representation of dates. Timezone conversion is also done during the process. Database dates shall be in GMT+00:00 (UTC)
+public static readonly string dateCulture = "en-US";  // The culture used in the representation of dates.
+```
+
+These values can be modified and the changes should be reflected in the frontend with no issues. 
+
+If you would like to implement a customization to fetch an specific date format, timezone and culture that the user has for example in its own configuration, you could make some modifications performing the fecth PENDING.....
