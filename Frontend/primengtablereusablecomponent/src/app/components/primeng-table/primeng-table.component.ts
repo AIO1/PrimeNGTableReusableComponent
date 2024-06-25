@@ -189,7 +189,10 @@ export class PrimengTableComponent {
       sort: event.multiSortMeta, // Set the sorting information
       filter: filtersWithoutGlobal, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
-      columns: this.columnsToShow.map(col => col.field) // Set the columns to show
+      columns: this.columnsToShow.map(col => col.field), // Set the columns to show
+      dateFormat: this.dateFormat,
+      dateTimezone: this.dateTimezone,
+      dateCulture: this.dateCulture
     };
     this.sharedService.handleHttpResponse(
       this.primengSharedService.fetchTableData(this.dataSoureURL, requestData) // Fetch table data from the server

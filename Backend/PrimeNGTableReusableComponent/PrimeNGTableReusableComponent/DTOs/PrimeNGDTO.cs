@@ -32,6 +32,12 @@
         /// Gets or sets a list of column to be included in the response.
         /// </summary>
         public List<string>? columns { get; set; }
+
+        public string dateFormat { get; set; } = null!;
+
+        public string dateTimezone { get; set; } = null!;
+
+        public string dateCulture { get; set; } = null!;
     }
 
     /// <summary>

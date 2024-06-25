@@ -10,16 +10,16 @@ using System;
 namespace PrimeNG.HelperFunctions {
     public static class PrimeNGHelper {
         public static readonly int[] allowedItemsPerPage = [10, 25, 50, 75, 100]; // The number of items per page allowed
-        public static readonly string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz"; // The date format used to represent dates in the tables (and for global search in dates). DO NOT USE "." SEPARATOR
-        public static readonly string dateTimezone = "+00:00"; // The timezone used in the representation of dates. Timezone conversion is also done during the process. Database dates shall be in GMT+00:00 (UTC)
-        public static readonly string dateCulture = "en-US";  // The culture used in the representation of dates.
+        //public static readonly string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz"; // The date format used to represent dates in the tables (and for global search in dates). DO NOT USE "." SEPARATOR
+        //public static readonly string dateTimezone = "+00:00"; // The timezone used in the representation of dates. Timezone conversion is also done during the process. Database dates shall be in GMT+00:00 (UTC)
+        //public static readonly string dateCulture = "en-US";  // The culture used in the representation of dates.
 
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
         public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, string? defaultSortColumnName=null, int defaultSortOrder = 1, List<string>? additionalColumnsToReturn = null) {
             baseQuery = ApplySorting(baseQuery, inputData.sort, defaultSortColumnName, defaultSortOrder); // Apply the sorting
             long totalRecordsNotFiltered = baseQuery.Count(); // Count all the available records (before applying filters)
-            baseQuery = ApplyGlobalFilter(baseQuery, inputData.globalFilter, inputData.columns!, stringDateFormatMethod); // Apply the global filter
+            baseQuery = ApplyGlobalFilter(baseQuery, inputData.globalFilter, inputData.columns!, stringDateFormatMethod, inputData.dateFormat, inputData.dateTimezone, inputData.dateCulture); // Apply the global filter
             baseQuery = ApplyColumnFilters(baseQuery, inputData.filter, inputData.columns!, stringDateFormatMethod); // Apply the column filters
             long totalRecords = baseQuery.Count(); // Count all the available records (after applying filters)
             int currentPage = inputData.page; // Get the current page that the user is viewing
@@ -46,7 +46,7 @@ namespace PrimeNG.HelperFunctions {
         /// Thrown when the <see cref="PrimeNGAttributes"/> attribute is missing for a property.
         /// The exception message includes the name of the property that is missing attributes.
         /// </exception>
-        public static PrimeNGTableColsAndAllowedPagination GetColumnsInfo<T>() {
+        public static PrimeNGTableColsAndAllowedPagination GetColumnsInfo<T>(string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz", string dateTimezone = "+00:00", string dateCulture = "en-US") {
             List<PrimeNGTableReturnColumnMetadata> columnsInfo = []; // Prepare the list to be returned
             PropertyInfo[] properties = typeof(T).GetProperties(); // Get the properties of the provided class
             foreach(var property in properties) { // Loop through each property of the class
@@ -156,7 +156,7 @@ namespace PrimeNG.HelperFunctions {
         /// <param name="globalFilter">The text used for global filtering.</param>
         /// <param name="visibleColumns">The list of column names that are currently visible.</param>
         /// <returns>A filtered list based on the global filter and visible columns.</returns>
-        private static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, MethodInfo stringDateFormatMethod) {
+        private static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, MethodInfo stringDateFormatMethod, string dateFormat, string dateTimezone, string dateCulture) {
             if(string.IsNullOrEmpty(globalFilter) || string.IsNullOrWhiteSpace(globalFilter)) { // If the global filter is empty or whitespace, return the original list
                 return query;
             }
@@ -164,7 +164,7 @@ namespace PrimeNG.HelperFunctions {
             foreach(PropertyInfo property in typeof(T).GetProperties().Where(x => visibleColumns.Contains(x.Name))) { // Iterate through properties of type T where the property is visible
                 PrimeNGAttribute? attribute = (PrimeNGAttribute?)property.GetCustomAttributes(typeof(PrimeNGAttribute), false).FirstOrDefault(); // Retrieve PrimeNGAttributes attribute
                 if(attribute != null && attribute.CanBeGlobalFiltered) {  // Check if the property can be globally filtered
-                    var filterPredicate = GetGlobalFilterPredicate<T>(property.Name, globalFilter, attribute.DataType, stringDateFormatMethod); // Get the filter predicate for the property
+                    var filterPredicate = GetGlobalFilterPredicate<T>(property.Name, globalFilter, attribute.DataType, stringDateFormatMethod, dateFormat, dateTimezone, dateCulture); // Get the filter predicate for the property
                     if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using OR
                         predicate = predicate.Or(filterPredicate);
                     }
@@ -237,12 +237,12 @@ namespace PrimeNG.HelperFunctions {
         /// Returns null if the data type is not supported.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the filterDataType is not supported.</exception>
-        private static Expression<Func<T, bool>>? GetGlobalFilterPredicate<T>(string propertyName, string filterValue, string filterDataType, MethodInfo stringDateFormatMethod) {
+        private static Expression<Func<T, bool>>? GetGlobalFilterPredicate<T>(string propertyName, string filterValue, string filterDataType, MethodInfo stringDateFormatMethod, string dateFormat, string dateTimezone, string dateCulture) {
             Expression<Func<T, bool>>? predicate = null; // Initialize the predicate as null
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x"); // Create an expression parameter to represent the generic entity T
             MemberExpression property = Expression.Property(parameter, propertyName); // Get the specific property of the entity using the provided property name
             if(filterDataType == "text" || filterDataType == "numeric" || filterDataType == "date") { // Check the filter data type, if it's text, numeric, or date, call method to create a filter predicate
-                predicate = CreateTextFilterPredicate<T>(property, filterValue, stringDateFormatMethod, "contains");
+                predicate = CreateTextFilterPredicate<T>(property, filterValue, stringDateFormatMethod, "contains", dateFormat, dateTimezone, dateCulture);
             } else if (filterDataType != "boolean") { // If the filter data type is not text, numeric, date or boolean, throw an exception
                 throw new ArgumentException("Invalid filterDataType value", nameof(filterDataType));
             }
@@ -287,7 +287,7 @@ namespace PrimeNG.HelperFunctions {
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown when an unsupported match mode is specified.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the property is null.</exception>
-        private static Expression<Func<T, bool>> CreateTextFilterPredicate<T>(MemberExpression property, string filterValue, MethodInfo stringDateFormatMethod, string matchMode = "contains") {
+        private static Expression<Func<T, bool>> CreateTextFilterPredicate<T>(MemberExpression property, string filterValue, MethodInfo stringDateFormatMethod, string matchMode = "contains", string dateFormat = "", string dateTimezone = "", string dateCulture = "") {
             #region PREPARE THE toStringMethod
                 Expression toStringMethod; // Prepare the method to convert the property to a string if necessary
                 bool isStringProperty = property.Type == typeof(string) || Nullable.GetUnderlyingType(property.Type) == typeof(string); // Check if the property type is a string or nullable string

@@ -19,4 +19,10 @@ export interface IprimengTableDataPost {
   
     /** Gets or sets a list of columns to be included in the response.*/
     columns?: string[];
+
+    dateFormat: string;
+
+    dateTimezone: string;
+
+    dateCulture: string;
 }
