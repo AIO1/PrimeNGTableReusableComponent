@@ -49,6 +49,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
                     .Select(
                         u => new TestDto {
                             id = u.Id,
+                            canBeDeleted = u.CanBeDeleted,
                             username = u.Username,
                             age = u.Age,
                             employmentStatusName =
@@ -61,7 +62,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
                             payedTaxes = u.PayedTaxes
                         }
                     ).AsNoTracking();
-                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1, ["id"]));
+                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1, ["id", "canBeDeleted"]));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }

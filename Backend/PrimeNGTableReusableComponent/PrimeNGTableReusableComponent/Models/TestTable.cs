@@ -48,5 +48,10 @@ public partial class TestTable
     /// </summary>
     public Guid? EmploymentStatusId { get; set; }
 
+    /// <summary>
+    /// Used for the frontend to show a delete button.
+    /// </summary>
+    public bool CanBeDeleted { get; set; }
+
     public virtual EmploymentStatusCategory? EmploymentStatus { get; set; }
 }

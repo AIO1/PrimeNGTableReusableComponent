@@ -5,6 +5,9 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute(sendColumn: false)]
         public Guid id { get; set; }
 
+        [PrimeNGAttribute(sendColumn: false)]
+        public bool canBeDeleted { get; set; }
+
         [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false)]
         public string username { get; set; } = null!;
 

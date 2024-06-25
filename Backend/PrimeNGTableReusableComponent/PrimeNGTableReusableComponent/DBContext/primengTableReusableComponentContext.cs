@@ -84,6 +84,9 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasPrecision(0)
                 .HasComment("The birthdate of the user.")
                 .HasColumnName("birthdate");
+            entity.Property(e => e.CanBeDeleted)
+                .HasComment("Used for the frontend to show a delete button.")
+                .HasColumnName("canBeDeleted");
             entity.Property(e => e.DateCreated)
                 .HasPrecision(0)
                 .HasDefaultValueSql("(getutcdate())")
