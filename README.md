@@ -360,7 +360,7 @@ From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTa
 As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "sendColumn" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
 
 
-### 4.3 Fetching columns endpoint
+### 4.3 Fetching table columns endpoint
 When you wish to create a new table, one of your first steps should be to create the DTO and then create an endpoint in a controller that will be used to fetch all the columns information that is used by the table. To do so, you just need to create and endpoint that calls "GetColumnsInfo" and provide it the DTO (that uses the PrimeNGAttribute in every entry) and the function will do everything for you. From the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project, and endpoint to fetch all the column data needed would look like this:
 ```c#
 [HttpGet("[action]")]
