@@ -306,6 +306,27 @@ With this, everything related to date formating should be already be customized 
 
 
 ### 4.2 Preparing what is going to be shown in the frontend
+For anything that needs to be sent to the frontend (including columns that will be not shown to the user like the ID columns) you must create a DTO. Each element of the DTO that is going to be used must have an attribute declared using "PrimeNGAttribute". The "PrimeNGAttribute" allows you to define certain aspects on how the data of any of the entreis of the DTO should be treated and shown in the frontend.
+
+From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGAttribute.cs), you will see that you can specify multiple things to each element of the DTO, the things that can be specified per columns are:
+
+- **header:** Used to specify the name that the column will have in the frontend.
+- **dateType:** Used to indicate the type of data that is being managed. This will affect the global filter and the filter per column. The filter by column will display different options to the user in the frontend depending on the data type specified. The are four data types and they must be declared as they appear exactly here:
+  - **"text":** Used mainly for strings and nullable strings. This is the default option if nothing has been specified.
+  - **"numeric":** Used for any type of data in C# that handles numeric values like int, long, ...
+  - **"booelan":** Used for bool and nullable bool types.
+  - **"date":** Used for valid date data, for example, datetime.
+- **dataAlign:** Being the default value "center", the value provided will be used to determine the aligment of the data in the frontend. The possible values that must be declared as they appear exactly here are:
+  - "left"
+  - "center"
+  - "right"
+- **canBeHidden:** Being the default value true, this parameter will indicate if the user in the frontend can hider or not this column. When a column is hidden, it means it won't be recovered in the SELECT statement to the database, saving up on resources. If a columns is hidden, it won't be shown in the frontend until the user selects it again.
+- **startHidden:** Default value is false. If the value is true and if "canBeHidden" is true, the column will be first shown to the user as hidden, and if he want to view it, the user must request it in the column selector.
+- **canBeResized:** Default true. If true, it means that the user will have the ability to resize the column.
+- **canBeReordered:** Default true. If true, the user can drag a column and place it in a different order.
+- **canBeSorted:** Default true. If true, the user can press the header of a column to sort the column. If pressed again, the sort order will be inverted. The user has te ability to perform a multisort holding down "CTRL" key and the clicking in all the columns that he wants to sort by.
+- **canBeFiltered:** Default true. If true, in the frontend, the user will see a filter icon in the column. When the filter icon is pressed, a menu with different options to filter by will be shown to the user. The menu that is displayed and the available rules will depend in the "dataType" and in "filterUsesPredifinedValues".
+- 
 
 
 ### 4.3 Fetching columns
