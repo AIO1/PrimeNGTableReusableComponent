@@ -361,6 +361,20 @@ As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marke
 
 
 ### 4.3 Fetching columns
+When you wish to create a new table, one of your first steps should be to create the DTO and then create an endpoint in a controller that will be used to fetch all the columns information that is used by the table. To do so, you just need to create and endpoint that calls "GetColumnsInfo" and provide it the DTO (that uses the PrimeNGAttribute in every entry) and the function will do everything for you. From the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project, and endpoint to fetch all the column data needed would look like this:
+```c#
+[HttpGet("[action]")]
+public IActionResult TestGetCols() {
+    try {
+        return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>()); // Get all the columns information to be returned
+    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+    }
+}
+```
+As you can see, you just need to call "GetColumnsInfo" and pass the DTO that you will be using for the table, in this example being "TestDto".
+
+**NOTE:** Please, make sure that every element in the DTO has a PrimeNGAttribute, or the column fetching endpoint won't work properly!
 
 
 ### 4.4 Retrieving table data with filter, global filter, pagination and just the requested columns
