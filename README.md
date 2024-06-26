@@ -326,7 +326,38 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
 - **canBeReordered:** Default true. If true, the user can drag a column and place it in a different order.
 - **canBeSorted:** Default true. If true, the user can press the header of a column to sort the column. If pressed again, the sort order will be inverted. The user has te ability to perform a multisort holding down "CTRL" key and the clicking in all the columns that he wants to sort by.
 - **canBeFiltered:** Default true. If true, in the frontend, the user will see a filter icon in the column. When the filter icon is pressed, a menu with different options to filter by will be shown to the user. The menu that is displayed and the available rules will depend in the "dataType" and in "filterUsesPredifinedValues".
-- 
+- **filterUsesPredifinedValues:** Default false. If true, the filter menu that will be shown (if "canBeFiltered" is true) is a list of options that will depend on the values that are in the frontend associated to the entity with name "filterPredifinedValuesName". In further sections there is an in depth explanation on how to use this.
+- **filterPredifinedValuesName:** If "canBeFiltered" and "filterUsesPredifinedValues" are both true, it will be used by the frontend to look for the data in an entity with the name provided here. In further sections there is an in depth explanation on how to use this.
+- **canBeGlobalFiltered:** Indicates if the column is affected by the glboal filter. The "boolean" data type can't be globally filtered. By default, all the other types of columns are affected by the global filter.
+- **sendColumn:** By default true. This value should be set to false for columns that you wish to send to the frontend, but you do not wish the user to be able to see them. These columns are not affected by the filter and need to be explicilty declared in a function to be sent to the web application. It is normally used for fields like the ID. There is a more in depth explanation in further sections on how to use it.
+
+From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/TestDTO.cs) that is used to send the data to the frontend.
+```c#
+ public class TestDto {
+    [PrimeNGAttribute(sendColumn: false)]
+    public Guid id { get; set; }
+
+    [PrimeNGAttribute(sendColumn: false)]
+    public bool canBeDeleted { get; set; }
+
+    [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false)]
+    public string username { get; set; } = null!;
+
+    [PrimeNGAttribute("Age", dataType: "numeric")]
+    public byte? age { get; set; }
+
+    [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter")]
+    public string? employmentStatusName { get; set; }
+
+    [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left", startHidden: true)]
+    public DateTime? birthdate { get; set; }
+
+    [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true)]
+    public bool payedTaxes { get; set; }
+}
+```
+
+As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "sendColumn" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
 
 
 ### 4.3 Fetching columns
