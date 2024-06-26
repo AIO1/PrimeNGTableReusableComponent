@@ -1,4 +1,4 @@
-CREATE FUNCTION primengtablereusablecomponent.dbo.FormatDateWithCulture (
+CREATE FUNCTION dbo.FormatDateWithCulture (
     @inputDate DATETIME,
     @format NVARCHAR(100),
     @timezone NVARCHAR(6),

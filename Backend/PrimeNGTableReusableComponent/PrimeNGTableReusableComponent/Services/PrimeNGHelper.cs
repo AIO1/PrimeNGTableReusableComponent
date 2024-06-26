@@ -10,9 +10,6 @@ using System;
 namespace PrimeNG.HelperFunctions {
     public static class PrimeNGHelper {
         public static readonly int[] allowedItemsPerPage = [10, 25, 50, 75, 100]; // The number of items per page allowed
-        //public static readonly string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz"; // The date format used to represent dates in the tables (and for global search in dates). DO NOT USE "." SEPARATOR
-        //public static readonly string dateTimezone = "+00:00"; // The timezone used in the representation of dates. Timezone conversion is also done during the process. Database dates shall be in GMT+00:00 (UTC)
-        //public static readonly string dateCulture = "en-US";  // The culture used in the representation of dates.
 
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
