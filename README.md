@@ -360,7 +360,7 @@ From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTa
 As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "sendColumn" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
 
 
-### 4.3 Fetching columns
+### 4.3 Fetching columns endpoint
 When you wish to create a new table, one of your first steps should be to create the DTO and then create an endpoint in a controller that will be used to fetch all the columns information that is used by the table. To do so, you just need to create and endpoint that calls "GetColumnsInfo" and provide it the DTO (that uses the PrimeNGAttribute in every entry) and the function will do everything for you. From the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project, and endpoint to fetch all the column data needed would look like this:
 ```c#
 [HttpGet("[action]")]
@@ -377,7 +377,68 @@ As you can see, you just need to call "GetColumnsInfo" and pass the DTO that you
 **NOTE:** Please, make sure that every element in the DTO has a PrimeNGAttribute, or the column fetching endpoint won't work properly!
 
 
-### 4.4 Retrieving table data with filter, global filter, pagination and just the requested columns
+### 4.4 Retrieving table data endpoint
+Another endpoint that must be created in the API is the one responsible of building the query dynamically and then retrieving just the needed data from the database. An example on how to do this can be found in [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project under the endpoint "TestGetData". This is how it looks:
+```c#
+public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
+    try {
+        if(!PrimeNGHelper.ValidateItemsPerPageSizeAndCols(inputData.pageSize, inputData.columns)) { // Validate the items per page size and columns
+            return BadRequest("Invalid page size or no columns for selection have been specified.");
+        }
+        IQueryable<TestDto> baseQuery = _context.TestTables
+            .Select(
+                u => new TestDto {
+                    id = u.Id,
+                    canBeDeleted = u.CanBeDeleted,
+                    username = u.Username,
+                    age = u.Age,
+                    employmentStatusName =
+                        u.EmploymentStatusId != null ?
+                            _context.EmploymentStatusCategories
+                                .Where(d => d.Id == u.EmploymentStatusId)
+                                .Select(d => d.StatusName).FirstOrDefault() 
+                            : null,
+                    birthdate = u.Birthdate,
+                    payedTaxes = u.PayedTaxes
+                }
+            ).AsNoTracking();
+        return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1, ["id", "canBeDeleted"]));
+    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+    }
+}
+```
+
+The strategy is to first check by calling the function "ValidateItemsPerPageSizeAndCols" that we have been requested and allowed items per page number (the allowed values are defined in the variable "allowedItemsPerPage" under [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs)) and that at least a column to be retrieved has been requested.
+
+The second part is to build and IQueryable that uses the same type as the DTO that we used to provide the columns. It is very important that the IQueryable has the "AsNoTracking" declaration since we don't want to track the entity for any modified data and this gives a slight performance boost. Also, it is strongly recomended that you keep your base IQueryable as plain as possible, try to avoid delegating joins or any other type of complex operations to Entity Framework. As you can see from the example, the base IQueryable is very plain being the only "complex" operation fetching the string of the "employmentStatusName" from the  "EmploymentStatusCategories" table. If your IQueryable can't be very plain, it might be a good strategy to consider generating a view in the database and map the entity to the view instead of trying to delegate the relation builder to Entity Framework, since sometimes it can generate not very optimal queries if they are too complex.
+
+Once you have your base IQueryable ready, the last part is to simply call the "PerformDynamicQuery" passing your base query. The "PerformDynamicQuery" accepts the following arguments:
+- **inputData:** This is the PrimeNGPostRequest object that should have arrrived from the frontend as part of the BODY when calling the endpoint. It contains multiple data related to the filter rules requested, the columns that should be shown...
+- **baseQuery:** The IQueryable that you have prepared before.
+- **stringDateFormatMethod:** The exposed database function "FormatDateWithCulture" that is used if a global filter has been specified and if the columns is of type "date".
+- **defaultSortColumnName:** If no sort order operations have been specified by the user, the specified column will be used to perform the sort (if it has been specified). The column must have the same name as in the DTO.
+- **defaultSortOrder:** The sorting order to be done to the "defaultSortColumnName" if it needs to be applied. If value is 1 it will be ascending, if not it will be descending.
+- **additionalColumnsToReturn:** A list of string that must match the values of the DTO for additional columns that we want to send. This is normally used for columns such as "ID" that have been given in the DTO the PrimeNGAttribute "sendColumn" as false. The "sendColumn" false makes it so that the column information is not sent to the frontend, but later on you can send the data and treat it in the typescript part without showing an additional column to the user. In the example project this is done with the "id" and the "canBeDeleted".
+
+The "PerformDynamicQuery" function will do all this operations in order:
+
+1. Perform the sorting. The sorting will apply all the sorting rules specified by the user that are located in the PrimeNGPostRequest object. If no sorting rules have been given, and if a "defaultSortColumnName" has been given, a default sorting will be applied. Otherwise, no sotring will be performed.
+2. Count the total elements that are available before applying the filtering rules by delegating a COUNT operation of all the records to the database engine.
+3. Apply the global filter, if any have been specified in the PrimeNGPostRequest object, to each column that can have the global filter applied. Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column. The more columns and data that you have, the slower the query will be. There is an option in the frontend to disable the global filter, which is recommendend when the dataset is very large or there is a large number of columns that could be affected by the global filter.
+4. Apply the filter rules per column. From the PrimeNGPostRequest it will get all the filter rules per column that must be applied (it included the pedifined filter rules). In this step the IQueryable will be added all the additional rules that need to be done to reflect all the filtering operations that the user has requested.
+5. Count the total elements that are available after applying the filtering rules by delegating a COUNT operation of all the records to the database engine with the current built query.
+6. Calculate the number of pages that are available (taking into account the items per page selected and the filtering rules) and determine if the user need to be moved from his current page. For example, if user was in page 100 and suddenly, due to the filters that are applied, only 7 pages are available, the returned current page will be changed to page 7. The frontend will handle this situation and move the user to said page accordingly.
+7. Perform the dynamic select and get the needed elements. In this step, the IQueryable will be added a SELECT statement to just get the columns that we are interested in, and the the IQueryable will be converted to a ToDynamicList, which will basically launch all the query that we have been building in the previous steps to the database. In this step, we would have delegated all operations to the database, and in the backend we will be given a dynamic list with the size of the number of items that must be shown in the current page and with only the selected columns that the user has requested.
+8. The function will end by returning us a PrimeNGPostReturn, which must be returned to the frontend.
+
+The PrimeNGPostReturn object contains:
+- The current page the user should be at.
+- The number of total records that are available before performing the filtering rules.
+- The number of total records that are available after performing the filtering rules.
+- The data that will be sent to the frontend.
+
+When the PrimeNGPostReturn is retrieved by the table component in the frontend, it will do all the necesarry operations to update what is shown to the user in the table.
 
 
 ### 4.5 Predifined filters
