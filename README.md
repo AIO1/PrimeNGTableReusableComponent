@@ -441,21 +441,50 @@ The PrimeNGPostReturn object contains:
 When the PrimeNGPostReturn is retrieved by the table component in the frontend, it will do all the necesarry operations to update what is shown to the user in the table.
 
 
-### 4.5 Predifined filters
+### 4.5 Implementing a new table in the frontend
+Once you have at least created an endpoint to fetch the columns and the data in you API (we are ye assuming an scenario where you don't need predifined filters), you can generate a new component on your frontend through Visual Studio Code terminal (using CMD, not the default powershell terminal that opens up) by first doing "cd" to you frontend root folder and then executing the command:
+```sh
+ng generate c OPTIONAL_PATH_FROM_ROOT_FOLDER_TO_GENERATE_COMPONENT YOUR_COMPONENT_NAME
+```
+
+This will generate you component inside a folder with four files. Assuming that to start, you only want to show some data the moment the component is loaded, in the file that has been generated with an ".html" extension you must add:
+```html
+<ecs-primeng-table #dt
+    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
+    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA/>
+```
+
+With only this, when starting the backend and the the frontend and navigating to the component, a table will be shown and it will automatically get the columns and data the moment the new component is entered. With this you would have completed a simple table that can be used to show data on the frontend with lots of personalization options to the user.
+
+In the above example, the "ecs-primeng-table" has been given the template reference variable "dt", which is optional to do. This is needed when you want to access from the component exposed functions of "ecs-primeng-table". From the demo project, you should be aware that the endpoints of your API shouldn't be the complete URL, but rather the combination of what is already given in the variable "APIbaseURL" in the file [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) and the endpoint part that you specify in the "ecs-primeng-table" component.
+
+This project offers some additional things that you can do with the tables and are explained in further chapters. To end this chapter, here is a list of all the parameters that can be given to a table in the HTML declaration:
+
+- **canPerformActions** (boolean): By default true. If is set to false, when entering the component, the table won't try to fetch the columns and data until explicitly told to do so calling "updateDataExternal". In later chapters it is shown how to use it.
+- **globalSearchEnabled** (boolean): By default true. Used to enable or disable the global search.
+- **globalSearchPlaceholder** (string): A placeholder to be shown in the global filter if no data has been entered. By default is "Search keyword".
+- **rowActionButtons** (IprimengActionButtons[]): A list that contains all buttons that will appear in the actions column for each record. Explained how to declare them in later chapters.
+- **headerActionButtons** (IprimengActionButtons[]): A list that contains all buttons that will appear in the right side of the header of the table. Explained how to declare them in later chapters.
+- **columnsSourceURL** (string): The URL (without the base API URL) that will be used to fetch all the information related to the columns.
+- **dataSoureURL** (string): The URL (without the base API URL) that will be used to fetch all the information related to the data.
+- **predifinedFiltersCollection** ({ [key: string]: IPrimengPredifinedFilter[] }): Contains a collection of the values that need to be shown for predifined column filters. Explained in later chapters how to use it.
+- **predifinedFiltersNoSelectionPlaceholder** (string): A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters. Default value is: "Any value".
+- **predifinedFiltersCollectionSelectedValuesText** (string): A text to display in the predifined filters dropdown footer indicating the number of items that have been selected. Default value is: "items selected".
+- **selectedColumnsDropdownPlaceholder** (string): A placeholder to show when no columns have been selected to be shown. Default value is: "Select columns to show".
+- **selectedColumnsDropdownPlaceholder** (string): The text to be shown when a group of columns that doesn't fit the dropdown has been selected. Default value is: "selected columns".
+- **noDataFoundText** (string): The text to be shown when no data has been returned. Default value is: "No data found for the current filter criteria.".
+- **showingRecordsText** (string): The text that must be displayed as part of "Showing records". The default value is: "Showing records".
+- **applyingFiltersText** (string): The text that is shown next to the number of records after applying filter rules. The default value is: "Available records after applying filters".
+- **notApplyingFiltersText** (string): The text to be shown next to the number of total records available (not applying filters). The default value is: "Number of available records".
+- **actionColumnName** (string): The column name were the action buttons will appear. Default value is: "Actions".
+
+
+### 4.6 Predifined filters
 You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have.
 
 
-### 4.6 Implementing a new table in the frontend
+### 4.7 Declaring header and row action buttons
 
 
-### 4.7 Declaring header action buttons
-
-
-### 4.8 Declaring row action buttons
-
-
-### 4.9 Saving table state (database solution)
-
-
-### 4.10 Customizing default texts
+### 4.8 Saving table state (database solution)
 
