@@ -488,9 +488,115 @@ This project offers some additional things that you can do with the tables and a
 
 
 ### 4.6 Predifined filters
-PENDING...
+You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. To achieve this, we will start off in the backend with your DTO.
 
-You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have.
+From the example project, the "TestDto" has an entry named "employmentStatusName". In the "TestDTO" it was given though the PrimeNGAttribute of "filterUsesPredifinedValues" as true. The "filterPredifinedValuesName" value that was given is "employmentStatusPredifinedFilter" which is important to remember because it will need to be exactly the same in the frontend.
+
+The next step is to create an endpoint that will return you all the data that you want from each of the columns that will use the predifined filter. In the example project, the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) has an endpoint named "GetEmploymentStatus" that is the one that will be called in the frontend to retrieve all the possible values for the employment status. Since the idea is to use a PrimeNG tag to render the status with a color, this endpoint sends the employment status and the RGB color that we want to use in the tag.
+
+If we now go to the frontend, in the component that calls the table we will need to apply some modifications to the Typescript code. First of all we have to define a number of IPrimengPredifinedFilter that matches the amount of different predifined columns that we could have in total. From the example project, in the [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see that we should start off with this code if we wanted to store the data from the "employmentStatusPredifinedFilter".
+```ts
+import { Component } from '@angular/core';
+import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html'
+})
+export class HomeComponent {
+  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
+  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
+    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
+  };
+...
+```
+
+An important thing to note is that all predifined filters must be stored in a key + IPrimengPredifinedFilter[] structure, in this case being "predifinedFiltersCollection". The "key" is the value that must match the value declared in "filterPredifinedValuesName" in the DTO in the backend for the table component to be able to map it to the column properly. All your predifined filters that are stored in "predifinedFiltersCollection" (variable name can be different) must be passed to table. To do so, your ".html" of the component will have an additional line:
+```html
+<ecs-primeng-table #dt
+    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
+    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
+    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
+```
+
+But we are not done yet, since the only thing we've done is map the "predifinedFiltersCollection" to the table component, so that the table component has access to it, but we should now populate the data. To do so, the strategy is to first force the table to not fetch columns and data on start, since we will need first to fecth all the different predifined filters. For making the table not tyring to load the columns and data when entering the component, we need to add the following line to the ".html":
+```html
+<ecs-primeng-table #dt
+    [canPerformActions]="false"
+    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
+    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
+    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
+```
+
+The "canPerformActions" variable will tell the table not to fetch the data upon loading the component, and we will have to later on explictly tell it to do so. Here is the part of Typescript that OnInit of the component, it will fetch the predifined filter information and then tell the table to load the data:
+```ts
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { PrimengTableComponent } from '../primeng-table/primeng-table.component';
+import { SharedService } from '../../services/shared/shared.service';
+import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
+import { IEmploymentStatus } from '../../interfaces/iemployment-status';
+import { Constants } from '../../../constants';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html'
+})
+export class HomeComponent implements OnInit{
+  constructor(private sharedService: SharedService){}
+  @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
+
+  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
+  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
+    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
+  };
+
+  ngOnInit(): void {
+    this.getEmploymentStatus(); // Retrieve the possible employment status
+  }
+  private getEmploymentStatus(){
+    setTimeout(() => {
+      Constants.waitingHTTP = true; // To indicate that we are waiting an HTTP call. Perform it after one frame so we don't get the warning of ExpressionChangedAfterItHasBeenCheckedError
+    }, 1);
+    this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
+      next: (responseData: IEmploymentStatus[]) => {
+        responseData.forEach((data) => {
+          this.employmentStatusPredifinedFilter.push({
+            value: data.statusName,
+            name: data.statusName,
+            displayTag: true,
+            tagStyle: {
+              background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
+            }
+          })
+        });
+        this.dt.updateDataExternal(); // Get data for the table (columns + data)
+      },
+      error: err => {
+        this.sharedService.dataFecthError("ERROR IN GET EMPLOYMENT STATUS", err);
+      }
+    });
+  }
+}
+```
+
+As you can see fromthe above example, a variable that views the table "dt" was setup so that later on we could access the public function of the table. OnInit of the component, the "getEmploymentStatus" is called which from a previously created endpoint in the backend, it will fetch all possible employment status. Once the data is obtained, it will push each entry retrieved to the previously empty "employmentStatusPredifinedFilter" array. Finally, once all the data has been pushed, "this.dt.updateDataExternal();" is called to force the table to start the process of fetching the columns and the data of the table.
+
+In this example the predifined filter has been used to display a tag with a color and the name of the employment status, but there are more possibilities. The renderization is both done to the filter list, and to each row for the column that this predifined filter belongs to.
+
+The different options that are available through the IPrimengPredifinedFilter object are:
+- **icon:** If specified, it will show a PrimeNG icon. The different icons avialable are [here](https://primeng.org/icons). If you wish to show the "pi-address-book" for example, you should put: "pi pi-address-book".
+- **iconURL:** If specified, it will show an image that will be loaded from the provided URL.
+- **iconBlob:** If specified, it will render an icon based on the passed data blob.
+- **name:** If specified and if "displayName" is undefined or true, it will show the provided string.
+- **displayName:** Can be set to false so that the "name" is not displayed. If "displayName" is undefined or true, the "name" will be displayed.
+- **value:** The underlying value of the option. The value can be of any type and represents the data managed behind the scenes. It could be an ID or for example the same value as the name (so that the global filter works OK).
+- **displayTag:** If set to true, a tag will be displayed with the "name" inside.
+- **tagStyle:** Can be passed a set of styles that will be applied to the tag, for example:
+  ```ts
+  tagStyle: {
+    background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
+  }
+  ```
 
 
 ### 4.7 Declaring header and row action buttons
