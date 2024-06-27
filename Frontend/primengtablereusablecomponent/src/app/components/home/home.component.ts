@@ -5,7 +5,7 @@ import { SharedService } from '../../services/shared/shared.service';
 
 import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
 import { IEmploymentStatus } from '../../interfaces/iemployment-status';
-import { IprimengRowActionButtons } from '../../interfaces/primeng/iprimeng-row-action-buttons';
+import { IprimengActionButtons } from '../../interfaces/primeng/iprimeng-action-buttons';
 import { Constants } from '../../../constants';
 
 @Component({
@@ -21,7 +21,7 @@ export class HomeComponent implements OnInit{
     employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
   };
 
-  headerActionButtons: IprimengRowActionButtons[] = [
+  headerActionButtons: IprimengActionButtons[] = [
     {
       icon: 'pi pi-calculator',
       action: () => {
@@ -38,7 +38,7 @@ export class HomeComponent implements OnInit{
       }
     }
   ];
-  rowActionButtons: IprimengRowActionButtons[] = [
+  rowActionButtons: IprimengActionButtons[] = [
     {
       icon: 'pi pi-trash',
       color: 'p-button-danger',

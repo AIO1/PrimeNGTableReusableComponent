@@ -11,7 +11,7 @@ import { IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-colum
 import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
-import { IprimengRowActionButtons } from '../../interfaces/primeng/iprimeng-row-action-buttons';
+import { IprimengActionButtons } from '../../interfaces/primeng/iprimeng-action-buttons';
 import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
 
 // Import other
@@ -34,20 +34,20 @@ export class PrimengTableComponent {
   @Input() canPerformActions: boolean = true; // Used to avoid upon entering to perform the searchs. Its usefull when its needed to retrieve other values firsts and then call "updateDataExternal"
   @Input() globalSearchEnabled: boolean = true; // Used to enable or disable the global search (by default enabled)
   @Input() globalSearchPlaceholder: string = "Search keyword"; // The placeholder text to show if global search is enabled
-  @Input() rowActionButtons: IprimengRowActionButtons[] = []; // A list that contains all buttons that will appear in the actions column
-  @Input() headerActionButtons: IprimengRowActionButtons[] = []; // A list that contains all buttons that will appear in the right side of the header of the table
+  @Input() rowActionButtons: IprimengActionButtons[] = []; // A list that contains all buttons that will appear in the actions column
+  @Input() headerActionButtons: IprimengActionButtons[] = []; // A list that contains all buttons that will appear in the right side of the header of the table
   @Input() columnsSourceURL!: string; // The URL (without the base API URL) that will be used to fetch all the information related to the columns
   @Input() dataSoureURL!: string; // The URL (without the base API URL) that will be used to fetch all the information related to the data
   @Input() predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
   @Input() predifinedFiltersNoSelectionPlaceholder: string = "Any value"; // A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters
   @Input() predifinedFiltersCollectionSelectedValuesText: string = "items selected"; // A text to display in the predifined filters dropdown footer indicating the number of items that have been selected
-  @Input() selectedColumnsDropdownPlaceholder: string = "Select columns to show";
-  @Input() selectedColumnsDropdownSelectedPlaceholder: string = "selected columns";
-  @Input() noDataFoundText: string = "No data found for the current filter criteria.";
-  @Input() showingRecordsText: string = "Showing records";
-  @Input() applyingFiltersText: string = "Available records after applying filters";
-  @Input() notApplyingFiltersText: string = "Number of available records";
-  @Input() actionColumnName: string = "Actions"
+  @Input() selectedColumnsDropdownPlaceholder: string = "Select columns to show"; // A placeholder to show when no columns have been selected to be shown
+  @Input() selectedColumnsDropdownSelectedPlaceholder: string = "selected columns"; // The text to be shown when a group of columns that doesn't fit the dropdown has been selected
+  @Input() noDataFoundText: string = "No data found for the current filter criteria."; // The text to be shown when no data has been returned
+  @Input() showingRecordsText: string = "Showing records"; // The text that must be displayed as part of "Showing records"
+  @Input() applyingFiltersText: string = "Available records after applying filters"; // The text that is shown next to the number of records after applying filter rules
+  @Input() notApplyingFiltersText: string = "Number of available records"; // The text to be shown next to the number of total records available (not applying filters)
+  @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
   
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
 
