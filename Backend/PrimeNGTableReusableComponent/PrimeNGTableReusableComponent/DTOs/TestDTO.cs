@@ -2,10 +2,10 @@
 
 namespace PrimeNGTableReusableComponent.DTOs {
     public class TestDto {
-        [PrimeNGAttribute(sendColumn: false)]
+        [PrimeNGAttribute(sendColumnAttributes: false)]
         public Guid id { get; set; }
 
-        [PrimeNGAttribute(sendColumn: false)]
+        [PrimeNGAttribute(sendColumnAttributes: false)]
         public bool canBeDeleted { get; set; }
 
         [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false)]

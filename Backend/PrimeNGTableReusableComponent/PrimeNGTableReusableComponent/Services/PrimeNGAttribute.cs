@@ -16,7 +16,7 @@
         public bool FilterUsesPredifinedValues { get; }
         public string FilterPredifinedValuesName { get; }
         public bool CanBeGlobalFiltered { get; }
-        public bool SendColumn { get; }
+        public bool SendColumnAttributes { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrimeNGAttribute"/> class.
@@ -33,7 +33,7 @@
         /// <param name="filterUsesPredifinedValues">If <c>true</c>, the row filter will use a list of predifined values to select from.</param>
         /// <param name="filterPredifinedValuesName">The name used on typescript to store the list of allowed values in the dropdown.</param>
         /// <param name="canBeGlobalFiltered">If <c>true</c>, the data can be globally filtered.</param>
-        /// <param name="sendColumn">If <c>true</c>, the column data will be sent. If <c>false</c> data won't be sent and has to be explicitly declared in GetDynamicSelect to be sent</param>
+        /// <param name="sendColumnAttributes">If <c>true</c>, the column attirbutes will be sent. If <c>false</c> column attributes won't be sent and has to be explicitly declared in PerformDynamicQuery to be sent</param>
         /// <exception cref="ArgumentException">
         /// Thrown if an invalid dataAlign or dataType value is provided.
         /// </exception>
@@ -50,14 +50,13 @@
             bool filterUsesPredifinedValues = false,
             string filterPredifinedValuesName = "",
             bool canBeGlobalFiltered = true,
-            bool sendColumn = true) {
+            bool sendColumnAttributes = true) {
             if(!IsValidDataAlignType(dataAlign)) {
                 throw new ArgumentException("Invalid dataAlign value", nameof(dataAlign));
             }
             if(!IsValidDataType(dataType)) {
                 throw new ArgumentException("Invalid dataType value", nameof(dataType));
             }
-
             Header = header;
             DataType = dataType;
             DataAlign = dataAlign;
@@ -70,9 +69,8 @@
             FilterUsesPredifinedValues = filterUsesPredifinedValues;
             FilterPredifinedValuesName = filterPredifinedValuesName;
             CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != "boolean";
-            SendColumn = sendColumn;
+            SendColumnAttributes = sendColumnAttributes;
         }
-
         private static bool IsValidDataAlignType(string alignType) {
             var allowedValues = new[] { "left", "center", "right" };
             return allowedValues.Contains(alignType);

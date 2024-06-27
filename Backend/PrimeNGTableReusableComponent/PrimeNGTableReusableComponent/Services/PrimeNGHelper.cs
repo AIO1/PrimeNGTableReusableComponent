@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using PrimeNG.DTOs;
 using PrimeNG.Attributes;
 using System.Text.Json;
-using System;
 namespace PrimeNG.HelperFunctions {
     public static class PrimeNGHelper {
         public static readonly int[] allowedItemsPerPage = [10, 25, 50, 75, 100]; // The number of items per page allowed
@@ -48,7 +47,7 @@ namespace PrimeNG.HelperFunctions {
             PropertyInfo[] properties = typeof(T).GetProperties(); // Get the properties of the provided class
             foreach(var property in properties) { // Loop through each property of the class
                 PrimeNGAttribute? primeNGAttributes = property.GetCustomAttribute<PrimeNGAttribute>() ?? throw new ArgumentException("The following column is missing its PrimeNG attributes ", property.Name); // Try to get the PrimeNG attributes for the current property, and if its null throw an error
-                if(primeNGAttributes.SendColumn) { // If we have to send the column
+                if(primeNGAttributes.SendColumnAttributes) { // If we have to send the column
                     columnsInfo.Add(new PrimeNGTableReturnColumnMetadata {
                         Field = property.Name,
                         Header = primeNGAttributes.Header,
