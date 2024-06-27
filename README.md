@@ -329,15 +329,15 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
 - **filterUsesPredifinedValues:** Default false. If true, the filter menu that will be shown (if "canBeFiltered" is true) is a list of options that will depend on the values that are in the frontend associated to the entity with name "filterPredifinedValuesName". In further sections there is an in depth explanation on how to use this.
 - **filterPredifinedValuesName:** If "canBeFiltered" and "filterUsesPredifinedValues" are both true, it will be used by the frontend to look for the data in an entity with the name provided here. In further sections there is an in depth explanation on how to use this.
 - **canBeGlobalFiltered:** Indicates if the column is affected by the glboal filter. The "boolean" data type can't be globally filtered. By default, all the other types of columns are affected by the global filter.
-- **sendColumn:** By default true. This value should be set to false for columns that you wish to send to the frontend, but you do not wish the user to be able to see them. These columns are not affected by the filter and need to be explicilty declared in a function to be sent to the web application. It is normally used for fields like the ID. There is a more in depth explanation in further sections on how to use it.
+- **SendColumnAttributes:** By default true. This value should be set to false for columns that you wish to send to the frontend, but you do not wish the user to be able to see them. These columns are not affected by the filter and need to be explicilty declared in a function to be sent to the web application. It is normally used for fields like the ID. There is a more in depth explanation in further sections on how to use it.
 
 From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/TestDTO.cs) that is used to send the data to the frontend.
 ```c#
  public class TestDto {
-    [PrimeNGAttribute(sendColumn: false)]
+    [PrimeNGAttribute(SendColumnAttributes: false)]
     public Guid id { get; set; }
 
-    [PrimeNGAttribute(sendColumn: false)]
+    [PrimeNGAttribute(SendColumnAttributes: false)]
     public bool canBeDeleted { get; set; }
 
     [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false)]
@@ -357,7 +357,7 @@ From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTa
 }
 ```
 
-As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "sendColumn" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
+As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "SendColumnAttributes" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
 
 
 ### 4.3 Fetching table columns endpoint
@@ -419,7 +419,7 @@ Once you have your base IQueryable ready, the last part is to simply call the "P
 - **stringDateFormatMethod:** The exposed database function "FormatDateWithCulture" that is used if a global filter has been specified and if the columns is of type "date".
 - **defaultSortColumnName:** If no sort order operations have been specified by the user, the specified column will be used to perform the sort (if it has been specified). The column must have the same name as in the DTO.
 - **defaultSortOrder:** The sorting order to be done to the "defaultSortColumnName" if it needs to be applied. If value is 1 it will be ascending, if not it will be descending.
-- **additionalColumnsToReturn:** A list of string that must match the values of the DTO for additional columns that we want to send. This is normally used for columns such as "ID" that have been given in the DTO the PrimeNGAttribute "sendColumn" as false. The "sendColumn" false makes it so that the column information is not sent to the frontend, but later on you can send the data and treat it in the typescript part without showing an additional column to the user. In the example project this is done with the "id" and the "canBeDeleted".
+- **additionalColumnsToReturn:** A list of string that must match the values of the DTO for additional columns that we want to send. This is normally used for columns such as "ID" that have been given in the DTO the PrimeNGAttribute "sendColumn" as false. The "SendColumnAttributes" false makes it so that the column information is not sent to the frontend, but later on you can send the data and treat it in the typescript part without showing an additional column to the user. In the example project this is done with the "id" and the "canBeDeleted".
 
 The "PerformDynamicQuery" function will do all this operations in order:
 
@@ -442,6 +442,7 @@ When the PrimeNGPostReturn is retrieved by the table component in the frontend, 
 
 
 ### 4.5 Predifined filters
+You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have.
 
 
 ### 4.6 Implementing a new table in the frontend
