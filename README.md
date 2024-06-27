@@ -1,4 +1,3 @@
-# WIP - I'm still updating this readme file :smile: Please, be patient :stuck_out_tongue_winking_eye:
 # PrimeNG Table reusable component
 A solution that shows how to use a PrimeNG table with advance filters delegating all logic to the database engine. This solution is designed to use Angular for the frontend and a .NET API (ASP.NET) for the backend. As database engine Microsoft SQL Server has been used, but other database engines should work with small modifications in the code.
 Currently it uses in the backend .NET 8, and in the frontend Angular 18 with PrimeNG 17.18.X components.
@@ -14,6 +13,15 @@ This project show how to do a full implementation of the PrimeNG table delegatin
 I hope this helps you to create very efficient and good looking tables in your web applications :)
 
 Take into account that I'm not an expert programmer, so there will be possibly some things that could be done better of how I made them. Also, I'm not an expert in CSS, so basically this solution uses a simple design given by PrimeNG and you will have to make it prettier yourself.
+
+This table component offers you all these features from the [PrimeNG table](https://primeng.org/table) with some modifications to delegate all the query building to the backend and the query execution to the database engine:
+- Pagination with lazy load requested directly to the database engine
+- Multiple sort
+- Advance filter (with a list of values per column that can be given)
+- Global filter
+- Column resize
+- Column reorder
+- Column toggle
 
 
 ## 1 Required software
@@ -480,11 +488,13 @@ This project offers some additional things that you can do with the tables and a
 
 
 ### 4.6 Predifined filters
+PENDING...
+
 You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have.
 
 
 ### 4.7 Declaring header and row action buttons
-
+PENDING...
 
 ### 4.8 Saving table state (database solution)
-
+PENDING...
