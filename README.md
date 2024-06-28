@@ -2,6 +2,30 @@
 A solution that shows how to use a PrimeNG table with advance filters delegating all logic to the database engine. This solution is designed to use Angular for the frontend and a .NET API (ASP.NET) for the backend. As database engine Microsoft SQL Server has been used, but other database engines should work with small modifications in the code.
 Currently it uses in the backend .NET 8, and in the frontend Angular 18 with PrimeNG 17.18.X components.
 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [1 Required software](#1-required-software)
+- [2 Setup the environment to try the demo](#2-setup-the-environment-to-try-the-demo)
+  - [2.1 Database (MSSQL)](#21-database-mssql)
+  - [2.2 Backend (API in ASP.NET)](#22-backend-api-in-aspnet)
+    - [2.2.1 Open the project](#221-open-the-project)
+    - [2.2.2 Verify packages](#222-verify-packages)
+    - [2.2.3 Update the database connection string](#223-update-the-database-connection-string)
+    - [2.2.4 Scafolding the database](#224-scafolding-the-database)
+    - [2.2.5 API first run](#225-api-first-run)
+  - [2.3 Frontend (Angular project that uses PrimeNG components)](#23-frontend-angular-project-that-uses-primeng-components)
+- [3 How to implement in existing projects](#3-how-to-implement-in-existing-projects)
+- [4 How to use the "PrimeNG Table reusable component" and what is included](#4-how-to-use-the-primeng-table-reusable-component-and-what-is-included)
+  - [4.1 Date formating](#41-date-formating)
+  - [4.2 Preparing what is going to be shown in the frontend](#42-preparing-what-is-going-to-be-shown-in-the-frontend)
+  - [4.3 Fetching table columns endpoint](#43-fetching-table-columns-endpoint)
+  - [4.4 Retrieving table data endpoint](#44-retrieving-table-data-endpoint)
+  - [4.5 Implementing a new table in the frontend](#45-implementing-a-new-table-in-the-frontend)
+  - [4.6 Predifined filters](#46-predifined-filters)
+  - [4.7 Declaring header and row action buttons](#47-declaring-header-and-row-action-buttons)
+  - [4.8 Saving table state (database solution)](#48-saving-table-state-database-solution)
+
 
 ## Introduction
 Hello! My name is Alex Ibrahim Ojea.
@@ -228,7 +252,7 @@ This section describes step by step what you need to implement the PrimeNG Table
   - You just need to execute the script to create the [FormatDateWithCulture function](Database%20scripts/04%20FormatDateWithCulture.txt). Remember to modify the initial part were it indicates the database and schema names in the script.
 - Backend
   - Open NuGet package manager and make sure you have all these packages:
-    - LinqKit
+    - LinqKit or LinqKit.Core (it has been tested with LinqKit, but LinqKit.Core should also work).
     - Microsoft.EntityFrameworkCore.SqlServer (If you are using MSSQL as database engine, if not, use the appropiate one depending on your target database engine)
     - Microsoft.EntityFrameworkCore.Tools (Optional, you only need it if you want to do scafolding)
     - Swashbuckle.AspNetCore
@@ -600,7 +624,70 @@ The different options that are available through the IPrimengPredifinedFilter ob
 
 
 ### 4.7 Declaring header and row action buttons
-PENDING...
+Included in this code, you have the option to easily define buttons which can be place on the top right header of the table or in each row. In your component you should define all the buttons that you want to have as an array of IprimengActionButtons (you need different arrays for the header buttons and another one for the row buttons). The IprimengActionButtons values that can be passed are:
+- **icon:** If specified, it will show a PrimeNG icon. The different icons avialable are [here](https://primeng.org/icons). If you wish to show the "pi-address-book" for example, you should put: "pi pi-address-book".
+- **label:** If specified, it will show a label inside the button.
+- **color:** The color property to be applied. The "color" references to the "severity" property of PrimeNG for the [button](https://primeng.org/button#severity).
+- **condition:** A condition that must be met in order to show the button. It can be passed a function and the expected return is a boolean. If no condition is specified, the button will always show. If the button is in a row, the data of the row can be accessed (like for example the "ID").
+- **action:** The action that the button will perform when pressed. It can be passed a function and no return value is expected. If no action is specified, the button won't do anything on pressed. If the button is in a row, the data of the row can be accessed (like for example the "ID").
+
+IMPORTANT: Do NOT ever trust that if a user can press a button that should only be shown under some condition, the action should be done. Always perform the verification in the backend, since the exposed data in the frontend can be tampered with.
+
+Buttons that are added into the IprimengActionButtons array that are passed to the table, will be always drawn from left to right, meaning that the first button provided will be always in the most left part, while the last button will be the last button in the row from the right.
+
+From the example project here is an example on how you can specify buttons that are shown in the table. From the Typescript file [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see the following code fragment:
+```ts
+headerActionButtons: IprimengActionButtons[] = [
+  {
+    icon: 'pi pi-calculator',
+    action: () => {
+      this.sharedService.clearToasts();
+      this.sharedService.showToast("success","Clicked on the calculator","Cool! It wokrs :)");
+    }
+  },
+  {
+    icon: 'pi pi-file',
+    color: 'p-button-success',
+    action: () => {
+      this.sharedService.clearToasts();
+      this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
+    }
+  }
+];
+rowActionButtons: IprimengActionButtons[] = [
+  {
+    icon: 'pi pi-trash',
+    color: 'p-button-danger',
+    action: (rowData) => {
+      this.sharedService.showToast("warn","Clicked on delete row",`The record ID is\n\n${rowData.id}\n\nThis button only appears if a condition is met. Remember that a backend validation should be done anyways because users can tamper with the exposed variables in the frontend.`);
+    },
+    condition: (rowData) => (rowData.canBeDeleted === true)
+  }, {
+    icon: 'pi pi-file-edit',
+    color: 'p-button-primary',
+    action: (rowData) => {
+      this.sharedService.showToast("success","Clicked on edit row",`The record ID is\n\n${rowData.id}\n\nHere you could open a modal for the user to edit this record (you can retrieve data through the ID) and then call 'this.dt.updateDataExternal()' to refresh the table data.`);
+    }
+  }
+];
+```
+
+From the above code it can be seen that two different arrays have been created, one being headerActionButtons and the other one rowActionButtons. In the header buttons we have two buttons that are always shown and both of them will execute the action of showing a toast message. In the row action buttons we have two buttons, were both will show a toast message including the "rowData.id" value. The delete button will be only shown under a specific condition, being "rowData.canBeDeleted === true".
+
+Once the buttons have been defined in your component, you must pass them to the table like so:
+```html
+<ecs-primeng-table #dt
+    [canPerformActions]="false"
+    columnsSourceURL="Main/TestGetCols"
+    dataSoureURL="Main/TestGetData"
+    [predifinedFiltersCollection]="predifinedFiltersCollection"
+    [headerActionButtons]="headerActionButtons"
+    [rowActionButtons]="rowActionButtons"/>
+```
+
+With all this, your table should show the specified buttons and the table component will handle the rest for you.
+
 
 ### 4.8 Saving table state (database solution)
 PENDING...
+
