@@ -30,9 +30,11 @@
                 <!--HEADER ACTION BUTTONS-->
                 <td *ngIf="headerActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;">
                     <ng-container *ngFor="let button of headerActionButtons">
-                        <button pButton pRipple 
+                        <button *ngIf="!button.condition || button.condition(null)"
+                                pButton pRipple
                                 [ngClass]="button.color"
-                                [icon]="button.icon" 
+                                [icon]="button.icon ? button.icon : ''" 
+                                [label]="button.label ? button.label : ''" 
                                 (click)="button.action && handleButtonsClick(button.action, null)"
                                 style="margin-right: 10px;">
                         </button>
@@ -118,9 +120,10 @@
             <td *ngIf="rowActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;">
                 <ng-container *ngFor="let button of rowActionButtons">
                     <button *ngIf="!button.condition || button.condition(rowData)"
-                            pButton 
+                            pButton pRipple
                             [ngClass]="button.color || 'p-button-outlined'"
-                            [icon]="button.icon" 
+                            [icon]="button.icon ? button.icon : ''" 
+                            [label]="button.label ? button.label : ''" 
                             (click)="button.action && handleButtonsClick(button.action, rowData)" 
                             size="small" 
                             class="p-button-sm" 

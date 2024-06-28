@@ -6,8 +6,10 @@ export interface IprimengActionButtons {
      * Gets or sets the icon to be displayed on the button.
      * The value should be a string representing the PrimeIcons class name.
      */
-    icon: string;
+    icon?: string;
 
+    label?: string;
+    
     /** 
      * Gets or sets the color style class to be applied to the button.
      * The value should be a string representing a CSS class for styling the button.
