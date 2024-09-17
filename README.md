@@ -24,7 +24,8 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
   - [4.5 Implementing a new table in the frontend](#45-implementing-a-new-table-in-the-frontend)
   - [4.6 Predifined filters](#46-predifined-filters)
   - [4.7 Declaring header and row action buttons](#47-declaring-header-and-row-action-buttons)
-  - [4.8 Saving table state (database solution)](#48-saving-table-state-database-solution)
+  - [4.8 Showing a column description](#48-showing-a-column-description)
+  - [4.9 Saving table state (database solution)](#49-saving-table-state-database-solution)
 
 
 ## Introduction
@@ -46,6 +47,12 @@ This table component offers you all these features from the [PrimeNG table](http
 - Column resize
 - Column reorder
 - Column toggle
+- Column descriptions
+- Show data in a tooltip
+
+An example of this demo viewed by a user:
+![image](https://github.com/user-attachments/assets/c3a2483f-9a87-46d4-b3c2-1b77a438e90c)
+
 
 
 ## 1 Required software
@@ -284,6 +291,7 @@ This section describes step by step what you need to implement the PrimeNG Table
       import { PaginatorModule } from 'primeng/paginator';
       import { TagModule } from 'primeng/tag';
       import { RippleModule } from 'primeng/ripple';
+      import { TooltipModule } from 'primeng/tooltip';
       import { DatePipe, registerLocaleData } from '@angular/common';
       
       import es from '@angular/common/locales/es'; // Needed for scenarios were you would like to manage different locales from "en", like "es-ES"
@@ -302,7 +310,8 @@ This section describes step by step what you need to implement the PrimeNG Table
         MultiSelectModule,
         PaginatorModule,
         TagModule,
-        RippleModule
+        RippleModule,
+        TooltipModule
       ]
       ```
     - In the "@NgModule" providers, you will need to add the following:
@@ -362,29 +371,31 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
 - **filterPredifinedValuesName:** If "canBeFiltered" and "filterUsesPredifinedValues" are both true, it will be used by the frontend to look for the data in an entity with the name provided here. In further sections there is an in depth explanation on how to use this.
 - **canBeGlobalFiltered:** Indicates if the column is affected by the glboal filter. The "boolean" data type can't be globally filtered. By default, all the other types of columns are affected by the global filter.
 - **SendColumnAttributes:** By default true. This value should be set to false for columns that you wish to send to the frontend, but you do not wish the user to be able to see them. These columns are not affected by the filter and need to be explicilty declared in a function to be sent to the web application. It is normally used for fields like the ID. There is a more in depth explanation in further sections on how to use it.
+- **ColumnDescription:** A string that if informed, it will show a "i" icon on the table header and when the user hovers over it, it will show a tooltip that shows the value given here. Useful to describe what the column is about.
+- **DataTooltip:** By default true. When the user hovers an item in the grid, after a brief delay, the data will be shown inside a tooltip. Useful for a cell that contains a long data that can't be shown easily inside the column width.
 
 From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/TestDTO.cs) that is used to send the data to the frontend.
 ```c#
  public class TestDto {
-    [PrimeNGAttribute(SendColumnAttributes: false)]
+    [PrimeNGAttribute(sendColumnAttributes: false)]
     public Guid id { get; set; }
 
-    [PrimeNGAttribute(SendColumnAttributes: false)]
+    [PrimeNGAttribute(sendColumnAttributes: false)]
     public bool canBeDeleted { get; set; }
 
-    [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false)]
+    [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false, columnDescription: "A random username")]
     public string username { get; set; } = null!;
 
-    [PrimeNGAttribute("Age", dataType: "numeric")]
+    [PrimeNGAttribute("Age", dataType: "numeric", columnDescription: "The age of the user")]
     public byte? age { get; set; }
 
-    [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter")]
+    [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
     public string? employmentStatusName { get; set; }
 
-    [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left", startHidden: true)]
+    [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left", startHidden: true, columnDescription: "When was the user born")]
     public DateTime? birthdate { get; set; }
 
-    [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true)]
+    [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true, columnDescription: "If the user has payed his taxes or not. You've got to pay your taxes :)")]
     public bool payedTaxes { get; set; }
 }
 ```
@@ -688,6 +699,20 @@ Once the buttons have been defined in your component, you must pass them to the 
 With all this, your table should show the specified buttons and the table component will handle the rest for you.
 
 
-### 4.8 Saving table state (database solution)
+### 4.8 Showing a column description
+To do this, it's very simple. In the backend you just have to give the attribute "columnDescription" a value, and this value will be shown in the frontend. Thats it :D
+
+This script will manage the rest for you. An example would be, in your DTO if you have this (declared "columnDescription"):
+```c#
+    [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
+    public string? employmentStatusName { get; set; }
+```
+
+It will be shown in the frontend like this:
+![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
+
+
+
+### 4.9 Saving table state (database solution)
 PENDING...
 
