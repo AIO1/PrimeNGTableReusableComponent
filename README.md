@@ -704,8 +704,8 @@ To do this, it's very simple. In the backend you just have to give the attribute
 
 This script will manage the rest for you. An example would be, in your DTO if you have this (declared "columnDescription"):
 ```c#
-    [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
-    public string? employmentStatusName { get; set; }
+[PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
+public string? employmentStatusName { get; set; }
 ```
 
 It will be shown in the frontend like this:
