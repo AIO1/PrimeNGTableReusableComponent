@@ -14,6 +14,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { PaginatorModule } from 'primeng/paginator';
 import { TagModule } from 'primeng/tag';
 import { RippleModule } from 'primeng/ripple';
+import { TooltipModule } from 'primeng/tooltip';
 import { DatePipe, registerLocaleData } from '@angular/common'; // registerLocaleData import is optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
 
 import es from '@angular/common/locales/es'; // Optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
@@ -51,6 +52,7 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     PaginatorModule,
     TagModule,
     RippleModule,
+    TooltipModule,
 
     DialogModule, // Optional import to show the loading indicator in HTTP calls
     ProgressSpinnerModule // Optional import to show the loading indicator in HTTP calls

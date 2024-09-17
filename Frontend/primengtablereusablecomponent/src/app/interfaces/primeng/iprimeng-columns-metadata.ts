@@ -12,4 +12,6 @@ export interface IprimengColumnsMetadata {
     filterUsesPredifinedValues: boolean;
     filterPredifinedValuesName: string;
     canBeGlobalFiltered: boolean;
+    columnDescription: string;
+    dataTooltip: boolean;
 }

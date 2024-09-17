@@ -8,19 +8,19 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute(sendColumnAttributes: false)]
         public bool canBeDeleted { get; set; }
 
-        [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false)]
+        [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false, columnDescription: "A random username")]
         public string username { get; set; } = null!;
 
-        [PrimeNGAttribute("Age", dataType: "numeric")]
+        [PrimeNGAttribute("Age", dataType: "numeric", columnDescription: "The age of the user")]
         public byte? age { get; set; }
 
-        [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter")]
+        [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
         public string? employmentStatusName { get; set; }
 
-        [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left", startHidden: true)]
+        [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left", startHidden: true, columnDescription: "When was the user born")]
         public DateTime? birthdate { get; set; }
 
-        [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true)]
+        [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true, columnDescription: "If the user has payed his taxes or not. You've got to pay your taxes :)")]
         public bool payedTaxes { get; set; }
     }
     public class EmploymentStatusDto {

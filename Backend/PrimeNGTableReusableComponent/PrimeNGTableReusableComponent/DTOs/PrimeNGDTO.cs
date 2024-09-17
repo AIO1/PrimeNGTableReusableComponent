@@ -191,5 +191,8 @@
         /// Gets or sets a value indicating whether the column can be globally filtered.
         /// </summary>
         public bool CanBeGlobalFiltered { get; set; }
+
+        public string ColumnDescription { get; set; } = null!;
+        public bool DataTooltip { get; set; }
     }
 }

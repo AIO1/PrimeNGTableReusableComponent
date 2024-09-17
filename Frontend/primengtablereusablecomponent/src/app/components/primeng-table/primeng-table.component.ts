@@ -182,11 +182,11 @@ export class PrimengTableComponent {
       return; // Exit after fetching columns (when columns load the lazy load event of the table will be triggered again)
     }
     Constants.waitingHTTP = true; // Set the loading indicator to active
-    const filtersWithoutGlobal = this.createFiltersWithoutGlobal(event.filters); // Create filters excluding the global filter
+    const filtersWithoutGlobal = this.createFiltersWithoutGlobal(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
     const requestData: IprimengTableDataPost = {
       page: this.currentPage, // Set the current page number
       pageSize: this.currentRowsPerPage, // Set the number of rows per page
-      sort: event.multiSortMeta, // Set the sorting information
+      sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
       filter: filtersWithoutGlobal, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
       columns: this.columnsToShow.map(col => col.field), // Set the columns to show
@@ -226,6 +226,7 @@ export class PrimengTableComponent {
    */
   getColumns(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false) {
     Constants.waitingHTTP = true; // Set the HTTP waiting state to true
+    this.columnsFetched = false;
     this.sharedService.handleHttpResponse(this.primengSharedService.fetchTableColumnsAndAllowedPaginations(this.columnsSourceURL)).subscribe({
         next: (responseData: IprimengColumnsAndAllowedPagination) => { // Handle successful response
             this.allowedRowsPerPage = responseData.allowedItemsPerPage; // Update the number of rows allowed per page
@@ -250,6 +251,22 @@ export class PrimengTableComponent {
             this.sharedService.dataFecthError("ERROR IN GET COLUMNS AND ALLOWED PAGINATIONS", err); // Log the error
         }
     });
+  }
+  saveTableState(){
+    const columns: string[] = this.dt.columns!.map(column => column.field);
+    const filtersWithoutGlobal = this.createFiltersWithoutGlobal(this.dt.filters);
+    const tableState: any = {
+      columns: columns,
+      multiSortMeta: this.dt.multiSortMeta,
+      filters: filtersWithoutGlobal,
+      globalSearchText: this.globalSearchText,
+      currentPage: this.currentPage,
+      currentRowsPerPage: this.currentRowsPerPage
+    }
+    console.log("tableState:",tableState);
+  }
+  resetTableState(){
+    this.getColumns(this.clearSortsAndFilters(this.dt,true)!,false);
   }
 
   /**
@@ -285,7 +302,7 @@ export class PrimengTableComponent {
    * @param {Table} dt - A PrimeNG Table object representing the table to which the clearing operations will be applied.
    * @param {boolean} [force=false] - (Optional) A boolean value indicating whether to force the clear operation even if there are no specific conditions. Defaults to false.
    */
-  clearSortsAndFilters(dt: Table, force: boolean = false) { 
+  clearSortsAndFilters(dt: Table, force: boolean = false): void { 
     let hasToClear = this.hasToClearSortsAndFilters(dt, this.globalSearchText, force); // Get if we have to clear sorts and filters
     this.predifinedFiltersSelectedValuesCollection = {}; // Reset the collection of predefined filter values
     if (hasToClear) { // If sorts and filters must be cleared
@@ -398,6 +415,7 @@ export class PrimengTableComponent {
   pageChange(event: PaginatorState): void {
     this.currentPage = event.page!; // Update the current page
     this.currentRowsPerPage = event.rows!; // Update the number of rows per page
+    this.saveTableState();
     this.updateData(this.tableLazyLoadEventInformation); // Force the data to be updated
   }
 

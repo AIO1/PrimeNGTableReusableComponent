@@ -3,13 +3,14 @@
     sortMode="multiple"
     [resizableColumns]="true" columnResizeMode="expand"
     [reorderableColumns]="true"
-    [lazy]="true" (onLazyLoad)="updateData($event)">
+    [lazy]="true" (onLazyLoad)="updateData($event)"
+    (onSort)="saveTableState()" (onFilter)="saveTableState()" (onColReorder)="saveTableState()"> <!--(onColResize)="saveTableState($event)"-->
     <ng-template pTemplate="caption"> <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--CHOOSE COLUMNS TO SHOW-->
                 <p-multiSelect [options]="columnsSelectable" [(ngModel)]="columnsSelected" optionLabel="header"
-                    [selectedItemsLabel]="'{0} ' + selectedColumnsDropdownSelectedPlaceholder" [style]="{minWidth: '400px'}" [placeholder]="selectedColumnsDropdownPlaceholder" [showToggleAll]=true (onChange)="columnsChanged()"></p-multiSelect>
+                    [selectedItemsLabel]="'{0} ' + selectedColumnsDropdownSelectedPlaceholder" [style]="{width: '220px'}" [placeholder]="selectedColumnsDropdownPlaceholder" [showToggleAll]=true (onChange)="columnsChanged()"></p-multiSelect>
                 
                 <!--CLEAR SORTS AND FILTERS-->
                 <button pButton pRipple (click)="clearSortsAndFilters(dt)" style="height: 50px;" [disabled]="!hasToClearSortsAndFilters(dt, globalSearchText)">
@@ -17,11 +18,14 @@
                     <i class="pi pi-filter-slash"></i>
                 </button>
             </div>
+            <!--<div style="display: flex; align-items: center; gap: 10px;">
+                <button pButton pRipple icon="pi pi-eraser" severity="danger" (click)="resetTableState()"></button>
+            </div>-->
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--GLOBAL FILTER-->
                 <span *ngIf="globalSearchEnabled" class="p-input-icon-left p-ml-auto">
                     <i class="pi pi-search"></i>
-                    <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" [placeholder]="globalSearchPlaceholder" [(ngModel)]="globalSearchText"/>
+                    <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" [placeholder]="globalSearchPlaceholder" [(ngModel)]="globalSearchText" [style]="{width: '220px'}"/>
                 </span>
 
                 <!--REFRESH DATA-->
@@ -107,6 +111,9 @@
                                 </p-columnFilter>
                             </ng-container>
                         </ng-container>
+                        <ng-container *ngIf="col.columnDescription && col.columnDescription.length > 0">
+                            <i [pTooltip]="col.columnDescription" tooltipPosition="top" class="pi pi-info-circle"></i>
+                        </ng-container>
                     </div>
                 </th>
             </ng-container>
@@ -119,7 +126,7 @@
             <!-- ACTION BUTTONS -->
             <td *ngIf="rowActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;">
                 <ng-container *ngFor="let button of rowActionButtons">
-                    <button *ngIf="!button.condition || button.condition(rowData)"
+                    <button [disabled]="button.condition ? !button.condition(rowData) : false"
                             pButton pRipple
                             [ngClass]="button.color || 'p-button-outlined'"
                             [icon]="button.icon ? button.icon : ''" 
@@ -154,12 +161,28 @@
                                 <i class="pi" [style.color]="rowData[col.field] ? 'green' : 'red'" [ngClass]="{ 'pi-check-circle': rowData[col.field], 'pi-times-circle': !rowData[col.field] }"></i>
                             </div>
                             <div *ngSwitchCase="'date'">
-                                <div [innerHtml]="highlightText(formatDate(rowData[col.field]), col, globalSearchText)">
+                                <div [innerHtml]="highlightText(formatDate(rowData[col.field]), col, globalSearchText)"
+                                    [pTooltip]="formatDate(rowData[col.field])"  
+                                    *ngIf="col.dataTooltip" 
+                                    showDelay="700" 
+                                    tooltipPosition="top">
+                                    {{ formatDate(rowData[col.field]) }}
+                                </div>
+                                <div [innerHtml]="highlightText(formatDate(rowData[col.field]), col, globalSearchText)" *ngIf="!col.dataTooltip">
                                     {{ formatDate(rowData[col.field]) }}
                                 </div>
                             </div>
                             <div *ngSwitchDefault>
-                                <div [innerHtml]="highlightText(rowData[col.field], col, globalSearchText)">{{rowData[col.field]}}</div>
+                                <div [innerHtml]="highlightText(rowData[col.field], col, globalSearchText)"
+                                    [pTooltip]="rowData[col.field]" 
+                                    *ngIf="col.dataTooltip" 
+                                    showDelay="700" 
+                                    tooltipPosition="top">
+                                    {{ rowData[col.field] }}
+                                </div>
+                                <div [innerHtml]="highlightText(rowData[col.field], col, globalSearchText)" *ngIf="!col.dataTooltip">
+                                    {{ rowData[col.field] }}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -17,6 +17,8 @@
         public string FilterPredifinedValuesName { get; }
         public bool CanBeGlobalFiltered { get; }
         public bool SendColumnAttributes { get; }
+        public string ColumnDescription { get; }
+        public bool DataTooltip { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrimeNGAttribute"/> class.
@@ -34,6 +36,9 @@
         /// <param name="filterPredifinedValuesName">The name used on typescript to store the list of allowed values in the dropdown.</param>
         /// <param name="canBeGlobalFiltered">If <c>true</c>, the data can be globally filtered.</param>
         /// <param name="sendColumnAttributes">If <c>true</c>, the column attirbutes will be sent. If <c>false</c> column attributes won't be sent and has to be explicitly declared in PerformDynamicQuery to be sent</param>
+        /// <param name="columnDescription">If informed, the column will have an additional icon with a description.</param>
+        /// <param name="dataTooltip">If <c>true</c>, data in a row when mouse hovers can be shown as tooltip. Useful for long data in a row</param>
+
         /// <exception cref="ArgumentException">
         /// Thrown if an invalid dataAlign or dataType value is provided.
         /// </exception>
@@ -50,7 +55,9 @@
             bool filterUsesPredifinedValues = false,
             string filterPredifinedValuesName = "",
             bool canBeGlobalFiltered = true,
-            bool sendColumnAttributes = true) {
+            bool sendColumnAttributes = true,
+            string columnDescription = "",
+            bool dataTooltip = true) {
             if(!IsValidDataAlignType(dataAlign)) {
                 throw new ArgumentException("Invalid dataAlign value", nameof(dataAlign));
             }
@@ -70,6 +77,8 @@
             FilterPredifinedValuesName = filterPredifinedValuesName;
             CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != "boolean";
             SendColumnAttributes = sendColumnAttributes;
+            ColumnDescription = columnDescription;
+            DataTooltip = dataTooltip;
         }
         private static bool IsValidDataAlignType(string alignType) {
             var allowedValues = new[] { "left", "center", "right" };

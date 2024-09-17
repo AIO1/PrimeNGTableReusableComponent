@@ -61,7 +61,9 @@ namespace PrimeNG.HelperFunctions {
                         CanBeFiltered = primeNGAttributes.CanBeFiltered,
                         FilterUsesPredifinedValues = primeNGAttributes.FilterUsesPredifinedValues,
                         FilterPredifinedValuesName = primeNGAttributes.FilterPredifinedValuesName,
-                        CanBeGlobalFiltered = primeNGAttributes.CanBeGlobalFiltered
+                        CanBeGlobalFiltered = primeNGAttributes.CanBeGlobalFiltered,
+                        ColumnDescription = primeNGAttributes.ColumnDescription,
+                        DataTooltip = primeNGAttributes.DataTooltip
                     });
                 }
             }
