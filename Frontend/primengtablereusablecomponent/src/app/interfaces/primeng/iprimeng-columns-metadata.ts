@@ -1,8 +1,19 @@
+export enum enumDataType {
+    Text,
+    Numeric,
+    Boolean,
+    Date
+}
+export enum enumDataAlign {
+    Left,
+    Center,
+    Right,
+}
 export interface IprimengColumnsMetadata {
     field: string;
     header: string;
-    dataType: string;
-    dataAlign: 'left' | 'center' | 'right';
+    dataType: enumDataType;
+    dataAlign: enumDataAlign;
     canBeHidden: boolean;
     startHidden: boolean;
     canBeResized: boolean;

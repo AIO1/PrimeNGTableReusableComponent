@@ -7,7 +7,7 @@ import { SharedService } from '../../services/shared/shared.service';
 import { PrimengSharedService } from '../../services/shared/primengShared.service';
 
 // Import interfaces
-import { IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
+import { enumDataAlign, enumDataType, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
 import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
@@ -50,6 +50,35 @@ export class PrimengTableComponent {
   @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
   
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
+
+  enumDataType = enumDataType;
+  enumDataAlign = enumDataAlign;
+  getDataTypeAsText(dataType: enumDataType): string {
+    switch (dataType) {
+      case enumDataType.Text:
+        return 'text';
+      case enumDataType.Numeric:
+        return 'numeric';
+      case enumDataType.Boolean:
+        return 'boolean';
+      case enumDataType.Date:
+        return 'date';
+      default:
+        return 'text';
+    }
+  }
+  getDataAlignAsText(dataAlign: enumDataAlign): string {
+    switch (dataAlign) {
+      case enumDataAlign.Left:
+        return 'left';
+      case enumDataAlign.Center:
+        return 'center';
+      case enumDataAlign.Right:
+        return 'right';
+      default:
+        return 'left';
+    }
+  }
 
   dateFormat: string = "dd-MMM-yyyy HH:mm:ss zzzz";
   dateTimezone: string = "+00:00";
@@ -441,7 +470,7 @@ export class PrimengTableComponent {
    * const highlightedHtml: SafeHtml = highlightText(cellValue, colMetadata, globalSearchText);
    */
   highlightText(cellValue: any, colMetadata: IprimengColumnsMetadata, globalSearchText: string | null): SafeHtml {
-    if (colMetadata.dataType !== "boolean" && globalSearchText !== null) { // Check if the column data type is not boolean and global search text is not null
+    if (colMetadata.dataType !== enumDataType.Boolean && globalSearchText !== null) { // Check if the column data type is not boolean and global search text is not null
       const valueToUse = String(cellValue); // Convert cell value to string
       if (colMetadata.canBeGlobalFiltered) { // Check if the column can be globally filtered
         const searchLowerCase = globalSearchText.toUpperCase(); // Convert global search text to uppercase for case-insensitive comparison

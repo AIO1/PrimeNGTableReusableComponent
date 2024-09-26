@@ -1,4 +1,6 @@
-﻿namespace PrimeNG.DTOs {
+﻿using PrimeNG.Attributes;
+
+namespace PrimeNG.DTOs {
     /// <summary>
     /// Represents the structure of a POST request sent to a PrimeNG table.
     /// </summary>
@@ -147,12 +149,12 @@
         /// <summary>
         /// Gets or sets the data type of the column.
         /// </summary>
-        public string DataType { get; set; } = null!;
+        public EnumDataType DataType { get; set; }
 
         /// <summary>
         /// Gets or sets the alignment of the data in the column ("left", "center", or "right").
         /// </summary>
-        public string DataAlign { get; set; } = null!;
+        public EnumDataAlign DataAlign { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the column can be hidden.

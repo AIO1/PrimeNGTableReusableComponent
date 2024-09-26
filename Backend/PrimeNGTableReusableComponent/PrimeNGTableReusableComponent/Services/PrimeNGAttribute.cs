@@ -1,12 +1,23 @@
 ﻿namespace PrimeNG.Attributes {
+    public enum EnumDataType {
+        Text,
+        Numeric,
+        Boolean,
+        Date
+    }
+    public enum EnumDataAlign {
+        Left,
+        Center,
+        Right
+    }
     /// <summary>
     /// Custom attributes for PrimeNG tables
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     sealed class PrimeNGAttribute : Attribute {
         public string Header { get; }
-        public string DataType { get; }
-        public string DataAlign { get; }
+        public EnumDataType DataType { get; }
+        public EnumDataAlign DataAlign { get; }
         public bool CanBeHidden { get; }
         public bool StartHidden { get; }
         public bool CanBeResized { get; }
@@ -44,8 +55,8 @@
         /// </exception>
         public PrimeNGAttribute(
             string header = "",
-            string dataType = "text",
-            string dataAlign = "center",
+            EnumDataType dataType = EnumDataType.Text,
+            EnumDataAlign dataAlign = EnumDataAlign.Center,
             bool canBeHidden = true,
             bool startHidden = false,
             bool canBeResized = true,
@@ -58,12 +69,6 @@
             bool sendColumnAttributes = true,
             string columnDescription = "",
             bool dataTooltip = true) {
-            if(!IsValidDataAlignType(dataAlign)) {
-                throw new ArgumentException("Invalid dataAlign value", nameof(dataAlign));
-            }
-            if(!IsValidDataType(dataType)) {
-                throw new ArgumentException("Invalid dataType value", nameof(dataType));
-            }
             Header = header;
             DataType = dataType;
             DataAlign = dataAlign;
@@ -75,18 +80,10 @@
             CanBeFiltered = canBeFiltered;
             FilterUsesPredifinedValues = filterUsesPredifinedValues;
             FilterPredifinedValuesName = filterPredifinedValuesName;
-            CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != "boolean";
+            CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != EnumDataType.Boolean;
             SendColumnAttributes = sendColumnAttributes;
             ColumnDescription = columnDescription;
             DataTooltip = dataTooltip;
-        }
-        private static bool IsValidDataAlignType(string alignType) {
-            var allowedValues = new[] { "left", "center", "right" };
-            return allowedValues.Contains(alignType);
-        }
-        private static bool IsValidDataType(string dataType) {
-            var allowedValues = new[] { "text", "numeric", "boolean", "date" };
-            return allowedValues.Contains(dataType);
         }
     }
 }

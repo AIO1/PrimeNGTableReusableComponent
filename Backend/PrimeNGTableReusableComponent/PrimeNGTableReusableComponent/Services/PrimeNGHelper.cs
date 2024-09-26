@@ -235,13 +235,13 @@ namespace PrimeNG.HelperFunctions {
         /// Returns null if the data type is not supported.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the filterDataType is not supported.</exception>
-        private static Expression<Func<T, bool>>? GetGlobalFilterPredicate<T>(string propertyName, string filterValue, string filterDataType, MethodInfo stringDateFormatMethod, string dateFormat, string dateTimezone, string dateCulture) {
+        private static Expression<Func<T, bool>>? GetGlobalFilterPredicate<T>(string propertyName, string filterValue, EnumDataType filterDataType, MethodInfo stringDateFormatMethod, string dateFormat, string dateTimezone, string dateCulture) {
             Expression<Func<T, bool>>? predicate = null; // Initialize the predicate as null
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x"); // Create an expression parameter to represent the generic entity T
             MemberExpression property = Expression.Property(parameter, propertyName); // Get the specific property of the entity using the provided property name
-            if(filterDataType == "text" || filterDataType == "numeric" || filterDataType == "date") { // Check the filter data type, if it's text, numeric, or date, call method to create a filter predicate
+            if(filterDataType == EnumDataType.Text || filterDataType == EnumDataType.Numeric || filterDataType == EnumDataType.Date) { // Check the filter data type, if it's text, numeric, or date, call method to create a filter predicate
                 predicate = CreateTextFilterPredicate<T>(property, filterValue, stringDateFormatMethod, "contains", dateFormat, dateTimezone, dateCulture);
-            } else if (filterDataType != "boolean") { // If the filter data type is not text, numeric, date or boolean, throw an exception
+            } else if (filterDataType != EnumDataType.Boolean) { // If the filter data type is not text, numeric, date or boolean, throw an exception
                 throw new ArgumentException("Invalid filterDataType value", nameof(filterDataType));
             }
             return predicate; // Return the predicate (may be null if the data type is not supported)
@@ -257,15 +257,15 @@ namespace PrimeNG.HelperFunctions {
         /// <param name="matchMode">The matching mode for the filter.</param>
         /// <returns>An Expression<Func<T, bool>> predicate for filtering entities.</returns>
         /// <exception cref="ArgumentException">Thrown when the filterDataType is not supported.</exception>
-        private static Expression<Func<T, bool>>? GetColumnFilterPredicate<T>(string propertyName, dynamic filterValue, string filterDataType, string matchMode, MethodInfo stringDateFormatMethod) {
+        private static Expression<Func<T, bool>>? GetColumnFilterPredicate<T>(string propertyName, dynamic filterValue, EnumDataType filterDataType, string matchMode, MethodInfo stringDateFormatMethod) {
             Expression<Func<T, bool>>? predicate; // Initialize the predicate as null
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x");  // Create an expression parameter to represent the generic entity T
             MemberExpression property = Expression.Property(parameter, propertyName);  // Get the specific property of the entity using the provided property name
             predicate = filterDataType switch {
-                "text" => CreateTextFilterPredicate<T>(property, filterValue.ToString(), stringDateFormatMethod, matchMode),
-                "date" => CreateDateFilterPredicate<T>(property, parameter, filterValue, matchMode),
-                "numeric" => CreateNumericFilterPredicate<T>(property, parameter, filterValue, matchMode),
-                "boolean" => CreateBoolFilterPredicate<T>(property, parameter, filterValue),
+                EnumDataType.Text => CreateTextFilterPredicate<T>(property, filterValue.ToString(), stringDateFormatMethod, matchMode),
+                EnumDataType.Date => CreateDateFilterPredicate<T>(property, parameter, filterValue, matchMode),
+                EnumDataType.Numeric => CreateNumericFilterPredicate<T>(property, parameter, filterValue, matchMode),
+                EnumDataType.Boolean => CreateBoolFilterPredicate<T>(property, parameter, filterValue),
                 _ => throw new ArgumentException("Invalid filterDataType value", nameof(filterDataType)),
             };
             return predicate;
