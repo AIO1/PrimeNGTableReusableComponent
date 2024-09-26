@@ -352,15 +352,15 @@ For anything that needs to be sent to the frontend (including columns that will 
 From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGAttribute.cs), you will see that you can specify multiple things to each element of the DTO, the things that can be specified per columns are:
 
 - **header:** Used to specify the name that the column will have in the frontend.
-- **dateType:** Used to indicate the type of data that is being managed. This will affect the global filter and the filter per column. The filter by column will display different options to the user in the frontend depending on the data type specified. The are four data types and they must be declared as they appear exactly here:
-  - **"text":** Used mainly for strings and nullable strings. This is the default option if nothing has been specified.
-  - **"numeric":** Used for any type of data in C# that handles numeric values like int, long, ...
-  - **"booelan":** Used for bool and nullable bool types.
-  - **"date":** Used for valid date data, for example, datetime.
-- **dataAlign:** Being the default value "center", the value provided will be used to determine the aligment of the data in the frontend. The possible values that must be declared as they appear exactly here are:
-  - "left"
-  - "center"
-  - "right"
+- **dateType:** An ENUM used to indicate the type of data that is being managed. This will affect the global filter and the filter per column. The filter by column will display different options to the user in the frontend depending on the data type specified. The are four data types and they must be declared as they appear exactly here:
+  - **"Text":** Used mainly for strings and nullable strings. This is the default option if nothing has been specified.
+  - **"Numeric":** Used for any type of data in C# that handles numeric values like int, long, ...
+  - **"Booelan":** Used for bool and nullable bool types.
+  - **"Date":** Used for valid date data, for example, datetime.
+- **dataAlign:** An ENUM being the default value "Center", the value provided will be used to determine the aligment of the data in the frontend. The possible values that must be declared as they appear exactly here are:
+  - "Left"
+  - "Center"
+  - "Right"
 - **canBeHidden:** Being the default value true, this parameter will indicate if the user in the frontend can hider or not this column. When a column is hidden, it means it won't be recovered in the SELECT statement to the database, saving up on resources. If a columns is hidden, it won't be shown in the frontend until the user selects it again.
 - **startHidden:** Default value is false. If the value is true and if "canBeHidden" is true, the column will be first shown to the user as hidden, and if he want to view it, the user must request it in the column selector.
 - **canBeResized:** Default true. If true, it means that the user will have the ability to resize the column.
@@ -376,26 +376,26 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
 
 From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/TestDTO.cs) that is used to send the data to the frontend.
 ```c#
- public class TestDto {
+public class TestDto {
     [PrimeNGAttribute(sendColumnAttributes: false)]
     public Guid id { get; set; }
 
     [PrimeNGAttribute(sendColumnAttributes: false)]
     public bool canBeDeleted { get; set; }
 
-    [PrimeNGAttribute("Username", dataAlign: "left", canBeHidden: false, columnDescription: "A random username")]
+    [PrimeNGAttribute("Username", dataAlign: EnumDataAlign.Left, canBeHidden: false, columnDescription: "A random username")]
     public string username { get; set; } = null!;
 
-    [PrimeNGAttribute("Age", dataType: "numeric", columnDescription: "The age of the user")]
+    [PrimeNGAttribute("Age", dataType: EnumDataType.Numeric, columnDescription: "The age of the user")]
     public byte? age { get; set; }
 
     [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
     public string? employmentStatusName { get; set; }
 
-    [PrimeNGAttribute("Birthdate", dataType: "date", dataAlign: "left", startHidden: true, columnDescription: "When was the user born")]
+    [PrimeNGAttribute("Birthdate", dataType: EnumDataType.Date, dataAlign: EnumDataAlign.Left, startHidden: true, columnDescription: "When was the user born")]
     public DateTime? birthdate { get; set; }
 
-    [PrimeNGAttribute("Payed taxes?", dataType: "boolean", startHidden: true, columnDescription: "If the user has payed his taxes or not. You've got to pay your taxes :)")]
+    [PrimeNGAttribute("Payed taxes?", dataType: EnumDataType.Boolean, startHidden: true, columnDescription: "If the user has payed his taxes or not. You've got to pay your taxes :)")]
     public bool payedTaxes { get; set; }
 }
 ```
