@@ -59,7 +59,6 @@ namespace PrimeNG.HelperFunctions {
                         CanBeReordered = primeNGAttributes.CanBeReordered,
                         CanBeSorted = primeNGAttributes.CanBeSorted,
                         CanBeFiltered = primeNGAttributes.CanBeFiltered,
-                        FilterUsesPredifinedValues = primeNGAttributes.FilterUsesPredifinedValues,
                         FilterPredifinedValuesName = primeNGAttributes.FilterPredifinedValuesName,
                         CanBeGlobalFiltered = primeNGAttributes.CanBeGlobalFiltered,
                         ColumnDescription = primeNGAttributes.ColumnDescription,

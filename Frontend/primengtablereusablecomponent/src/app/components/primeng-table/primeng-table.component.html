@@ -67,10 +67,10 @@
                             <p-sortIcon [field]="col.field"></p-sortIcon>
                         </ng-container>
                         <ng-container *ngIf="col.canBeFiltered">
-                            <ng-container *ngIf="!col.filterUsesPredifinedValues">
+                            <ng-container *ngIf="!col.filterPredifinedValuesName || col.filterPredifinedValuesName.length === 0">
                                 <p-columnFilter type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu" showButtons="false"/>
                             </ng-container>
-                            <ng-container *ngIf="col.filterUsesPredifinedValues">
+                            <ng-container *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
                                 <p-columnFilter
                                     type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu" showButtons="false"
                                     matchMode="in" operator="or"
@@ -143,7 +143,7 @@
             <ng-container *ngFor="let col of columns">
                 <td [style.text-align]="getDataAlignAsText(col.dataAlign)" [ngSwitch]="col.dataType">
                     <div *ngIf="rowData[col.field] !== null; else nullContent">
-                        <div *ngIf="col.filterUsesPredifinedValues">
+                        <div *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
                             <div class="inline-block vertical-align-middle">
                                 <ng-container *ngIf="getPredfinedFilterMatch(col, rowData[col.field]) as option">
                                     <div class="inline-block vertical-align-middle">
@@ -156,7 +156,7 @@
                                 </ng-container>
                             </div>
                         </div>
-                        <div *ngIf="!col.filterUsesPredifinedValues">
+                        <div *ngIf="!col.filterPredifinedValuesName || col.filterPredifinedValuesName.length === 0">
                             <div *ngSwitchCase="enumDataType.Boolean">
                                 <i class="pi" [style.color]="rowData[col.field] ? 'green' : 'red'" [ngClass]="{ 'pi-check-circle': rowData[col.field], 'pi-times-circle': !rowData[col.field] }"></i>
                             </div>

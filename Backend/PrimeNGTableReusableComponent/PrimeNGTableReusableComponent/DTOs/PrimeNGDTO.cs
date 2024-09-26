@@ -186,7 +186,6 @@ namespace PrimeNG.DTOs {
         /// </summary>
         public bool CanBeFiltered { get; set; }
 
-        public bool FilterUsesPredifinedValues { get; set; }
         public string FilterPredifinedValuesName { get; set; } = null!;
 
         /// <summary>

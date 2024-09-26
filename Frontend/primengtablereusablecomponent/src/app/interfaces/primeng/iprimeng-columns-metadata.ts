@@ -20,7 +20,6 @@ export interface IprimengColumnsMetadata {
     canBeReordered: boolean;
     canBeSorted: boolean;
     canBeFiltered: boolean;
-    filterUsesPredifinedValues: boolean;
     filterPredifinedValuesName: string;
     canBeGlobalFiltered: boolean;
     columnDescription: string;

@@ -132,7 +132,7 @@ export class PrimengTableComponent {
    * @returns {any} The matching predefined filter value if found, otherwise null.
    */
   getPredfinedFilterMatch(colMetadata: IprimengColumnsMetadata, value: any): any {
-    if (colMetadata.filterUsesPredifinedValues) { // Check if the column uses predefined filter values
+    if (colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0) { // Check if the column uses predefined filter values
         const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName); // Get the predefined filter values based on the name
         return options.find(option => option.value === value); // Return the matching option if found
     }

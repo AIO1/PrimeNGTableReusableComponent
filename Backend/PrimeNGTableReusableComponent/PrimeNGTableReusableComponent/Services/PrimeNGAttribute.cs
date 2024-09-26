@@ -24,7 +24,6 @@
         public bool CanBeReordered { get; }
         public bool CanBeSorted { get; }
         public bool CanBeFiltered { get; }
-        public bool FilterUsesPredifinedValues { get; }
         public string FilterPredifinedValuesName { get; }
         public bool CanBeGlobalFiltered { get; }
         public bool SendColumnAttributes { get; }
@@ -43,7 +42,6 @@
         /// <param name="canBeReordered">If <c>true</c>, the column can be reordered.</param>
         /// <param name="canBeSorted">If <c>true</c>, the column can be sorted.</param>
         /// <param name="canBeFiltered">If <c>true</c>, the column can be filtered.</param>
-        /// <param name="filterUsesPredifinedValues">If <c>true</c>, the row filter will use a list of predifined values to select from.</param>
         /// <param name="filterPredifinedValuesName">The name used on typescript to store the list of allowed values in the dropdown.</param>
         /// <param name="canBeGlobalFiltered">If <c>true</c>, the data can be globally filtered.</param>
         /// <param name="sendColumnAttributes">If <c>true</c>, the column attirbutes will be sent. If <c>false</c> column attributes won't be sent and has to be explicitly declared in PerformDynamicQuery to be sent</param>
@@ -63,12 +61,12 @@
             bool canBeReordered = true,
             bool canBeSorted = true,
             bool canBeFiltered = true,
-            bool filterUsesPredifinedValues = false,
             string filterPredifinedValuesName = "",
             bool canBeGlobalFiltered = true,
             bool sendColumnAttributes = true,
             string columnDescription = "",
-            bool dataTooltip = true) {
+            bool dataTooltip = true
+        ){
             Header = header;
             DataType = dataType;
             DataAlign = dataAlign;
@@ -78,7 +76,6 @@
             CanBeReordered = canBeReordered;
             CanBeSorted = canBeSorted;
             CanBeFiltered = canBeFiltered;
-            FilterUsesPredifinedValues = filterUsesPredifinedValues;
             FilterPredifinedValuesName = filterPredifinedValuesName;
             CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != EnumDataType.Boolean;
             SendColumnAttributes = sendColumnAttributes;

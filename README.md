@@ -367,8 +367,7 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
 - **canBeReordered:** Default true. If true, the user can drag a column and place it in a different order.
 - **canBeSorted:** Default true. If true, the user can press the header of a column to sort the column. If pressed again, the sort order will be inverted. The user has te ability to perform a multisort holding down "CTRL" key and the clicking in all the columns that he wants to sort by.
 - **canBeFiltered:** Default true. If true, in the frontend, the user will see a filter icon in the column. When the filter icon is pressed, a menu with different options to filter by will be shown to the user. The menu that is displayed and the available rules will depend in the "dataType" and in "filterUsesPredifinedValues".
-- **filterUsesPredifinedValues:** Default false. If true, the filter menu that will be shown (if "canBeFiltered" is true) is a list of options that will depend on the values that are in the frontend associated to the entity with name "filterPredifinedValuesName". In further sections there is an in depth explanation on how to use this.
-- **filterPredifinedValuesName:** If "canBeFiltered" and "filterUsesPredifinedValues" are both true, it will be used by the frontend to look for the data in an entity with the name provided here. In further sections there is an in depth explanation on how to use this.
+- **filterPredifinedValuesName:** If "canBeFiltered" is true, it will be used by the frontend to look for the data in an entity with the name provided here. In further sections there is an in depth explanation on how to use this.
 - **canBeGlobalFiltered:** Indicates if the column is affected by the glboal filter. The "boolean" data type can't be globally filtered. By default, all the other types of columns are affected by the global filter.
 - **SendColumnAttributes:** By default true. This value should be set to false for columns that you wish to send to the frontend, but you do not wish the user to be able to see them. These columns are not affected by the filter and need to be explicilty declared in a function to be sent to the web application. It is normally used for fields like the ID. There is a more in depth explanation in further sections on how to use it.
 - **ColumnDescription:** A string that if informed, it will show a "i" icon on the table header and when the user hovers over it, it will show a tooltip that shows the value given here. Useful to describe what the column is about.
@@ -389,7 +388,7 @@ public class TestDto {
     [PrimeNGAttribute("Age", dataType: EnumDataType.Numeric, columnDescription: "The age of the user")]
     public byte? age { get; set; }
 
-    [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
+    [PrimeNGAttribute("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
     public string? employmentStatusName { get; set; }
 
     [PrimeNGAttribute("Birthdate", dataType: EnumDataType.Date, dataAlign: EnumDataAlign.Left, startHidden: true, columnDescription: "When was the user born")]
@@ -525,7 +524,7 @@ This project offers some additional things that you can do with the tables and a
 ### 4.6 Predifined filters
 You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. To achieve this, we will start off in the backend with your DTO.
 
-From the example project, the "TestDto" has an entry named "employmentStatusName". In the "TestDTO" it was given though the PrimeNGAttribute of "filterUsesPredifinedValues" as true. The "filterPredifinedValuesName" value that was given is "employmentStatusPredifinedFilter" which is important to remember because it will need to be exactly the same in the frontend.
+From the example project, the "TestDto" has an entry named "employmentStatusName". In the "TestDTO" it was given in the PrimeNGAttribute of "filterPredifinedValuesName" the value "employmentStatusPredifinedFilter", which is important to remember because it will need to be exactly the same in the frontend.
 
 The next step is to create an endpoint that will return you all the data that you want from each of the columns that will use the predifined filter. In the example project, the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) has an endpoint named "GetEmploymentStatus" that is the one that will be called in the frontend to retrieve all the possible values for the employment status. Since the idea is to use a PrimeNG tag to render the status with a color, this endpoint sends the employment status and the RGB color that we want to use in the tag.
 

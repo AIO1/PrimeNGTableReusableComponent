@@ -14,7 +14,7 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute("Age", dataType: EnumDataType.Numeric, columnDescription: "The age of the user")]
         public byte? age { get; set; }
 
-        [PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
+        [PrimeNGAttribute("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
         public string? employmentStatusName { get; set; }
 
         [PrimeNGAttribute("Birthdate", dataType: EnumDataType.Date, dataAlign: EnumDataAlign.Left, startHidden: true, columnDescription: "When was the user born")]
