@@ -522,6 +522,7 @@ This project offers some additional things that you can do with the tables and a
 - **actionColumnName** (string): The column name were the action buttons will appear. Default value is: "Actions".
 - **actionsColumnAligmentRight** (boolean): By default true, it can be changed to false to make the actions column appear in the left part of the table, instead that on the right.
 - **actionsColumnFrozen:** (boolean): By default true. If true, it will freeze the actions column so that if the table is scrolled horizontally, it will remain visible.
+- **actionsColumnResizable:** (boolean): By default false. If true, it will allow the user to resize the actions column.
 
 
 ### 4.6 Predifined filters

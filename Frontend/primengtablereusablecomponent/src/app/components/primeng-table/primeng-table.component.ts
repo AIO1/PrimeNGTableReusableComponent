@@ -50,6 +50,7 @@ export class PrimengTableComponent {
   @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
   @Input() actionsColumnAligmentRight: boolean = true; // If actions columns is put at the right end of the table (or false if its at the left)
   @Input() actionsColumnFrozen: boolean = true; // If the actions column should be frozen
+  @Input() actionsColumnResizable: boolean = false; // If the action column can be resized by the user
 
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
 

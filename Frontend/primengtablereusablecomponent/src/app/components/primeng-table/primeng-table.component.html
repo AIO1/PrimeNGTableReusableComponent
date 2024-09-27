@@ -1,26 +1,3 @@
-<ng-template #actionColumnHeaderTemplate>
-    <th *ngIf="rowActionButtons.length > 0" scope="col" style="text-align: center;"
-        pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
-        {{actionColumnName}}
-    </th>
-</ng-template>
-<ng-template #actionColumnTemplate let-rowData="rowData">
-    <td *ngIf="rowActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;"
-        pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
-        <ng-container *ngFor="let button of rowActionButtons">
-            <button [disabled]="button.condition ? !button.condition(rowData) : false"
-                    pButton pRipple
-                    [ngClass]="button.color || 'p-button-outlined'"
-                    [icon]="button.icon ? button.icon : ''" 
-                    [label]="button.label ? button.label : ''" 
-                    (click)="button.action && handleButtonsClick(button.action, rowData)" 
-                    size="small" 
-                    class="p-button-sm" 
-                    style="height: 28px; margin-right: 10px;">
-            </button>
-        </ng-container>
-    </td>
-</ng-template>
 <p-table #dt
     [columns]="columnsToShow" [value]="data" dataKey="id" [scrollable]="true" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
     sortMode="multiple"
@@ -29,6 +6,35 @@
     scrollDirection="both"
     [lazy]="true" (onLazyLoad)="updateData($event)"
     (onSort)="saveTableState()" (onFilter)="saveTableState()" (onColReorder)="saveTableState()"> <!--(onColResize)="saveTableState($event)"-->
+    <ng-template #actionColumnHeaderTemplate>
+        <th *ngIf="rowActionButtons.length > 0" 
+            pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable"
+            id="actions-header" [attr.scope]="'col'"
+            style="text-align: center;"
+            pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+            {{actionColumnName}}
+        </th>
+    </ng-template>
+    <ng-template #actionColumnTemplate let-rowData="rowData">
+        <td *ngIf="rowActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;"
+            pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+            <ng-container *ngFor="let button of rowActionButtons">
+                <button [disabled]="button.condition ? !button.condition(rowData) : false"
+                        pButton pRipple
+                        [ngClass]="button.color || 'p-button-outlined'"
+                        [icon]="button.icon ? button.icon : ''" 
+                        [label]="button.label ? button.label : ''" 
+                        (click)="button.action && handleButtonsClick(button.action, rowData)" 
+                        size="small" 
+                        class="p-button-sm" 
+                        style="height: 28px; margin-right: 10px;">
+                </button>
+            </ng-container>
+        </td>
+    </ng-template>
+    
+    
+    
     <ng-template pTemplate="caption"> <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -225,7 +231,7 @@
 
     <!-- LOGIC FOR DRAWING PAGINATION -->
     <ng-template pTemplate="summary"> 
-        <p-paginator  [first]="currentPage * currentRowsPerPage" [rows]="currentRowsPerPage" [totalRecords]="totalRecords" (onPageChange)="pageChange($event)" [rowsPerPageOptions]="allowedRowsPerPage"
+        <p-paginator [first]="currentPage * currentRowsPerPage" [rows]="currentRowsPerPage" [totalRecords]="totalRecords" (onPageChange)="pageChange($event)" [rowsPerPageOptions]="allowedRowsPerPage"
             [showCurrentPageReport]="true" [currentPageReportTemplate]="showingRecordsText +' {first} - {last}'"/>
             <div>{{notApplyingFiltersText}}: {{totalRecordsNotFiltered}}</div>
             <div>{{applyingFiltersText}}: {{totalRecords}}</div>
