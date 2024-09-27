@@ -10,6 +10,11 @@
         Center,
         Right
     }
+    public enum EnumFrozenColumnAlign {
+        Noone,
+        Left,
+        Right
+    }
     /// <summary>
     /// Custom attributes for PrimeNG tables
     /// </summary>
@@ -29,6 +34,7 @@
         public bool SendColumnAttributes { get; }
         public string ColumnDescription { get; }
         public bool DataTooltip { get; }
+        public EnumFrozenColumnAlign FrozenColumnAlign { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrimeNGAttribute"/> class.
@@ -47,6 +53,7 @@
         /// <param name="sendColumnAttributes">If <c>true</c>, the column attirbutes will be sent. If <c>false</c> column attributes won't be sent and has to be explicitly declared in PerformDynamicQuery to be sent</param>
         /// <param name="columnDescription">If informed, the column will have an additional icon with a description.</param>
         /// <param name="dataTooltip">If <c>true</c>, data in a row when mouse hovers can be shown as tooltip. Useful for long data in a row</param>
+        /// <param name="frozenColumnAlign">An enum that indicates if the column is frozen and were it is aligned</param>
 
         /// <exception cref="ArgumentException">
         /// Thrown if an invalid dataAlign or dataType value is provided.
@@ -65,15 +72,16 @@
             bool canBeGlobalFiltered = true,
             bool sendColumnAttributes = true,
             string columnDescription = "",
-            bool dataTooltip = true
-        ){
+            bool dataTooltip = true,
+            EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone
+        ) {
             Header = header;
             DataType = dataType;
             DataAlign = dataAlign;
             CanBeHidden = canBeHidden;
             StartHidden = startHidden && canBeHidden;
             CanBeResized = canBeResized;
-            CanBeReordered = canBeReordered;
+            CanBeReordered = canBeReordered && frozenColumnAlign == EnumFrozenColumnAlign.Noone;
             CanBeSorted = canBeSorted;
             CanBeFiltered = canBeFiltered;
             FilterPredifinedValuesName = filterPredifinedValuesName;
@@ -81,6 +89,7 @@
             SendColumnAttributes = sendColumnAttributes;
             ColumnDescription = columnDescription;
             DataTooltip = dataTooltip;
+            FrozenColumnAlign = frozenColumnAlign;
         }
     }
 }

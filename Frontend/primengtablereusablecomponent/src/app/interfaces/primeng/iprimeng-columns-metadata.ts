@@ -9,6 +9,11 @@ export enum enumDataAlign {
     Center,
     Right,
 }
+export enum enumFrozenColumnAlign {
+    Noone,
+    Left,
+    Right,
+}
 export interface IprimengColumnsMetadata {
     field: string;
     header: string;
@@ -24,4 +29,5 @@ export interface IprimengColumnsMetadata {
     canBeGlobalFiltered: boolean;
     columnDescription: string;
     dataTooltip: boolean;
+    frozenColumnAlign: enumFrozenColumnAlign;
 }

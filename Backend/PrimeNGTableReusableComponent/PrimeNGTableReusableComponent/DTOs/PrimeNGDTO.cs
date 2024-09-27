@@ -194,6 +194,9 @@ namespace PrimeNG.DTOs {
         public bool CanBeGlobalFiltered { get; set; }
 
         public string ColumnDescription { get; set; } = null!;
+
         public bool DataTooltip { get; set; }
+
+        public EnumFrozenColumnAlign FrozenColumnAlign { get; set; }
     }
 }

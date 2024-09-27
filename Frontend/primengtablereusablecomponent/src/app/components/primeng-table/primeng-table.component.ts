@@ -7,7 +7,7 @@ import { SharedService } from '../../services/shared/shared.service';
 import { PrimengSharedService } from '../../services/shared/primengShared.service';
 
 // Import interfaces
-import { enumDataAlign, enumDataType, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
+import { enumDataAlign, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
 import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
@@ -48,11 +48,14 @@ export class PrimengTableComponent {
   @Input() applyingFiltersText: string = "Available records after applying filters"; // The text that is shown next to the number of records after applying filter rules
   @Input() notApplyingFiltersText: string = "Number of available records"; // The text to be shown next to the number of total records available (not applying filters)
   @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
-  
+  @Input() actionsColumnAligmentRight: boolean = true; // If actions columns is put at the right end of the table (or false if its at the left)
+  @Input() actionsColumnFrozen: boolean = true; // If the actions column should be frozen
+
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
 
   enumDataType = enumDataType;
   enumDataAlign = enumDataAlign;
+  enumFrozenColumnAlign = enumFrozenColumnAlign;
   getDataTypeAsText(dataType: enumDataType): string {
     switch (dataType) {
       case enumDataType.Text:
@@ -74,6 +77,16 @@ export class PrimengTableComponent {
       case enumDataAlign.Center:
         return 'center';
       case enumDataAlign.Right:
+        return 'right';
+      default:
+        return 'left';
+    }
+  }
+  getFrozenColumnAlignAsText(frozenColumnAlign: enumFrozenColumnAlign): string {
+    switch (frozenColumnAlign) {
+      case enumFrozenColumnAlign.Left:
+        return 'left';
+      case enumFrozenColumnAlign.Right:
         return 'right';
       default:
         return 'left';
@@ -264,7 +277,7 @@ export class PrimengTableComponent {
             this.columnsSelectable = this.columns.filter((col: any) => col.canBeHidden); // Filter columns that can be hidden
             this.columnsNonSelectable = this.columns.filter((col: any) => !col.canBeHidden); // Filter columns that cannot be hidden
             this.columnsSelected = this.columnsSelectable.filter((col: any) => !col.startHidden); // Select columns that are not hidden by default
-            this.columnsToShow = this.columnsNonSelectable.concat(this.columnsSelected); // Combine non-selectable and selected columns to show
+            this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
             this.columnsSelectable = this.columnsSelectable.slice().sort((a: any, b: any) => { // Sort selectable columns by header
                 const fieldA = a.header.toUpperCase();
                 const fieldB = b.header.toUpperCase();
@@ -318,8 +331,19 @@ export class PrimengTableComponent {
             finalColumns.push(column);
         }
     }); // Add the new columns that are in columnsToKeep but not in finalColumns
-    this.columnsToShow=finalColumns; // Set the columnsToShow to the finalColumns
+    this.columnsToShow= this.orderColumnsWithFrozens(finalColumns);
     this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
+  }
+  
+  /**
+   *  Orders the list of columns that must be shown taking into account that columns frozen to the left should be ordered first
+   *  and the ones to the right last, to avoid visual gltichs with the PrimeNG table component
+   */
+  private orderColumnsWithFrozens(colsToOrder: IprimengColumnsMetadata[]): IprimengColumnsMetadata[]{
+    const frozenLeftColumns = colsToOrder.filter(col => col.frozenColumnAlign === enumFrozenColumnAlign.Left);
+    const frozenRightColumns = colsToOrder.filter(col => col.frozenColumnAlign === enumFrozenColumnAlign.Right);
+    const nonFrozenColumns = colsToOrder.filter(col => col.frozenColumnAlign === enumFrozenColumnAlign.Noone);
+    return [...frozenLeftColumns, ...nonFrozenColumns, ...frozenRightColumns];
   }
 
   /**

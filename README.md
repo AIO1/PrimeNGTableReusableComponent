@@ -366,12 +366,13 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
 - **canBeResized:** Default true. If true, it means that the user will have the ability to resize the column.
 - **canBeReordered:** Default true. If true, the user can drag a column and place it in a different order.
 - **canBeSorted:** Default true. If true, the user can press the header of a column to sort the column. If pressed again, the sort order will be inverted. The user has te ability to perform a multisort holding down "CTRL" key and the clicking in all the columns that he wants to sort by.
-- **canBeFiltered:** Default true. If true, in the frontend, the user will see a filter icon in the column. When the filter icon is pressed, a menu with different options to filter by will be shown to the user. The menu that is displayed and the available rules will depend in the "dataType" and in "filterUsesPredifinedValues".
+- **canBeFiltered:** Default true. If true, in the frontend, the user will see a filter icon in the column. When the filter icon is pressed, a menu with different options to filter by will be shown to the user. The menu that is displayed and the available rules will depend in the "dataType" and in "filterPredifinedValuesName".
 - **filterPredifinedValuesName:** If "canBeFiltered" is true, it will be used by the frontend to look for the data in an entity with the name provided here. In further sections there is an in depth explanation on how to use this.
 - **canBeGlobalFiltered:** Indicates if the column is affected by the glboal filter. The "boolean" data type can't be globally filtered. By default, all the other types of columns are affected by the global filter.
 - **SendColumnAttributes:** By default true. This value should be set to false for columns that you wish to send to the frontend, but you do not wish the user to be able to see them. These columns are not affected by the filter and need to be explicilty declared in a function to be sent to the web application. It is normally used for fields like the ID. There is a more in depth explanation in further sections on how to use it.
 - **ColumnDescription:** A string that if informed, it will show a "i" icon on the table header and when the user hovers over it, it will show a tooltip that shows the value given here. Useful to describe what the column is about.
 - **DataTooltip:** By default true. When the user hovers an item in the grid, after a brief delay, the data will be shown inside a tooltip. Useful for a cell that contains a long data that can't be shown easily inside the column width.
+- **FrozenColumnAlign:** An enum and by default noone. If noone the column will not be frozen when scrolled horizontally. If value is different from noone, the column will be frozen to the left or right.
 
 From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/TestDTO.cs) that is used to send the data to the frontend.
 ```c#
@@ -382,7 +383,7 @@ public class TestDto {
     [PrimeNGAttribute(sendColumnAttributes: false)]
     public bool canBeDeleted { get; set; }
 
-    [PrimeNGAttribute("Username", dataAlign: EnumDataAlign.Left, canBeHidden: false, columnDescription: "A random username")]
+    [PrimeNGAttribute("Username", dataAlign: EnumDataAlign.Left, canBeHidden: false, columnDescription: "A random username", frozenColumnAlign: EnumFrozenColumnAlign.Left)]
     public string username { get; set; } = null!;
 
     [PrimeNGAttribute("Age", dataType: EnumDataType.Numeric, columnDescription: "The age of the user")]
@@ -519,6 +520,8 @@ This project offers some additional things that you can do with the tables and a
 - **applyingFiltersText** (string): The text that is shown next to the number of records after applying filter rules. The default value is: "Available records after applying filters".
 - **notApplyingFiltersText** (string): The text to be shown next to the number of total records available (not applying filters). The default value is: "Number of available records".
 - **actionColumnName** (string): The column name were the action buttons will appear. Default value is: "Actions".
+- **actionsColumnAligmentRight** (boolean): By default true, it can be changed to false to make the actions column appear in the left part of the table, instead that on the right.
+- **actionsColumnFrozen:** (boolean): By default true. If true, it will freeze the actions column so that if the table is scrolled horizontally, it will remain visible.
 
 
 ### 4.6 Predifined filters
@@ -703,7 +706,7 @@ To do this, it's very simple. In the backend you just have to give the attribute
 
 This script will manage the rest for you. An example would be, in your DTO if you have this (declared "columnDescription"):
 ```c#
-[PrimeNGAttribute("Employment status", filterUsesPredifinedValues: true, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
+[PrimeNGAttribute("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
 public string? employmentStatusName { get; set; }
 ```
 

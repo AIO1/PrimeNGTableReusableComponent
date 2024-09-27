@@ -1,8 +1,32 @@
+<ng-template #actionColumnHeaderTemplate>
+    <th *ngIf="rowActionButtons.length > 0" scope="col" style="text-align: center;"
+        pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+        {{actionColumnName}}
+    </th>
+</ng-template>
+<ng-template #actionColumnTemplate let-rowData="rowData">
+    <td *ngIf="rowActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;"
+        pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+        <ng-container *ngFor="let button of rowActionButtons">
+            <button [disabled]="button.condition ? !button.condition(rowData) : false"
+                    pButton pRipple
+                    [ngClass]="button.color || 'p-button-outlined'"
+                    [icon]="button.icon ? button.icon : ''" 
+                    [label]="button.label ? button.label : ''" 
+                    (click)="button.action && handleButtonsClick(button.action, rowData)" 
+                    size="small" 
+                    class="p-button-sm" 
+                    style="height: 28px; margin-right: 10px;">
+            </button>
+        </ng-container>
+    </td>
+</ng-template>
 <p-table #dt
     [columns]="columnsToShow" [value]="data" dataKey="id" [scrollable]="true" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
     sortMode="multiple"
     [resizableColumns]="true" columnResizeMode="expand"
     [reorderableColumns]="true"
+    scrollDirection="both"
     [lazy]="true" (onLazyLoad)="updateData($event)"
     (onSort)="saveTableState()" (onFilter)="saveTableState()" (onColReorder)="saveTableState()"> <!--(onColResize)="saveTableState($event)"-->
     <ng-template pTemplate="caption"> <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
@@ -51,13 +75,14 @@
     <!-- LOGIC FOR DRAWING TABLE HEADERS -->
     <ng-template pTemplate="header" let-columns> 
         <tr>
-            <th *ngIf="rowActionButtons.length > 0" scope="col" style="text-align: center;">
-                {{actionColumnName}}
-            </th>
+            <ng-container *ngIf="!actionsColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
+            </ng-container>
             <ng-container *ngFor="let col of columns">
                 <th 
                     pResizableColumn [pResizableColumnDisabled]="!col.canBeResized ? true : false"
                     pReorderableColumn [pReorderableColumnDisabled]="!col.canBeReordered ? true : false"
+                    pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                     [pSortableColumn]="col.field" [pSortableColumnDisabled]="!col.canBeSorted ? true : false"
                     style="text-align: center;"
                     [id]="col.field + '-header'" [attr.scope]="'col'">
@@ -117,6 +142,9 @@
                     </div>
                 </th>
             </ng-container>
+            <ng-container *ngIf="actionsColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
+            </ng-container>
         </tr>
     </ng-template>
 
@@ -124,24 +152,15 @@
     <ng-template pTemplate="body" let-rowData let-columns="columns"> 
         <tr>
             <!-- ACTION BUTTONS -->
-            <td *ngIf="rowActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;">
-                <ng-container *ngFor="let button of rowActionButtons">
-                    <button [disabled]="button.condition ? !button.condition(rowData) : false"
-                            pButton pRipple
-                            [ngClass]="button.color || 'p-button-outlined'"
-                            [icon]="button.icon ? button.icon : ''" 
-                            [label]="button.label ? button.label : ''" 
-                            (click)="button.action && handleButtonsClick(button.action, rowData)" 
-                            size="small" 
-                            class="p-button-sm" 
-                            style="height: 28px; margin-right: 10px;">
-                    </button>
-                </ng-container>
-            </td>
+            <ng-container *ngIf="!actionsColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
+            </ng-container>
 
             <!-- REST OF COLUMNS -->
             <ng-container *ngFor="let col of columns">
-                <td [style.text-align]="getDataAlignAsText(col.dataAlign)" [ngSwitch]="col.dataType">
+                <td pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
+                    [style.text-align]="getDataAlignAsText(col.dataAlign)" 
+                    [ngSwitch]="col.dataType">
                     <div *ngIf="rowData[col.field] !== null; else nullContent">
                         <div *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
                             <div class="inline-block vertical-align-middle">
@@ -190,6 +209,9 @@
                          <!-- Content for null cases, by default, don't draw anything -->
                     </ng-template>
                 </td>
+            </ng-container>
+            <ng-container *ngIf="actionsColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
             </ng-container>
         </tr>
     </ng-template>
