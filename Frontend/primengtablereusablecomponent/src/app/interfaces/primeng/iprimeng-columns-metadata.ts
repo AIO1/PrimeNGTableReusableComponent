@@ -28,6 +28,7 @@ export interface IprimengColumnsMetadata {
     filterPredifinedValuesName: string;
     canBeGlobalFiltered: boolean;
     columnDescription: string;
-    dataTooltip: boolean;
+    dataTooltipShow: boolean;
+    dataTooltipCustomColumnSource: string;
     frozenColumnAlign: enumFrozenColumnAlign;
 }

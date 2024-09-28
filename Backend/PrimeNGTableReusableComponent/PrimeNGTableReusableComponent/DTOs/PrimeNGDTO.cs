@@ -195,7 +195,9 @@ namespace PrimeNG.DTOs {
 
         public string ColumnDescription { get; set; } = null!;
 
-        public bool DataTooltip { get; set; }
+        public bool DataTooltipShow { get; set; }
+
+        public string DataTooltipCustomColumnSource { get; set; } = null!;
 
         public EnumFrozenColumnAlign FrozenColumnAlign { get; set; }
     }

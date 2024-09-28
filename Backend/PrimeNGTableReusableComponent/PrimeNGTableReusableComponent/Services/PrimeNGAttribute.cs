@@ -33,7 +33,8 @@
         public bool CanBeGlobalFiltered { get; }
         public bool SendColumnAttributes { get; }
         public string ColumnDescription { get; }
-        public bool DataTooltip { get; }
+        public bool DataTooltipShow { get; }
+        public string DataTooltipCustomColumnSource { get; }
         public EnumFrozenColumnAlign FrozenColumnAlign { get; }
 
         /// <summary>
@@ -52,7 +53,8 @@
         /// <param name="canBeGlobalFiltered">If <c>true</c>, the data can be globally filtered.</param>
         /// <param name="sendColumnAttributes">If <c>true</c>, the column attirbutes will be sent. If <c>false</c> column attributes won't be sent and has to be explicitly declared in PerformDynamicQuery to be sent</param>
         /// <param name="columnDescription">If informed, the column will have an additional icon with a description.</param>
-        /// <param name="dataTooltip">If <c>true</c>, data in a row when mouse hovers can be shown as tooltip. Useful for long data in a row</param>
+        /// <param name="dataTooltipShow">If <c>true</c>, data in a row when mouse hovers can be shown as tooltip. Useful for long data in a row</param>
+        /// <param name="dataTooltipCustomColumnSource">A string that ig given a value, the tooltip will fetch the value from a column name that matches the provided value</param>
         /// <param name="frozenColumnAlign">An enum that indicates if the column is frozen and were it is aligned</param>
 
         /// <exception cref="ArgumentException">
@@ -72,7 +74,8 @@
             bool canBeGlobalFiltered = true,
             bool sendColumnAttributes = true,
             string columnDescription = "",
-            bool dataTooltip = true,
+            bool dataTooltipShow = true,
+            string dataTooltipCustomColumnSource = "",
             EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone
         ) {
             Header = header;
@@ -88,7 +91,8 @@
             CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != EnumDataType.Boolean;
             SendColumnAttributes = sendColumnAttributes;
             ColumnDescription = columnDescription;
-            DataTooltip = dataTooltip;
+            DataTooltipShow = dataTooltipShow;
+            DataTooltipCustomColumnSource = dataTooltipCustomColumnSource;
             FrozenColumnAlign = frozenColumnAlign;
         }
     }
