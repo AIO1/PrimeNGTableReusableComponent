@@ -36,6 +36,8 @@
         public bool DataTooltipShow { get; }
         public string DataTooltipCustomColumnSource { get; }
         public EnumFrozenColumnAlign FrozenColumnAlign { get; }
+        public bool WrapIsActive { get; }
+        public bool WrapAllowUserEdit { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrimeNGAttribute"/> class.
@@ -56,6 +58,8 @@
         /// <param name="dataTooltipShow">If <c>true</c>, data in a row when mouse hovers can be shown as tooltip. Useful for long data in a row</param>
         /// <param name="dataTooltipCustomColumnSource">A string that ig given a value, the tooltip will fetch the value from a column name that matches the provided value</param>
         /// <param name="frozenColumnAlign">An enum that indicates if the column is frozen and were it is aligned</param>
+        /// <param name="wrapIsActive">By default false. If true, the text in the column will be wraped in the frontend.</param>
+        /// <param name="wrapAllowUserEdit">By default true. If true, the user can enable or disable word wrap in the frontend.</param>
 
         /// <exception cref="ArgumentException">
         /// Thrown if an invalid dataAlign or dataType value is provided.
@@ -76,7 +80,9 @@
             string columnDescription = "",
             bool dataTooltipShow = true,
             string dataTooltipCustomColumnSource = "",
-            EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone
+            EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone,
+            bool wrapIsActive = false,
+            bool wrapAllowUserEdit = true
         ) {
             Header = header;
             DataType = dataType;
@@ -94,6 +100,8 @@
             DataTooltipShow = dataTooltipShow;
             DataTooltipCustomColumnSource = dataTooltipCustomColumnSource;
             FrozenColumnAlign = frozenColumnAlign;
+            WrapIsActive = wrapIsActive;
+            WrapAllowUserEdit = wrapAllowUserEdit;
         }
     }
 }

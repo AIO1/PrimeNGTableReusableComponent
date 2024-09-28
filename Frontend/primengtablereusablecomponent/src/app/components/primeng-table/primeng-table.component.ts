@@ -453,7 +453,9 @@ export class PrimengTableComponent {
           field: column.field,
           header: column.header,
           selected: isSelected,
-          selectDisabled: isSelectDisabled
+          selectDisabled: isSelectDisabled,
+          wrapIsActive: column.wrapIsActive,
+          wrapDisabled: !column.wrapAllowUserEdit || column.dataType === enumDataType.Boolean
       };
     });
     tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
@@ -495,6 +497,20 @@ export class PrimengTableComponent {
     this.columnsSelected = this.columnsToShow.filter(column => 
       !this.columnsNonSelectable.some(nonSelectable => nonSelectable.field === column.field)
     ); // Update selected columns
+
+    //PERFORM UPDATES OF THE TEXT WRAP
+    const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
+    const columnModalDataMap = new Map(this.columnModalData.map((item: any) => [item.field, item.wrapIsActive]));
+    const updatedFields = new Set(); // To track updated fields
+    allColumns.forEach((columnList) => {
+        columnList.forEach((col: any) => {
+            if (columnModalDataMap.has(col.field) && !updatedFields.has(col.field)) {
+                col.wrapIsActive = columnModalDataMap.get(col.field);
+                updatedFields.add(col.field);
+            }
+        });
+    });
+
     this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
     this.columnModalShow=false;
   }

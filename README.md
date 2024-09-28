@@ -378,6 +378,8 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
 - **dataTooltipShow:** By default true. When the user hovers an item in the grid, after a brief delay, the data will be shown inside a tooltip. Useful for a cell that contains a long data that can't be shown easily inside the column width.
 - **dataTooltipCustomColumnSource:** By default empty string. If a name of a column of the DTO is provided (case sensitive), and DataTooltipShow is true, the tooltip message will read from the DataTooltipCustomColumnSource column that is referenced.
 - **frozenColumnAlign:** An enum and by default noone. If noone the column will not be frozen when scrolled horizontally. If value is different from noone, the column will be frozen to the left or right.
+- **wrapIsActive:** By default false. If true, the text in the column will be wraped in the frontend.
+- **wrapAllowUserEdit:** By default true. If true, the user can enable or disable word wrap in the frontend.
 
 From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/TestDTO.cs) that is used to send the data to the frontend.
 ```c#

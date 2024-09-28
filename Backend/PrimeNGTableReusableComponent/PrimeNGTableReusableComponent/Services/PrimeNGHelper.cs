@@ -64,7 +64,9 @@ namespace PrimeNG.HelperFunctions {
                         ColumnDescription = primeNGAttributes.ColumnDescription,
                         DataTooltipShow = primeNGAttributes.DataTooltipShow,
                         DataTooltipCustomColumnSource = primeNGAttributes.DataTooltipCustomColumnSource,
-                        FrozenColumnAlign = primeNGAttributes.FrozenColumnAlign
+                        FrozenColumnAlign = primeNGAttributes.FrozenColumnAlign,
+                        WrapIsActive = primeNGAttributes.WrapIsActive,
+                        WrapAllowUserEdit = primeNGAttributes.WrapAllowUserEdit
                     });
                 }
             }

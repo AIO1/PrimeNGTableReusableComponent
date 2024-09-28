@@ -17,7 +17,7 @@
         </th>
     </ng-template>
     <ng-template #actionColumnTemplate let-rowData="rowData">
-        <td *ngIf="rowActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;"
+        <td *ngIf="rowActionButtons.length > 0" style="text-align: center; vertical-align: middle;"
             pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
             <ng-container *ngFor="let button of rowActionButtons">
                 <button [disabled]="button.condition ? !button.condition(rowData) : false"
@@ -162,7 +162,9 @@
 
             <!-- REST OF COLUMNS -->
             <ng-container *ngFor="let col of columns">
-                <td pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
+                <td 
+                    [ngStyle]="col.wrapIsActive ? {'white-space': 'normal', 'word-wrap': 'break-word', 'word-break': 'break-all'} : {}"
+                    pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                     [style.text-align]="getDataAlignAsText(col.dataAlign)" 
                     [ngSwitch]="col.dataType">
                     <div *ngIf="rowData[col.field] !== null; else nullContent">
@@ -276,6 +278,7 @@
                 <tr>
                     <th pFrozenColumn alignFrozen="left" style="text-align: center;">Show column</th>
                     <th pFrozenColumn alignFrozen="left" style="text-align: center;">Column name</th>
+                    <th style="text-align: center;">Word wrap</th>
                     <!--<th style="text-align: center;">Properties</th>-->
                 </tr>
             </ng-template>
@@ -288,6 +291,12 @@
                             [disabled]="rowData.selectDisabled"/>
                     </td>
                     <td pFrozenColumn alignFrozen="left" >{{rowData.header}}</td>
+                    <td style="text-align: center;">
+                        <p-checkbox 
+                            [(ngModel)]="rowData.wrapIsActive" 
+                            [binary]="true"
+                            [disabled]="rowData.wrapDisabled"/>
+                    </td>
                     <!--<td>
                         <p-inputGroup>
                             <button pButton pRipple icon="pi pi-align-left" (click)="columnModalShow = true" severity="secondary" size="small" 

@@ -200,5 +200,9 @@ namespace PrimeNG.DTOs {
         public string DataTooltipCustomColumnSource { get; set; } = null!;
 
         public EnumFrozenColumnAlign FrozenColumnAlign { get; set; }
+
+        public bool WrapIsActive { get; set; }
+
+        public bool WrapAllowUserEdit { get; set; }
     }
 }

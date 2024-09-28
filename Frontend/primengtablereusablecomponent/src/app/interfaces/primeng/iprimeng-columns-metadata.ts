@@ -31,4 +31,6 @@ export interface IprimengColumnsMetadata {
     dataTooltipShow: boolean;
     dataTooltipCustomColumnSource: string;
     frozenColumnAlign: enumFrozenColumnAlign;
+    wrapIsActive: boolean;
+    wrapAllowUserEdit: boolean;
 }
