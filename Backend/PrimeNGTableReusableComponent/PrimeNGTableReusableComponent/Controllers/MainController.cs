@@ -62,7 +62,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
                             payedTaxes = u.PayedTaxes
                         }
                     ).AsNoTracking();
-                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1, ["id", "canBeDeleted"]));
+                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }

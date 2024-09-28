@@ -12,7 +12,7 @@ namespace PrimeNG.HelperFunctions {
 
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
-        public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, string? defaultSortColumnName=null, int defaultSortOrder = 1, List<string>? additionalColumnsToReturn = null) {
+        public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, string? defaultSortColumnName=null, int defaultSortOrder = 1) {
             baseQuery = ApplySorting(baseQuery, inputData.sort, defaultSortColumnName, defaultSortOrder); // Apply the sorting
             long totalRecordsNotFiltered = baseQuery.Count(); // Count all the available records (before applying filters)
             baseQuery = ApplyGlobalFilter(baseQuery, inputData.globalFilter, inputData.columns!, stringDateFormatMethod, inputData.dateFormat, inputData.dateTimezone, inputData.dateCulture); // Apply the global filter
@@ -20,7 +20,7 @@ namespace PrimeNG.HelperFunctions {
             long totalRecords = baseQuery.Count(); // Count all the available records (after applying filters)
             int currentPage = inputData.page; // Get the current page that the user is viewing
             IQueryable<T> pagedItems = PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.pageSize); // Perform the pagination
-            List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.columns!, additionalColumnsToReturn); // Limit the columns that are going to be selected
+            List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.columns!); // Limit the columns that are going to be selected
             return new PrimeNGPostReturn {
                 Page = currentPage,
                 TotalRecords = totalRecords,
@@ -118,8 +118,17 @@ namespace PrimeNG.HelperFunctions {
         /// <param name="query">The original query containing items of type T.</param>
         /// <param name="columns">The list of column names to be included in the selection.</param>
         /// <returns>A list of dynamic objects representing the dynamic selection of properties.</returns>
-        private static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns, List<string>? additionalColumns = null) {
+        private static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns) {
             PropertyInfo[] properties = typeof(T).GetProperties(); // Get properties of the class T
+
+
+            // Filtrar las propiedades que tienen el atributo PrimeNGAttribute con sendColumnAttributes: false
+            List<string> additionalColumns = properties
+                .Where(p => p.GetCustomAttribute<PrimeNGAttribute>()?.SendColumnAttributes == false)
+                .Select(p => p.Name)
+                .ToList();
+
+
             IEnumerable<PropertyInfo> selectedProperties = properties.Where(p => columns.Contains(p.Name) || (additionalColumns != null && additionalColumns.Contains(p.Name))); // Filter only the properties that are in the list of columns
             string select = string.Join(", ", selectedProperties.Select(p => p.Name)); // Build the SELECT part of the dynamic query
             return query.Select($"new ({select})").ToDynamicList(); // Build and execute the dynamic query, return the result
