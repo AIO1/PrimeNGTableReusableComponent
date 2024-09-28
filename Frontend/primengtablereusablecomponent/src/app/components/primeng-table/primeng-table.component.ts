@@ -41,8 +41,6 @@ export class PrimengTableComponent {
   @Input() predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
   @Input() predifinedFiltersNoSelectionPlaceholder: string = "Any value"; // A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters
   @Input() predifinedFiltersCollectionSelectedValuesText: string = "items selected"; // A text to display in the predifined filters dropdown footer indicating the number of items that have been selected
-  @Input() selectedColumnsDropdownPlaceholder: string = "Select columns to show"; // A placeholder to show when no columns have been selected to be shown
-  @Input() selectedColumnsDropdownSelectedPlaceholder: string = "selected columns"; // The text to be shown when a group of columns that doesn't fit the dropdown has been selected
   @Input() noDataFoundText: string = "No data found for the current filter criteria."; // The text to be shown when no data has been returned
   @Input() showingRecordsText: string = "Showing records"; // The text that must be displayed as part of "Showing records"
   @Input() applyingFiltersText: string = "Available records after applying filters"; // The text that is shown next to the number of records after applying filter rules
@@ -53,6 +51,7 @@ export class PrimengTableComponent {
   @Input() actionsColumnResizable: boolean = false; // If the action column can be resized by the user
 
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
+  @ViewChild('dt_columnDialog') dt_columnDialog!: Table;
 
   enumDataType = enumDataType;
   enumDataAlign = enumDataAlign;
@@ -107,15 +106,18 @@ export class PrimengTableComponent {
   
   private columnsFetched: boolean = false; // Used to indicate if the columns data has at least been obtained once
   private columns: IprimengColumnsMetadata[] = []; // All the columns with all their data (not segmented into selectable and non-selectable)
-  columnsSelectable: IprimengColumnsMetadata[] = []; // Columns which can be selected to be displayed or not by the user
-  columnsSelected: IprimengColumnsMetadata[] = []; // The columns (from the selectables) which are currently selected by the user
+  private columnsSelected: IprimengColumnsMetadata[] = []; // The columns (from the selectables) which are currently selected by the user
   private columnsNonSelectable: IprimengColumnsMetadata[] = []; // Columns which are always displayed
   columnsToShow: IprimengColumnsMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
+  columnModalShow: boolean = false; // If the column modal window must be shown
 
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
 
   tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
   data: any[] = []; // The array of data to be displayed
+
+  columnModalData: any[] = []; // The array of data that is used to display the information about the columns
+  filteredColumnData: any[] = []; // The array of data that shows the columns that are currently being shown in the columns modal (to count to show the filters)
 
   /**
    * Updates the filters of a PrimeNG data table based on predefined filter changes.
@@ -275,15 +277,9 @@ export class PrimengTableComponent {
             this.allowedRowsPerPage = responseData.allowedItemsPerPage; // Update the number of rows allowed per page
             this.currentRowsPerPage = Math.min(...this.allowedRowsPerPage); // Update the current rows per page to use the minimum value of allowed rows per page by default
             this.columns = responseData.columnsInfo; // Update columns with fetched data
-            this.columnsSelectable = this.columns.filter((col: any) => col.canBeHidden); // Filter columns that can be hidden
             this.columnsNonSelectable = this.columns.filter((col: any) => !col.canBeHidden); // Filter columns that cannot be hidden
-            this.columnsSelected = this.columnsSelectable.filter((col: any) => !col.startHidden); // Select columns that are not hidden by default
+            this.columnsSelected = this.columns.filter((col: any) => !col.startHidden && col.canBeHidden); // Selected columns that are not hidden by default
             this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
-            this.columnsSelectable = this.columnsSelectable.slice().sort((a: any, b: any) => { // Sort selectable columns by header
-                const fieldA = a.header.toUpperCase();
-                const fieldB = b.header.toUpperCase();
-                return fieldA.localeCompare(fieldB);
-            });
             this.dateFormat = responseData.dateFormat;
             this.dateTimezone = responseData.dateTimezone;
             this.dateCulture = responseData.dateCulture;
@@ -310,30 +306,6 @@ export class PrimengTableComponent {
   }
   resetTableState(){
     this.getColumns(this.clearSortsAndFilters(this.dt,true)!,false);
-  }
-
-  /**
-   * Handles the change of selected columns in the table, keeping the order of the columns that were already present, and adding the new ones at the end.
-   */
-  columnsChanged(): void {
-    const existingColumns = this.dt.columns!; // Get the currently selected columns (will be used to determine the final order)
-    const columnsToKeep = new Set<string>(); // Used to track all the columns that must be kept
-    this.columnsNonSelectable.concat(this.columnsSelected).forEach(column => {
-        columnsToKeep.add(column.field);
-    }); // Add columns from this.columnsNonSelectable.concat(this.columnsSelected) to columnsToKeep
-    const finalColumns: IprimengColumnsMetadata[] = []; // Used to store the final result of columns (ordered)
-    existingColumns.forEach(column => {
-        if (columnsToKeep.has(column.field)) {
-            finalColumns.push(column);
-        }
-    }); // Filter the existing columns to only keep those ones that are in columnsToKeep
-    this.columnsNonSelectable.concat(this.columnsSelected).forEach(column => {
-        if (!finalColumns.find(c => c.field === column.field)) {
-            finalColumns.push(column);
-        }
-    }); // Add the new columns that are in columnsToKeep but not in finalColumns
-    this.columnsToShow= this.orderColumnsWithFrozens(finalColumns);
-    this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
   }
   
   /**
@@ -471,6 +443,74 @@ export class PrimengTableComponent {
     this.currentRowsPerPage = event.rows!; // Update the number of rows per page
     this.saveTableState();
     this.updateData(this.tableLazyLoadEventInformation); // Force the data to be updated
+  }
+
+  showColumnModal(){
+    let tempData = this.columns.map(column => {
+      const isSelected = this.columnsSelected.some(selectedColumn => selectedColumn.field === column.field) || this.columnsNonSelectable.some(selectedColumn => selectedColumn.field === column.field);
+      const isSelectDisabled =  this.columnsNonSelectable.some(selectedColumn => selectedColumn.field === column.field);
+      return {
+          field: column.field,
+          header: column.header,
+          selected: isSelected,
+          selectDisabled: isSelectDisabled
+      };
+    });
+    tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
+                const fieldA = a.header.toUpperCase();
+                const fieldB = b.header.toUpperCase();
+                return fieldA.localeCompare(fieldB);
+            });
+    this.columnModalData = [...tempData];
+    this.filteredColumnData = this.columnModalData;
+    this.columnModalShow=true;
+  }
+
+  applyColumnModalChanges(){
+    const existingColumns = this.dt.columns!; 
+    const columnsToKeep = new Set<string>();
+    this.columnsNonSelectable.forEach(column => {
+      columnsToKeep.add(column.field);
+    });
+    this.columnModalData.forEach(column => {
+      if(column.selected && !column.selectDisabled){
+        columnsToKeep.add(column.field);
+      }
+    });
+    const finalColumns: IprimengColumnsMetadata[] = []; // Used to store the final result of columns (ordered)
+    existingColumns.forEach(column => {
+      if (columnsToKeep.has(column.field)) {
+          finalColumns.push(column);
+      }
+    }); // Filter the existing columns to only keep those ones that are in columnsToKeep
+    this.columnModalData.forEach(column => {
+      if (column.selected && !column.selectDisabled) {
+          const matchingColumn = this.columns.find(c => c.field === column.field);
+          if (matchingColumn && !finalColumns.find(c => c.field === matchingColumn.field)) {
+              finalColumns.push(matchingColumn);
+          }
+      }
+    });
+    this.columnsToShow=this.orderColumnsWithFrozens(finalColumns); // Order the columns that must be shown
+    this.columnsSelected = this.columnsToShow.filter(column => 
+      !this.columnsNonSelectable.some(nonSelectable => nonSelectable.field === column.field)
+    ); // Update selected columns
+    this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
+    this.columnModalShow=false;
+  }
+
+  filterColumnModal(event: any) {
+    let filterValue = event.target.value;
+    this.dt_columnDialog.filterGlobal(filterValue, 'contains');
+  }
+
+  onColumnModalFilter(event: any) {
+    const filterValue = event.filters && event.filters.global 
+        ? event.filters.global.value.toLowerCase() 
+        : ''; 
+    this.filteredColumnData = this.columnModalData.filter(column => 
+        column.header.toLowerCase().includes(filterValue)
+    );
   }
 
   /**

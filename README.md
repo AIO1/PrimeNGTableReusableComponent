@@ -292,6 +292,8 @@ This section describes step by step what you need to implement the PrimeNG Table
       import { TagModule } from 'primeng/tag';
       import { RippleModule } from 'primeng/ripple';
       import { TooltipModule } from 'primeng/tooltip';
+	  import { InputGroupModule } from 'primeng/inputgroup';
+	  import { CheckboxModule } from 'primeng/checkbox';
       import { DatePipe, registerLocaleData } from '@angular/common';
       
       import es from '@angular/common/locales/es'; // Needed for scenarios were you would like to manage different locales from "en", like "es-ES"
@@ -311,7 +313,9 @@ This section describes step by step what you need to implement the PrimeNG Table
         PaginatorModule,
         TagModule,
         RippleModule,
-        TooltipModule
+        TooltipModule,
+		InputGroupModule,
+		CheckboxModule
       ]
       ```
     - In the "@NgModule" providers, you will need to add the following:
@@ -513,8 +517,6 @@ This project offers some additional things that you can do with the tables and a
 - **predifinedFiltersCollection** ({ [key: string]: IPrimengPredifinedFilter[] }): Contains a collection of the values that need to be shown for predifined column filters. Explained in later chapters how to use it.
 - **predifinedFiltersNoSelectionPlaceholder** (string): A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters. Default value is: "Any value".
 - **predifinedFiltersCollectionSelectedValuesText** (string): A text to display in the predifined filters dropdown footer indicating the number of items that have been selected. Default value is: "items selected".
-- **selectedColumnsDropdownPlaceholder** (string): A placeholder to show when no columns have been selected to be shown. Default value is: "Select columns to show".
-- **selectedColumnsDropdownPlaceholder** (string): The text to be shown when a group of columns that doesn't fit the dropdown has been selected. Default value is: "selected columns".
 - **noDataFoundText** (string): The text to be shown when no data has been returned. Default value is: "No data found for the current filter criteria.".
 - **showingRecordsText** (string): The text that must be displayed as part of "Showing records". The default value is: "Showing records".
 - **applyingFiltersText** (string): The text that is shown next to the number of records after applying filter rules. The default value is: "Available records after applying filters".

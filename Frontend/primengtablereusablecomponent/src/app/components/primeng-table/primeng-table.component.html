@@ -6,6 +6,7 @@
     scrollDirection="both"
     [lazy]="true" (onLazyLoad)="updateData($event)"
     (onSort)="saveTableState()" (onFilter)="saveTableState()" (onColReorder)="saveTableState()"> <!--(onColResize)="saveTableState($event)"-->
+    
     <ng-template #actionColumnHeaderTemplate>
         <th *ngIf="rowActionButtons.length > 0" 
             pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable"
@@ -33,15 +34,12 @@
         </td>
     </ng-template>
     
-    
-    
     <ng-template pTemplate="caption"> <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--CHOOSE COLUMNS TO SHOW-->
-                <p-multiSelect [options]="columnsSelectable" [(ngModel)]="columnsSelected" optionLabel="header"
-                    [selectedItemsLabel]="'{0} ' + selectedColumnsDropdownSelectedPlaceholder" [style]="{width: '220px'}" [placeholder]="selectedColumnsDropdownPlaceholder" [showToggleAll]=true (onChange)="columnsChanged()"></p-multiSelect>
-                
+                <button pButton pRipple icon="pi pi-objects-column" (click)="showColumnModal()"></button>
+
                 <!--CLEAR SORTS AND FILTERS-->
                 <button pButton pRipple (click)="clearSortsAndFilters(dt)" style="height: 50px;" [disabled]="!hasToClearSortsAndFilters(dt, globalSearchText)">
                     <i class="pi pi-sort-alt-slash" style="margin-right: 8px;"></i>
@@ -237,3 +235,77 @@
             <div>{{applyingFiltersText}}: {{totalRecords}}</div>
     </ng-template>
 </p-table>
+
+<!--COLUMN MODAL DIALOG-->
+<p-dialog [(visible)]="columnModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
+    <ng-template pTemplate="header">
+        <div class="inline-flex align-items-center justify-content-center gap-2">
+            <span class="white-space-nowrap"><b>MODIFY COLUMNS</b></span>
+        </div>
+    </ng-template>
+    <div style="padding: 20px;">
+        <p-table #dt_columnDialog [value]="columnModalData" [scrollable]="true"
+            responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+            scrollDirection="both" [globalFilterFields]="['header']" scrollHeight="400px" [tableStyle]="{'min-width': '25rem'}"
+            (onFilter)="onColumnModalFilter($event)">
+            <ng-template pTemplate="caption">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;"></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input type="text" pInputText placeholder="Search" (input)="filterColumnModal($event)" placeholder="Search column name"/>
+                        </span>
+                    </div>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pFrozenColumn alignFrozen="left" style="text-align: center;">Show column</th>
+                    <th pFrozenColumn alignFrozen="left" style="text-align: center;">Column name</th>
+                    <!--<th style="text-align: center;">Properties</th>-->
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowData>
+                <tr>
+                    <td pFrozenColumn alignFrozen="left" style="text-align: center;">
+                        <p-checkbox 
+                            [(ngModel)]="rowData.selected" 
+                            [binary]="true"
+                            [disabled]="rowData.selectDisabled"/>
+                    </td>
+                    <td pFrozenColumn alignFrozen="left" >{{rowData.header}}</td>
+                    <!--<td>
+                        <p-inputGroup>
+                            <button pButton pRipple icon="pi pi-align-left" (click)="columnModalShow = true" severity="secondary" size="small" 
+                            class="p-button-sm" 
+                            style="height: 28px;"></button>
+                            <button pButton pRipple icon="pi pi-align-center" (click)="columnModalShow = true" severity="secondary" size="small" 
+                            class="p-button-sm" 
+                            style="height: 28px;"></button>
+                            <button pButton pRipple icon="pi pi-align-right" (click)="columnModalShow = true" severity="secondary" size="small" 
+                            class="p-button-sm" 
+                            style="height: 28px;"></button>
+                            <button pButton pRipple icon="pi pi-align-justify" (click)="columnModalShow = true" size="small" 
+                            class="p-button-sm" 
+                            style="height: 28px;"></button>
+                        </p-inputGroup>
+                    </td>-->
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="999">There are no columns</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary"> 
+                <div>In total there are {{columnModalData ? columnModalData.length : 0}} columns</div>
+                <div>Applying filters there are {{filteredColumnData ? filteredColumnData.length : 0}} columns</div>
+            </ng-template>
+        </p-table>
+    </div>
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="columnModalShow = false" label="Cancel changes" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="applyColumnModalChanges()" label="Save changes" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+    </ng-template>
+</p-dialog>
