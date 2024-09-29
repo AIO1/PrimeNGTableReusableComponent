@@ -158,6 +158,10 @@ namespace PrimeNG.DTOs {
 
         public bool DataAlignHorizontalAllowUserEdit { get; set; }
 
+        public EnumDataAlignVertical DataAlignVertical { get; set; }
+
+        public bool DataAlignVerticalAllowUserEdit { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether the column can be hidden.
         /// </summary>

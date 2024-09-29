@@ -194,7 +194,8 @@
                 <td 
                     [ngStyle]="col.wrapIsActive ? {'white-space': 'normal', 'word-wrap': 'break-word', 'word-break': 'break-all'} : {}"
                     pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
-                    [style.text-align]="getDataAlignAsText(col.dataAlignHorizontal)" 
+                    [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" 
+                    [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)"
                     [ngSwitch]="col.dataType">
                     <div *ngIf="rowData[col.field] !== null; else nullContent">
                         <div *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
@@ -312,6 +313,7 @@
                     <th pFrozenColumn alignFrozen="left" style="text-align: center;">Column name</th>
                     <th style="text-align: center;">Word wrap</th>
                     <th style="text-align: center;">Horizontal aligment</th>
+                    <th style="text-align: center;">Vertical aligment</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-rowData>
@@ -333,17 +335,36 @@
                         <p-inputGroup>
                             <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-left" 
                                 [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Left}" 
-                                (click)="setAlignment(rowData, enumDataAlignHorizontal.Left)" 
+                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Left)" 
                                 style="height: 28px;">
                             </button>
                             <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-center" 
                                 [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Center}" 
-                                (click)="setAlignment(rowData, enumDataAlignHorizontal.Center)" 
+                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Center)" 
                                 style="height: 28px;">
                             </button>
                             <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-right" 
                                 [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Right}" 
-                                (click)="setAlignment(rowData, enumDataAlignHorizontal.Right)" 
+                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Right)" 
+                                style="height: 28px;">
+                            </button>
+                        </p-inputGroup>
+                    </td>
+                    <td>
+                        <p-inputGroup>
+                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-angle-up" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Top}" 
+                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Top)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-align-justify" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Middle}" 
+                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Middle)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-angle-down" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Bottom}" 
+                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Bottom)" 
                                 style="height: 28px;">
                             </button>
                         </p-inputGroup>

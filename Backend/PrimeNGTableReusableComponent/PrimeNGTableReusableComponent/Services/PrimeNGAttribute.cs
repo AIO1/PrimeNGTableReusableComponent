@@ -10,6 +10,11 @@
         Center,
         Right
     }
+    public enum EnumDataAlignVertical {
+        Top,
+        Middle,
+        Bottom
+    }
     public enum EnumFrozenColumnAlign {
         Noone,
         Left,
@@ -24,6 +29,8 @@
         public EnumDataType DataType { get; }
         public EnumDataAlignHorizontal DataAlignHorizontal { get; }
         public bool DataAlignHorizontalAllowUserEdit { get; }
+        public EnumDataAlignVertical DataAlignVertical { get; }
+        public bool DataAlignVerticalAllowUserEdit { get; }
         public bool CanBeHidden { get; }
         public bool StartHidden { get; }
         public bool CanBeResized { get; }
@@ -47,6 +54,8 @@
         /// <param name="dataType">The data type that will be used for the filter ("text" by default).</param>
         /// <param name="dataAlignHorizontal">The data horizontal alignment for the column ("center" by default).</param>
         /// <param name="dataAlignHorizontalAllowUserEdit">By default true. If true, the user may modify the horizontal aligment.</param>
+        /// <param name="dataAlignVertical">The data vertical alignment for the column ("middle" by default).</param>
+        /// <param name="dataAlignVerticalAllowUserEdit">By default true. If true, the user may modify the vertical aligment.</param>
         /// <param name="canBeHidden">If <c>true</c>, the column can be hidden.</param>
         /// <param name="startHidden">If <c>true</c>, the column starts hidden (if it can be hidden).</param>
         /// <param name="canBeResized">If <c>true</c>, the column can be resized.</param>
@@ -71,6 +80,8 @@
             EnumDataType dataType = EnumDataType.Text,
             EnumDataAlignHorizontal dataAlignHorizontal = EnumDataAlignHorizontal.Center,
             bool dataAlignHorizontalAllowUserEdit = true,
+            EnumDataAlignVertical dataAlignVertical = EnumDataAlignVertical.Middle,
+            bool dataAlignVerticalAllowUserEdit = true,
             bool canBeHidden = true,
             bool startHidden = false,
             bool canBeResized = true,
@@ -91,6 +102,8 @@
             DataType = dataType;
             DataAlignHorizontal = dataAlignHorizontal;
             DataAlignHorizontalAllowUserEdit = dataAlignHorizontalAllowUserEdit;
+            DataAlignVertical = dataAlignVertical;
+            DataAlignVerticalAllowUserEdit = dataAlignVerticalAllowUserEdit;
             CanBeHidden = canBeHidden;
             StartHidden = startHidden && canBeHidden;
             CanBeResized = canBeResized;

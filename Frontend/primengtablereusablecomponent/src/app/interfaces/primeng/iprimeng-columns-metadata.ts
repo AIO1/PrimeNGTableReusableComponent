@@ -9,6 +9,11 @@ export enum enumDataAlignHorizontal {
     Center,
     Right
 }
+export enum enumDataAlignVertical {
+    Top,
+    Middle,
+    Bottom
+}
 export enum enumFrozenColumnAlign {
     Noone,
     Left,
@@ -20,6 +25,8 @@ export interface IprimengColumnsMetadata {
     dataType: enumDataType;
     dataAlignHorizontal: enumDataAlignHorizontal;
     dataAlignHorizontalAllowUserEdit: boolean;
+    dataAlignVertical: enumDataAlignVertical;
+    dataAlignVerticalAllowUserEdit: boolean;
     canBeHidden: boolean;
     startHidden: boolean;
     canBeResized: boolean;

@@ -54,6 +54,8 @@ namespace PrimeNG.HelperFunctions {
                         DataType = primeNGAttributes.DataType,
                         DataAlignHorizontal = primeNGAttributes.DataAlignHorizontal,
                         DataAlignHorizontalAllowUserEdit = primeNGAttributes.DataAlignHorizontalAllowUserEdit,
+                        DataAlignVertical = primeNGAttributes.DataAlignVertical,
+                        DataAlignVerticalAllowUserEdit = primeNGAttributes.DataAlignVerticalAllowUserEdit,
                         CanBeHidden = primeNGAttributes.CanBeHidden,
                         StartHidden = primeNGAttributes.StartHidden,
                         CanBeResized = primeNGAttributes.CanBeResized,

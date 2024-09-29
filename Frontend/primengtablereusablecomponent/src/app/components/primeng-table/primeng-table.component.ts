@@ -7,7 +7,7 @@ import { SharedService } from '../../services/shared/shared.service';
 import { PrimengSharedService } from '../../services/shared/primengShared.service';
 
 // Import interfaces
-import { enumDataAlignHorizontal, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
+import { enumDataAlignHorizontal, enumDataAlignVertical, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
 import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
@@ -60,6 +60,7 @@ export class PrimengTableComponent {
 
   enumDataType = enumDataType;
   enumDataAlignHorizontal = enumDataAlignHorizontal;
+  enumDataAlignVertical = enumDataAlignVertical;
   enumFrozenColumnAlign = enumFrozenColumnAlign;
   getDataTypeAsText(dataType: enumDataType): string {
     switch (dataType) {
@@ -75,7 +76,7 @@ export class PrimengTableComponent {
         return 'text';
     }
   }
-  getDataAlignAsText(dataAlignHorizontal: enumDataAlignHorizontal): string {
+  getDataAlignHorizontalAsText(dataAlignHorizontal: enumDataAlignHorizontal): string {
     switch (dataAlignHorizontal) {
       case enumDataAlignHorizontal.Left:
         return 'left';
@@ -84,7 +85,19 @@ export class PrimengTableComponent {
       case enumDataAlignHorizontal.Right:
         return 'right';
       default:
-        return 'left';
+        return 'center';
+    }
+  }
+  getDataAlignVerticalAsText(dataAlignVertical: enumDataAlignVertical): string {
+    switch (dataAlignVertical) {
+      case enumDataAlignVertical.Top:
+        return 'top';
+      case enumDataAlignVertical.Middle:
+        return 'middle';
+      case enumDataAlignVertical.Bottom:
+        return 'bottom';
+      default:
+        return 'middle';
     }
   }
   getFrozenColumnAlignAsText(frozenColumnAlign: enumFrozenColumnAlign): string {
@@ -479,7 +492,9 @@ export class PrimengTableComponent {
           wrapIsActive: column.wrapIsActive,
           wrapDisabled: !column.wrapAllowUserEdit || column.dataType === enumDataType.Boolean,
           dataAlignHorizontal: column.dataAlignHorizontal,
-          dataAlignHorizontalDisabled: !column.dataAlignHorizontalAllowUserEdit
+          dataAlignHorizontalDisabled: !column.dataAlignHorizontalAllowUserEdit,
+          dataAlignVertical: column.dataAlignVertical,
+          dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit
       };
     });
     tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
@@ -491,8 +506,13 @@ export class PrimengTableComponent {
     this.filteredColumnData = this.columnModalData;
     this.columnModalShow=true;
   }
-  setAlignment(rowData: any, alignment: enumDataAlignHorizontal) {
-    rowData.dataAlignHorizontal = alignment; // Actualiza la alineación en la columna
+
+  setHorizontalAlignment(rowData: any, alignment: enumDataAlignHorizontal) {
+    rowData.dataAlignHorizontal = alignment;
+  }
+
+  setVerticalAlignment(rowData: any, alignment: enumDataAlignVertical) {
+    rowData.dataAlignVertical = alignment;
   }
 
   applyColumnModalChanges(){
@@ -529,7 +549,8 @@ export class PrimengTableComponent {
     const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
     const columnModalDataMap = new Map(this.columnModalData.map((item: any) => [item.field, { 
         wrapIsActive: item.wrapIsActive, 
-        dataAlignHorizontal: item.dataAlignHorizontal
+        dataAlignHorizontal: item.dataAlignHorizontal,
+        dataAlignVertical: item.dataAlignVertical
     }]));
     const updatedFields = new Set(); // To track updated fields
     allColumns.forEach((columnList) => {
@@ -539,6 +560,7 @@ export class PrimengTableComponent {
                 if (columnData) {
                     col.wrapIsActive = columnData.wrapIsActive;
                     col.dataAlignHorizontal = columnData.dataAlignHorizontal;
+                    col.dataAlignVertical = columnData.dataAlignVertical;
                     updatedFields.add(col.field);
                 }
             }
