@@ -159,11 +159,6 @@
                                                     <span *ngIf="option.displayName === true" class="ml-1 mt-1">{{ option.name }}</span>
                                                 </div>
                                             </ng-template>
-                                            <ng-template pTemplate="footer">
-                                                <div class="py-2 px-3">
-                                                    {{predifinedFiltersSelectedValuesText(col.filterPredifinedValuesName)}}
-                                                </div>
-                                            </ng-template>
                                         </p-multiSelect>
                                     </ng-template>
                                 </p-columnFilter>
@@ -199,7 +194,7 @@
                 <td 
                     [ngStyle]="col.wrapIsActive ? {'white-space': 'normal', 'word-wrap': 'break-word', 'word-break': 'break-all'} : {}"
                     pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
-                    [style.text-align]="getDataAlignAsText(col.dataAlign)" 
+                    [style.text-align]="getDataAlignAsText(col.dataAlignHorizontal)" 
                     [ngSwitch]="col.dataType">
                     <div *ngIf="rowData[col.field] !== null; else nullContent">
                         <div *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
@@ -316,7 +311,7 @@
                     <th pFrozenColumn alignFrozen="left" style="text-align: center;">Show column</th>
                     <th pFrozenColumn alignFrozen="left" style="text-align: center;">Column name</th>
                     <th style="text-align: center;">Word wrap</th>
-                    <!--<th style="text-align: center;">Properties</th>-->
+                    <th style="text-align: center;">Horizontal aligment</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-rowData>
@@ -334,22 +329,25 @@
                             [binary]="true"
                             [disabled]="rowData.wrapDisabled"/>
                     </td>
-                    <!--<td>
+                    <td>
                         <p-inputGroup>
-                            <button pButton pRipple icon="pi pi-align-left" (click)="columnModalShow = true" severity="secondary" size="small" 
-                            class="p-button-sm" 
-                            style="height: 28px;"></button>
-                            <button pButton pRipple icon="pi pi-align-center" (click)="columnModalShow = true" severity="secondary" size="small" 
-                            class="p-button-sm" 
-                            style="height: 28px;"></button>
-                            <button pButton pRipple icon="pi pi-align-right" (click)="columnModalShow = true" severity="secondary" size="small" 
-                            class="p-button-sm" 
-                            style="height: 28px;"></button>
-                            <button pButton pRipple icon="pi pi-align-justify" (click)="columnModalShow = true" size="small" 
-                            class="p-button-sm" 
-                            style="height: 28px;"></button>
+                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-left" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Left}" 
+                                (click)="setAlignment(rowData, enumDataAlignHorizontal.Left)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-center" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Center}" 
+                                (click)="setAlignment(rowData, enumDataAlignHorizontal.Center)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-right" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Right}" 
+                                (click)="setAlignment(rowData, enumDataAlignHorizontal.Right)" 
+                                style="height: 28px;">
+                            </button>
                         </p-inputGroup>
-                    </td>-->
+                    </td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">

@@ -8,7 +8,7 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute(sendColumnAttributes: false)]
         public bool canBeDeleted { get; set; }
 
-        [PrimeNGAttribute("Username", dataAlign: EnumDataAlign.Left, canBeHidden: false, columnDescription: "A random username", frozenColumnAlign: EnumFrozenColumnAlign.Left)]
+        [PrimeNGAttribute("Username", dataAlignHorizontal: EnumDataAlignHorizontal.Left, dataAlignHorizontalAllowUserEdit:false ,canBeHidden: false, columnDescription: "A random username", frozenColumnAlign: EnumFrozenColumnAlign.Left)]
         public string username { get; set; } = null!;
 
         [PrimeNGAttribute("Age", dataType: EnumDataType.Numeric, columnDescription: "The age of the user")]
@@ -17,7 +17,7 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
         public string? employmentStatusName { get; set; }
 
-        [PrimeNGAttribute("Birthdate", dataType: EnumDataType.Date, dataAlign: EnumDataAlign.Left, startHidden: true, columnDescription: "When was the user born")]
+        [PrimeNGAttribute("Birthdate", dataType: EnumDataType.Date, dataAlignHorizontal: EnumDataAlignHorizontal.Left, startHidden: true, columnDescription: "When was the user born")]
         public DateTime? birthdate { get; set; }
 
         [PrimeNGAttribute("Payed taxes?", dataType: EnumDataType.Boolean, startHidden: true, columnDescription: "If the user has payed his taxes or not. You've got to pay your taxes :)")]

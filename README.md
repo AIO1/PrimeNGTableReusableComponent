@@ -361,10 +361,11 @@ From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeN
   - **"Numeric":** Used for any type of data in C# that handles numeric values like int, long, ...
   - **"Booelan":** Used for bool and nullable bool types.
   - **"Date":** Used for valid date data, for example, datetime.
-- **dataAlign:** An ENUM being the default value "Center", the value provided will be used to determine the aligment of the data in the frontend. The possible values that must be declared as they appear exactly here are:
+- **dataAlignHorizontal:** An ENUM being the default value "Center", the value provided will be used to determine the aligment of the data in the frontend. The possible values that must be declared as they appear exactly here are:
   - "Left"
   - "Center"
   - "Right"
+- **dataAlignHorizontalAllowUserEdit:** By default true. If true, the user can edit the horizontal aligment in the front-end.
 - **canBeHidden:** Being the default value true, this parameter will indicate if the user in the frontend can hider or not this column. When a column is hidden, it means it won't be recovered in the SELECT statement to the database, saving up on resources. If a columns is hidden, it won't be shown in the frontend until the user selects it again.
 - **startHidden:** Default value is false. If the value is true and if "canBeHidden" is true, the column will be first shown to the user as hidden, and if he want to view it, the user must request it in the column selector.
 - **canBeResized:** Default true. If true, it means that the user will have the ability to resize the column.
@@ -525,12 +526,12 @@ This project offers some additional things that you can do with the tables and a
 - **notApplyingFiltersText** (string): The text to be shown next to the number of total records available (not applying filters). The default value is: "Number of available records".
 - **actionColumnName** (string): The column name were the action buttons will appear. Default value is: "Actions".
 - **actionsColumnAligmentRight** (boolean): By default true, it can be changed to false to make the actions column appear in the left part of the table, instead that on the right.
-- **actionsColumnFrozen:** (boolean): By default true. If true, it will freeze the actions column so that if the table is scrolled horizontally, it will remain visible.
-- **actionsColumnResizable:** (boolean): By default false. If true, it will allow the user to resize the actions column.
-- **rowSelectorColumnActive:** (boolean): By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
-  @Input() rowSelectorColumName: string = "Selected"; // The column name were the row selector checkboxs will appear
-  @Input() rowSelectorColumnAligmentRight: boolean = true; // If row selector column is put at the right end of the table (or false if its at the left)
-  @Input() rowSelectorColumnFrozen: boolean = true; // If the row selector column will be frozen
+- **actionsColumnFrozen** (boolean): By default true. If true, it will freeze the actions column so that if the table is scrolled horizontally, it will remain visible.
+- **actionsColumnResizable** (boolean): By default false. If true, it will allow the user to resize the actions column.
+- **rowSelectorColumnActive** (boolean): By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
+- **rowSelectorColumName** (string): The title of the row selection column. By default is "Selected".
+- **rowSelectorColumnAligmentRight** (boolean): By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
+- **rowSelectorColumnFrozen** (boolean): By default true. If true, the row selector column will be frozen.
 
 There is an output which you can access from other components:
 

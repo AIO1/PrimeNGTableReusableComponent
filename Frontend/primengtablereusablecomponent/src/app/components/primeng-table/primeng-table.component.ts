@@ -7,7 +7,7 @@ import { SharedService } from '../../services/shared/shared.service';
 import { PrimengSharedService } from '../../services/shared/primengShared.service';
 
 // Import interfaces
-import { enumDataAlign, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
+import { enumDataAlignHorizontal, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
 import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
@@ -59,7 +59,7 @@ export class PrimengTableComponent {
   @ViewChild('dt_columnDialog') dt_columnDialog!: Table;
 
   enumDataType = enumDataType;
-  enumDataAlign = enumDataAlign;
+  enumDataAlignHorizontal = enumDataAlignHorizontal;
   enumFrozenColumnAlign = enumFrozenColumnAlign;
   getDataTypeAsText(dataType: enumDataType): string {
     switch (dataType) {
@@ -75,13 +75,13 @@ export class PrimengTableComponent {
         return 'text';
     }
   }
-  getDataAlignAsText(dataAlign: enumDataAlign): string {
-    switch (dataAlign) {
-      case enumDataAlign.Left:
+  getDataAlignAsText(dataAlignHorizontal: enumDataAlignHorizontal): string {
+    switch (dataAlignHorizontal) {
+      case enumDataAlignHorizontal.Left:
         return 'left';
-      case enumDataAlign.Center:
+      case enumDataAlignHorizontal.Center:
         return 'center';
-      case enumDataAlign.Right:
+      case enumDataAlignHorizontal.Right:
         return 'right';
       default:
         return 'left';
@@ -123,8 +123,6 @@ export class PrimengTableComponent {
 
   columnModalData: any[] = []; // The array of data that is used to display the information about the columns
   filteredColumnData: any[] = []; // The array of data that shows the columns that are currently being shown in the columns modal (to count to show the filters)
-
-  
 
   isRowSelected(id: any): boolean {
     return this.selectedRows.includes(id);
@@ -479,7 +477,9 @@ export class PrimengTableComponent {
           selected: isSelected,
           selectDisabled: isSelectDisabled,
           wrapIsActive: column.wrapIsActive,
-          wrapDisabled: !column.wrapAllowUserEdit || column.dataType === enumDataType.Boolean
+          wrapDisabled: !column.wrapAllowUserEdit || column.dataType === enumDataType.Boolean,
+          dataAlignHorizontal: column.dataAlignHorizontal,
+          dataAlignHorizontalDisabled: !column.dataAlignHorizontalAllowUserEdit
       };
     });
     tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
@@ -490,6 +490,9 @@ export class PrimengTableComponent {
     this.columnModalData = [...tempData];
     this.filteredColumnData = this.columnModalData;
     this.columnModalShow=true;
+  }
+  setAlignment(rowData: any, alignment: enumDataAlignHorizontal) {
+    rowData.dataAlignHorizontal = alignment; // Actualiza la alineación en la columna
   }
 
   applyColumnModalChanges(){
@@ -522,15 +525,22 @@ export class PrimengTableComponent {
       !this.columnsNonSelectable.some(nonSelectable => nonSelectable.field === column.field)
     ); // Update selected columns
 
-    //PERFORM UPDATES OF THE TEXT WRAP
+    //PERFORM UPDATES TO THE COLUMNS
     const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
-    const columnModalDataMap = new Map(this.columnModalData.map((item: any) => [item.field, item.wrapIsActive]));
+    const columnModalDataMap = new Map(this.columnModalData.map((item: any) => [item.field, { 
+        wrapIsActive: item.wrapIsActive, 
+        dataAlignHorizontal: item.dataAlignHorizontal
+    }]));
     const updatedFields = new Set(); // To track updated fields
     allColumns.forEach((columnList) => {
         columnList.forEach((col: any) => {
             if (columnModalDataMap.has(col.field) && !updatedFields.has(col.field)) {
-                col.wrapIsActive = columnModalDataMap.get(col.field);
-                updatedFields.add(col.field);
+                const columnData = columnModalDataMap.get(col.field);
+                if (columnData) {
+                    col.wrapIsActive = columnData.wrapIsActive;
+                    col.dataAlignHorizontal = columnData.dataAlignHorizontal;
+                    updatedFields.add(col.field);
+                }
             }
         });
     });

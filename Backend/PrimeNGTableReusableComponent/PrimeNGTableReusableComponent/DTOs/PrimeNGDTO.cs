@@ -154,7 +154,9 @@ namespace PrimeNG.DTOs {
         /// <summary>
         /// Gets or sets the alignment of the data in the column ("left", "center", or "right").
         /// </summary>
-        public EnumDataAlign DataAlign { get; set; }
+        public EnumDataAlignHorizontal DataAlignHorizontal { get; set; }
+
+        public bool DataAlignHorizontalAllowUserEdit { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the column can be hidden.

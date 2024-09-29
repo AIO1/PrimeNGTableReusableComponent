@@ -4,21 +4,22 @@ export enum enumDataType {
     Boolean,
     Date
 }
-export enum enumDataAlign {
+export enum enumDataAlignHorizontal {
     Left,
     Center,
-    Right,
+    Right
 }
 export enum enumFrozenColumnAlign {
     Noone,
     Left,
-    Right,
+    Right
 }
 export interface IprimengColumnsMetadata {
     field: string;
     header: string;
     dataType: enumDataType;
-    dataAlign: enumDataAlign;
+    dataAlignHorizontal: enumDataAlignHorizontal;
+    dataAlignHorizontalAllowUserEdit: boolean;
     canBeHidden: boolean;
     startHidden: boolean;
     canBeResized: boolean;

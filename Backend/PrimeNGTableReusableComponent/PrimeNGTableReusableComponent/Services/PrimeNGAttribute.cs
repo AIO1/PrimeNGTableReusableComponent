@@ -5,7 +5,7 @@
         Boolean,
         Date
     }
-    public enum EnumDataAlign {
+    public enum EnumDataAlignHorizontal {
         Left,
         Center,
         Right
@@ -22,7 +22,8 @@
     sealed class PrimeNGAttribute : Attribute {
         public string Header { get; }
         public EnumDataType DataType { get; }
-        public EnumDataAlign DataAlign { get; }
+        public EnumDataAlignHorizontal DataAlignHorizontal { get; }
+        public bool DataAlignHorizontalAllowUserEdit { get; }
         public bool CanBeHidden { get; }
         public bool StartHidden { get; }
         public bool CanBeResized { get; }
@@ -44,7 +45,8 @@
         /// </summary>
         /// <param name="header">The name that will be used to display this column in the table.</param>
         /// <param name="dataType">The data type that will be used for the filter ("text" by default).</param>
-        /// <param name="dataAlign">The data alignment for the column ("center" by default).</param>
+        /// <param name="dataAlignHorizontal">The data horizontal alignment for the column ("center" by default).</param>
+        /// <param name="dataAlignHorizontalAllowUserEdit">By default true. If true, the user may modify the horizontal aligment.</param>
         /// <param name="canBeHidden">If <c>true</c>, the column can be hidden.</param>
         /// <param name="startHidden">If <c>true</c>, the column starts hidden (if it can be hidden).</param>
         /// <param name="canBeResized">If <c>true</c>, the column can be resized.</param>
@@ -67,7 +69,8 @@
         public PrimeNGAttribute(
             string header = "",
             EnumDataType dataType = EnumDataType.Text,
-            EnumDataAlign dataAlign = EnumDataAlign.Center,
+            EnumDataAlignHorizontal dataAlignHorizontal = EnumDataAlignHorizontal.Center,
+            bool dataAlignHorizontalAllowUserEdit = true,
             bool canBeHidden = true,
             bool startHidden = false,
             bool canBeResized = true,
@@ -86,7 +89,8 @@
         ) {
             Header = header;
             DataType = dataType;
-            DataAlign = dataAlign;
+            DataAlignHorizontal = dataAlignHorizontal;
+            DataAlignHorizontalAllowUserEdit = dataAlignHorizontalAllowUserEdit;
             CanBeHidden = canBeHidden;
             StartHidden = startHidden && canBeHidden;
             CanBeResized = canBeResized;
