@@ -1,5 +1,5 @@
 import { Table, TableLazyLoadEvent } from 'primeng/table';
-import { Component, Input, ViewChild} from '@angular/core';
+import { Component, Input, Output, ViewChild} from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 // Import services
@@ -46,9 +46,14 @@ export class PrimengTableComponent {
   @Input() applyingFiltersText: string = "Available records after applying filters"; // The text that is shown next to the number of records after applying filter rules
   @Input() notApplyingFiltersText: string = "Number of available records"; // The text to be shown next to the number of total records available (not applying filters)
   @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
-  @Input() actionsColumnAligmentRight: boolean = true; // If actions columns is put at the right end of the table (or false if its at the left)
+  @Input() actionsColumnAligmentRight: boolean = true; // If actions column is put at the right end of the table (or false if its at the left)
   @Input() actionsColumnFrozen: boolean = true; // If the actions column should be frozen
   @Input() actionsColumnResizable: boolean = false; // If the action column can be resized by the user
+  @Input() rowSelectorColumnActive: boolean = false; // By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
+  @Input() rowSelectorColumName: string = "Selected"; // The title of the row selection column. By default is "Selected"
+  @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
+  @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
+  @Output() selectedRows: any[] = []; // An array to keep all the selected rows
 
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   @ViewChild('dt_columnDialog') dt_columnDialog!: Table;
@@ -118,6 +123,20 @@ export class PrimengTableComponent {
 
   columnModalData: any[] = []; // The array of data that is used to display the information about the columns
   filteredColumnData: any[] = []; // The array of data that shows the columns that are currently being shown in the columns modal (to count to show the filters)
+
+  
+
+  isRowSelected(id: any): boolean {
+    return this.selectedRows.includes(id);
+  }
+
+  onRowSelectChange(event: any, id: any): void {
+    if (event.checked) { // Add the selected item
+        this.selectedRows.push(id);
+    } else { // Remove the selected item
+        this.selectedRows = this.selectedRows.filter(selectedId => selectedId !== id);
+    }
+  }
 
   /**
    * Updates the filters of a PrimeNG data table based on predefined filter changes.
@@ -227,12 +246,12 @@ export class PrimengTableComponent {
       return; // Exit after fetching columns (when columns load the lazy load event of the table will be triggered again)
     }
     Constants.waitingHTTP = true; // Set the loading indicator to active
-    const filtersWithoutGlobal = this.createFiltersWithoutGlobal(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
+    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
     const requestData: IprimengTableDataPost = {
       page: this.currentPage, // Set the current page number
       pageSize: this.currentRowsPerPage, // Set the number of rows per page
       sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
-      filter: filtersWithoutGlobal, // Set the filters excluding the global filter
+      filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
       columns: this.columnsToShow.map(col => col.field), // Set the columns to show
       dateFormat: this.dateFormat,
@@ -293,11 +312,11 @@ export class PrimengTableComponent {
   }
   saveTableState(){
     const columns: string[] = this.dt.columns!.map(column => column.field);
-    const filtersWithoutGlobal = this.createFiltersWithoutGlobal(this.dt.filters);
+    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.dt.filters);
     const tableState: any = {
       columns: columns,
       multiSortMeta: this.dt.multiSortMeta,
-      filters: filtersWithoutGlobal,
+      filters: filtersWithoutGlobalAndSelectedRows,
       globalSearchText: this.globalSearchText,
       currentPage: this.currentPage,
       currentRowsPerPage: this.currentRowsPerPage
@@ -337,34 +356,39 @@ export class PrimengTableComponent {
     }
   }
 
-  /**
-   * Creates a copy of a set of filters by removing the global filter.
-   *
-   * @param {any} filters - An object representing the current filters, where the properties are column names and the values are associated filter rules.
-   * @returns {any} An object that is a copy of the original filters but without the global filter.
-   * 
-   * @example
-   * // Example filters object
-   * const filters = {
-   *   name: { value: 'John', matchMode: 'contains' },
-   *   age: { value: 30, matchMode: 'equals' },
-   *   global: 'something'
-   * };
-   * 
-   * // Use createFiltersWithoutGlobal to get filters without the global filter
-   * const newFilters = createFiltersWithoutGlobal(filters);
-   * 
-   * // Output: { name: { value: 'John', matchMode: 'contains' }, age: { value: 30, matchMode: 'equals' } }
-   */
-  private createFiltersWithoutGlobal(filters: any): any {
+  private modifyFiltersWithoutGlobalAndSelectedRows(filters: any): any {
     if (this.globalSearchText === "") { // If the global search text is an empty string
       this.globalSearchText = null; // Set it to null
     }
-    const filtersWithoutGlobal = { ...filters }; // Create a copy of filters to delete the global.
-    if (filtersWithoutGlobal.hasOwnProperty('global')) { // If there is an entry with the global filter
-      delete filtersWithoutGlobal['global']; // Remove the global filter
+    let filtersWithoutGlobalAndSelectedRows = { ...filters }; // Create a copy of filters to delete the global.
+    if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('global')) { // If there is an entry with the global filter
+      delete filtersWithoutGlobalAndSelectedRows['global']; // Remove the global filter
     }
-    return filtersWithoutGlobal; // Return the filters without global array
+    if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('selector')) {
+      const selectorFilter = filtersWithoutGlobalAndSelectedRows['selector'][0];
+      if (!filtersWithoutGlobalAndSelectedRows.hasOwnProperty('id')) {
+          filtersWithoutGlobalAndSelectedRows['id'] = [
+              {
+                  "value": null,
+                  "matchMode": "in",
+                  "operator": "or"
+              }
+          ];
+      }
+      const idFilter = filtersWithoutGlobalAndSelectedRows['id'][0];
+      if (selectorFilter.value === true) {
+          idFilter.matchMode = "in";
+          idFilter.value = this.selectedRows;
+      } else if (selectorFilter.value === false) {
+          idFilter.operator = "and"
+          idFilter.matchMode = "notIn";
+          idFilter.value = this.selectedRows;
+      } else if (selectorFilter.value === null) {
+          idFilter.value = null;
+          idFilter.matchMode = "in";
+      }
+    }
+    return filtersWithoutGlobalAndSelectedRows; // Return the filters without global array
   }
 
   /**
@@ -377,8 +401,8 @@ export class PrimengTableComponent {
    */
   hasToClearSortsAndFilters(dt: Table, globalSearchText: string | null, force: boolean = false) : boolean { 
     let hasToClear : boolean = false; // Initialize the flag to indicate if clearing is needed
-    const filtersWithoutGlobal = this.createFiltersWithoutGlobal(dt.filters); // Create a copy of filters excluding the global filter
-    const hasFilters = this.hasFilters(filtersWithoutGlobal); // Check if there are active filters
+    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(dt.filters);
+    const hasFilters = this.hasFilters(filtersWithoutGlobalAndSelectedRows); // Check if there are active filters
     const hasSorts = (dt.multiSortMeta && dt.multiSortMeta.length > 0); // Check if there are active sorts
     const hasGlobalFilter = (globalSearchText && globalSearchText.trim() !== ""); // Check if there is a global filter with non-empty text
     if (force || hasSorts || hasFilters || hasGlobalFilter) { // If the clearing is forced or if there are active sorts, filters, or a global filter

@@ -122,15 +122,10 @@ namespace PrimeNG.HelperFunctions {
         /// <returns>A list of dynamic objects representing the dynamic selection of properties.</returns>
         private static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns) {
             PropertyInfo[] properties = typeof(T).GetProperties(); // Get properties of the class T
-
-
-            // Filtrar las propiedades que tienen el atributo PrimeNGAttribute con sendColumnAttributes: false
             List<string> additionalColumns = properties
                 .Where(p => p.GetCustomAttribute<PrimeNGAttribute>()?.SendColumnAttributes == false)
                 .Select(p => p.Name)
                 .ToList();
-
-
             IEnumerable<PropertyInfo> selectedProperties = properties.Where(p => columns.Contains(p.Name) || (additionalColumns != null && additionalColumns.Contains(p.Name))); // Filter only the properties that are in the list of columns
             string select = string.Join(", ", selectedProperties.Select(p => p.Name)); // Build the SELECT part of the dynamic query
             return query.Select($"new ({select})").ToDynamicList(); // Build and execute the dynamic query, return the result
@@ -195,7 +190,7 @@ namespace PrimeNG.HelperFunctions {
         private static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<PrimeNGTableFilterModel>> columnFilters, List<string> visibleColumns, MethodInfo stringDateFormatMethod) {
             foreach(var entry in columnFilters) { // Iterate through the column filters
                 string key = entry.Key; // Get the key of the current column filter
-                if(!visibleColumns.Contains(key)) { // If the column is not visible
+                if(/*!visibleColumns.Contains(key)*/key == "selector") { // If the column is not visible
                     continue; // Skip processing if the column is not visible
                 }
                 List<PrimeNGTableFilterModel> values = entry.Value; // Get the filter values for the column
@@ -209,6 +204,8 @@ namespace PrimeNG.HelperFunctions {
                     PrimeNGAttribute? attribute = (PrimeNGAttribute?)property.GetCustomAttributes(typeof(PrimeNGAttribute), false).FirstOrDefault() ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not have the PrimeNGAttributes attribute in type '{typeof(T).FullName}'."); // Retrieve PrimeNGAttributes attribute and if its null throw error
                     if(value.MatchMode == "in") {
                         FilterPredicateInClauseBuilder<T>(value, property, attribute, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                    } else if(value.MatchMode == "notIn") {
+                        FilterPredicateNotInClauseBuilder<T>(value, property, attribute, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
                     } else {
                         FilterPredicateBuilder(property, attribute, value.Value, value.MatchMode, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
                     }
@@ -232,6 +229,14 @@ namespace PrimeNG.HelperFunctions {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
                 foreach(object item in items) {
                     FilterPredicateBuilder(property, attribute, item, MatchModeEquals, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                }
+            }
+        }
+        private static void FilterPredicateNotInClauseBuilder<T>(PrimeNGTableFilterModel value, PropertyInfo property, PrimeNGAttribute attribute, MethodInfo stringDateFormatMethod, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate) {
+            if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
+                List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
+                foreach(object item in items) {
+                    FilterPredicateBuilder(property, attribute, item, "notEquals", stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
                 }
             }
         }

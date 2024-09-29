@@ -7,6 +7,7 @@
     [lazy]="true" (onLazyLoad)="updateData($event)"
     (onSort)="saveTableState()" (onFilter)="saveTableState()" (onColReorder)="saveTableState()"> <!--(onColResize)="saveTableState($event)"-->
     
+    <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
     <ng-template #actionColumnHeaderTemplate>
         <th *ngIf="rowActionButtons.length > 0" 
             pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable"
@@ -16,6 +17,8 @@
             {{actionColumnName}}
         </th>
     </ng-template>
+
+    <!--TEMPLATE FOR THE ACTIONS ROW COLUMN-->
     <ng-template #actionColumnTemplate let-rowData="rowData">
         <td *ngIf="rowActionButtons.length > 0" style="text-align: center; vertical-align: middle;"
             pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
@@ -31,6 +34,29 @@
                         style="height: 28px; margin-right: 10px;">
                 </button>
             </ng-container>
+        </td>
+    </ng-template>
+
+    <!--TEMPLATE FOR THE ROW SELECTOR HEADER COLUMN-->
+    <ng-template #rowSelectorColumnHeaderTemplate>
+        <th id="rowSelector-header" [attr.scope]="'col'"
+            style="text-align: center;"
+            pFrozenColumn [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+            <div class="p-d-flex p-jc-between p-ai-center">
+                {{rowSelectorColumName}}
+                <p-columnFilter type="boolean" field="selector" display="menu" showButtons="false"/>
+            </div>
+        </th>
+    </ng-template>
+
+    <!--TEMPLATE FOR THE ROW SELECTOR ROW COLUMN-->
+    <ng-template #rowSelectorColumnTemplate let-rowData="rowData">
+        <td style="text-align: center; vertical-align: middle;"
+            pFrozenColumn [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+            <p-checkbox 
+                [ngModel]="isRowSelected(rowData.id)"
+                (onChange)="onRowSelectChange($event, rowData.id)"
+                [binary]="true"/>
         </td>
     </ng-template>
     
@@ -81,6 +107,9 @@
         <tr>
             <ng-container *ngIf="!actionsColumnAligmentRight">
                 <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
+            </ng-container>
+            <ng-container *ngIf="rowSelectorColumnActive && !rowSelectorColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="rowSelectorColumnHeaderTemplate"></ng-container>
             </ng-container>
             <ng-container *ngFor="let col of columns">
                 <th 
@@ -146,6 +175,9 @@
                     </div>
                 </th>
             </ng-container>
+            <ng-container *ngIf="rowSelectorColumnActive && rowSelectorColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="rowSelectorColumnHeaderTemplate"></ng-container>
+            </ng-container>
             <ng-container *ngIf="actionsColumnAligmentRight">
                 <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
             </ng-container>
@@ -155,9 +187,11 @@
     <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
     <ng-template pTemplate="body" let-rowData let-columns="columns"> 
         <tr>
-            <!-- ACTION BUTTONS -->
             <ng-container *ngIf="!actionsColumnAligmentRight">
                 <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
+            </ng-container>
+            <ng-container *ngIf="rowSelectorColumnActive && !rowSelectorColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="rowSelectorColumnTemplate; context: { rowData: rowData }"></ng-container>
             </ng-container>
 
             <!-- REST OF COLUMNS -->
@@ -228,6 +262,9 @@
                          <!-- Content for null cases, by default, don't draw anything -->
                     </ng-template>
                 </td>
+            </ng-container>
+            <ng-container *ngIf="rowSelectorColumnActive && rowSelectorColumnAligmentRight">
+                <ng-container *ngTemplateOutlet="rowSelectorColumnTemplate; context: { rowData: rowData }"></ng-container>
             </ng-container>
             <ng-container *ngIf="actionsColumnAligmentRight">
                 <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>

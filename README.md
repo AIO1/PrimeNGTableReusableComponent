@@ -527,6 +527,14 @@ This project offers some additional things that you can do with the tables and a
 - **actionsColumnAligmentRight** (boolean): By default true, it can be changed to false to make the actions column appear in the left part of the table, instead that on the right.
 - **actionsColumnFrozen:** (boolean): By default true. If true, it will freeze the actions column so that if the table is scrolled horizontally, it will remain visible.
 - **actionsColumnResizable:** (boolean): By default false. If true, it will allow the user to resize the actions column.
+- **rowSelectorColumnActive:** (boolean): By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
+  @Input() rowSelectorColumName: string = "Selected"; // The column name were the row selector checkboxs will appear
+  @Input() rowSelectorColumnAligmentRight: boolean = true; // If row selector column is put at the right end of the table (or false if its at the left)
+  @Input() rowSelectorColumnFrozen: boolean = true; // If the row selector column will be frozen
+
+There is an output which you can access from other components:
+
+- **selectedRows:** (any): A list of all the "id" selected by the user in a row. By default is empty but the user can add elements through the front-end if rowSelectorColumnActive is true.
 
 
 ### 4.6 Predifined filters
