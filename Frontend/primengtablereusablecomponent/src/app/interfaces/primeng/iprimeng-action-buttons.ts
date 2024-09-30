@@ -29,4 +29,5 @@ export interface IprimengActionButtons {
      * specific actions based on that data.
      */
     action?: (rowData: any) => void;
+    tooltip?: string;
 }

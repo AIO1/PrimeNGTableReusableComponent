@@ -367,6 +367,60 @@ export class PrimengTableComponent {
     }
   }
 
+  clearFilters(dt: Table, force: boolean = false): void{
+    let hasToClear = this.hasToClearFilters(dt, this.globalSearchText, force);
+    if(hasToClear){
+      for (const key in dt.filters) {
+        if (dt.filters.hasOwnProperty(key)) {
+          const filters = dt.filters[key];
+          if (Array.isArray(filters)) {
+            filters.forEach(filter => {
+              filter.value = null;  // Establecer el valor a null
+            });
+          } else {
+            filters.value = null; // Establecer el valor a null
+          }
+        }
+      }
+      let filters = {...this.dt.filters};
+      dt.columns?.forEach(
+        element => {
+          dt.filter(null, element.field, element.matchMode)
+        }
+      );
+      this.dt.filters = filters;
+      console.log("FILTROS LIMPIADOS", dt.filters);
+      this.globalSearchText = null;
+      dt.filterGlobal('','');
+    }
+  }
+  hasToClearFilters(dt: Table, globalSearchText: string|null, force:boolean = false): boolean{
+    let hasToClear: boolean = false;
+    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(dt.filters)
+    const hasFilters = this.hasFilters(filtersWithoutGlobalAndSelectedRows);
+    const hasGlobalFilter = (globalSearchText && globalSearchText.trim() !== "");
+    if(force || hasFilters || hasGlobalFilter){
+      hasToClear = true;
+    }
+    return hasToClear;
+  }
+  clearSorts(dt: Table, force: boolean = false): void{
+    let hasToClear = this.hasToClearSorts(dt, force);
+    if(hasToClear){
+      dt.multiSortMeta = [];
+      console.log("FILTROS LIMPIADOS", dt.filters);
+      dt.sortMultiple();
+    }
+  }
+  hasToClearSorts(dt: Table, force: boolean = false): boolean{
+    let hasToClear: boolean = false;
+    const hasSorts = (dt.multiSortMeta && dt.multiSortMeta.length > 0);
+    if(force || hasSorts){
+      hasToClear = true;
+    }
+    return hasToClear;
+  }
+
   private modifyFiltersWithoutGlobalAndSelectedRows(filters: any): any {
     if (this.globalSearchText === "") { // If the global search text is an empty string
       this.globalSearchText = null; // Set it to null

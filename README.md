@@ -662,6 +662,7 @@ Included in this code, you have the option to easily define buttons which can be
 - **color:** The color property to be applied. The "color" references to the "severity" property of PrimeNG for the [button](https://primeng.org/button#severity).
 - **condition:** A condition that must be met in order to show the button. It can be passed a function and the expected return is a boolean. If no condition is specified, the button will always show. If the button is in a row, the data of the row can be accessed (like for example the "ID").
 - **action:** The action that the button will perform when pressed. It can be passed a function and no return value is expected. If no action is specified, the button won't do anything on pressed. If the button is in a row, the data of the row can be accessed (like for example the "ID").
+- **tooltip:** If given, it will show a tooltip when the user hovers the mouse over the button.
 
 IMPORTANT: Do NOT ever trust that if a user can press a button that should only be shown under some condition, the action should be done. Always perform the verification in the backend, since the exposed data in the frontend can be tampered with.
 

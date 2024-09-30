@@ -27,7 +27,8 @@ export class HomeComponent implements OnInit{
       action: () => {
         this.sharedService.clearToasts();
         this.sharedService.showToast("success","Clicked on the calculator","Cool! It wokrs :)");
-      }
+      },
+      tooltip: 'Example of action button'
     },
     {
       icon: 'pi pi-file',
@@ -35,7 +36,9 @@ export class HomeComponent implements OnInit{
       action: () => {
         this.sharedService.clearToasts();
         this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
-      }
+      },
+      label: "CREATE",
+      tooltip: "Create new record"
     }
   ];
   rowActionButtons: IprimengActionButtons[] = [
