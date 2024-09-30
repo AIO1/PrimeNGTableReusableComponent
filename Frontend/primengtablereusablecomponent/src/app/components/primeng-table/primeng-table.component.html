@@ -1,12 +1,14 @@
 <!--[style]="{'height': 'calc(100vh - 400px)'}"-->
 <!--[scrollHeight]="'calc(100vh - 400px)'"-->
+<div #tableContainer style="position: relative;">
 <p-table #dt
+    [scrollHeight]="computeScrollHeight ? scrollHeight : undefined"
     [columns]="columnsToShow" [value]="data" dataKey="id" [scrollable]="true" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
     sortMode="multiple"
     [resizableColumns]="true" columnResizeMode="expand"
     [reorderableColumns]="true"
     scrollDirection="both"
-    [lazy]="true" (onLazyLoad)="updateData($event)"
+    [lazy]="true" (onLazyLoad)="updateData($event)" (onColResize)="onColResize($event)"
     (onSort)="saveTableState()" (onFilter)="saveTableState()" (onColReorder)="saveTableState()"> <!--(onColResize)="saveTableState($event)"-->
     
     <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
@@ -63,7 +65,7 @@
     </ng-template>
     
     <ng-template pTemplate="caption"> <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--CHOOSE COLUMNS TO SHOW-->
                 <button pButton pRipple icon="pi pi-objects-column" (click)="showColumnModal()"
@@ -296,7 +298,7 @@
 
     <!-- LOGIC FOR DRAWING PAGINATION -->
     <ng-template pTemplate="summary"> 
-        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+        <div #paginatorContainer style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
             <div class="p-d-flex mt-2">
                 Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records
             </div>
@@ -314,7 +316,7 @@
         </div>
     </ng-template>
 </p-table>
-
+</div>
 <!--COLUMN MODAL DIALOG-->
 <p-dialog [(visible)]="columnModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
     <ng-template pTemplate="header">
@@ -408,8 +410,13 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="summary"> 
-                <div>In total there are {{columnModalData ? columnModalData.length : 0}} columns</div>
-                <div>Applying filters there are {{filteredColumnData ? filteredColumnData.length : 0}} columns</div>
+                <div #paginatorContainer style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                    <div class="p-d-flex mt-2">
+                        Showing {{filteredColumnData ? filteredColumnData.length : 0}} records of {{columnModalData ? columnModalData.length : 0}} available records
+                    </div>
+                    <div class="p-d-flex">
+                    </div>
+                </div>
             </ng-template>
         </p-table>
     </div>

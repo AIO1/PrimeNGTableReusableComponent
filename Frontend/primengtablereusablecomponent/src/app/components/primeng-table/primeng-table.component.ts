@@ -1,5 +1,5 @@
 import { Table, TableLazyLoadEvent } from 'primeng/table';
-import { Component, Input, Output, ViewChild} from '@angular/core';
+import { Component, ElementRef, Input, Output, ViewChild} from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 // Import services
@@ -53,6 +53,7 @@ export class PrimengTableComponent {
   @Input() rowSelectorColumName: string = "Selected"; // The title of the row selection column. By default is "Selected"
   @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
   @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
+  @Input() computeScrollHeight: boolean = true; // If true, the table will try not to grow more than the total height of the window vertically
   @Output() selectedRows: any[] = []; // An array to keep all the selected rows
 
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
@@ -62,6 +63,35 @@ export class PrimengTableComponent {
   enumDataAlignHorizontal = enumDataAlignHorizontal;
   enumDataAlignVertical = enumDataAlignVertical;
   enumFrozenColumnAlign = enumFrozenColumnAlign;
+
+  scrollHeight: string = "0px";
+  @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
+  @ViewChild('paginatorContainer', { static: false }) paginatorContainer!: ElementRef;
+  @ViewChild('headerContainer', { static: false }) headerContainer!: ElementRef;
+  ngAfterViewInit() {
+    if(this.computeScrollHeight){
+      this.calculateScrollHeight();
+      window.addEventListener('resize', this.calculateScrollHeight.bind(this));
+    }
+  }
+  calculateScrollHeight() {
+    setTimeout(() => {
+      if (this.tableContainer && this.paginatorContainer && this.headerContainer) {
+        const containerRect = this.tableContainer.nativeElement.getBoundingClientRect();
+        const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight;
+        const headerHeight = this.headerContainer.nativeElement.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        const topOffset = containerRect.top + window.scrollY;
+        this.scrollHeight = `${(viewportHeight - topOffset - paginatorHeight - headerHeight)-45}px`;
+      }
+    }, 0);
+  }
+  ngOnDestroy() {
+    if(this.computeScrollHeight){
+      window.removeEventListener('resize', this.calculateScrollHeight.bind(this));
+    }
+  }
+
   getDataTypeAsText(dataType: enumDataType): string {
     switch (dataType) {
       case enumDataType.Text:
@@ -332,7 +362,7 @@ export class PrimengTableComponent {
       currentPage: this.currentPage,
       currentRowsPerPage: this.currentRowsPerPage
     }
-    console.log("tableState:",tableState);
+    //console.log("tableState:",tableState);
   }
   resetTableState(){
     this.getColumns(this.clearSortsAndFilters(this.dt,true)!,false);
@@ -389,7 +419,6 @@ export class PrimengTableComponent {
         }
       );
       this.dt.filters = filters;
-      console.log("FILTROS LIMPIADOS", dt.filters);
       this.globalSearchText = null;
       dt.filterGlobal('','');
     }
@@ -408,7 +437,6 @@ export class PrimengTableComponent {
     let hasToClear = this.hasToClearSorts(dt, force);
     if(hasToClear){
       dt.multiSortMeta = [];
-      console.log("FILTROS LIMPIADOS", dt.filters);
       dt.sortMultiple();
     }
   }
@@ -530,7 +558,7 @@ export class PrimengTableComponent {
   pageChange(event: PaginatorState): void {
     this.currentPage = event.page!; // Update the current page
     this.currentRowsPerPage = event.rows!; // Update the number of rows per page
-    this.saveTableState();
+    //this.saveTableState();
     this.updateData(this.tableLazyLoadEventInformation); // Force the data to be updated
   }
 
@@ -637,6 +665,12 @@ export class PrimengTableComponent {
     this.filteredColumnData = this.columnModalData.filter(column => 
         column.header.toLowerCase().includes(filterValue)
     );
+  }
+
+  onColResize(event: any) {
+    //console.log(event)
+    //console.log(this.dt)
+    //_initialColWidths
   }
 
   /**
