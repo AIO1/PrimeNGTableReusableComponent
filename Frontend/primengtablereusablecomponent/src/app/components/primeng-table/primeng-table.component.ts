@@ -20,10 +20,18 @@ import { FilterMetadata } from 'primeng/api';
 import { DatePipe } from '@angular/common';
 import { PaginatorState } from 'primeng/paginator';
 
+export enum enumTableStateSaveMode {
+  noone,
+  sessionStorage,
+  localStorage,
+  databaseStorage
+}
+
 @Component({
   selector: 'ecs-primeng-table', // Component selector used in HTML to render this component
   templateUrl: './primeng-table.component.html' // Path to the HTML template for this component
 })
+
 export class PrimengTableComponent {
   constructor(
     private primengSharedService: PrimengSharedService,
@@ -54,6 +62,9 @@ export class PrimengTableComponent {
   @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
   @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
   @Input() computeScrollHeight: boolean = true; // If true, the table will try not to grow more than the total height of the window vertically
+  @Input() tableStateSaveAs: enumTableStateSaveMode = enumTableStateSaveMode.noone; // How the table state will be saved
+  @Input() tableStateSaveKey: string = ""; // The key used to save the table state
+
   @Output() selectedRows: any[] = []; // An array to keep all the selected rows
 
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
@@ -63,6 +74,7 @@ export class PrimengTableComponent {
   enumDataAlignHorizontal = enumDataAlignHorizontal;
   enumDataAlignVertical = enumDataAlignVertical;
   enumFrozenColumnAlign = enumFrozenColumnAlign;
+  enumTableStateSaveMode = enumTableStateSaveMode;
 
   scrollHeight: string = "0px";
   @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
@@ -277,11 +289,11 @@ export class PrimengTableComponent {
    * 
    * updateData(event, continueAction, uponContinueActionEndModalHttp);
    */
-  updateData(event: TableLazyLoadEvent, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false): void {
-    this.tableLazyLoadEventInformation = event; // Store the event information for later use
+  updateData(event: TableLazyLoadEvent, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, forceColumns?: any[]): void {
     if (!this.canPerformActions) { // Check if actions can be performed
       return; // Exit if actions cannot be performed
     }
+    this.tableLazyLoadEventInformation = event; // Store the event information for later use
     if (!this.columnsFetched) { // Check if columns have been fetched
       this.getColumns(continueAction, uponContinueActionEndModalHttp); // Fetch columns if not already fetched
       return; // Exit after fetching columns (when columns load the lazy load event of the table will be triggered again)
@@ -294,7 +306,10 @@ export class PrimengTableComponent {
       sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
       filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
-      columns: this.columnsToShow.map(col => col.field), // Set the columns to show
+      columns: (forceColumns && forceColumns.length > 0) 
+        ? forceColumns.map(col => col.field)
+        : this.columnsToShow.map(col => col.field), // Set the columns to show
+        
       dateFormat: this.dateFormat,
       dateTimezone: this.dateTimezone,
       dateCulture: this.dateCulture
@@ -307,6 +322,14 @@ export class PrimengTableComponent {
         this.totalRecords = responseData.totalRecords; // Update the total number of records
         this.totalRecordsNotFiltered = responseData.totalRecordsNotFiltered; // Update the total records not filtered
         this.currentPage = responseData.page; // Update the current page
+        if(forceColumns && forceColumns.length > 0) {
+          this.columnsSelected = forceColumns
+            .map(data => this.columns.find((col: any) => col.field === data.field))
+            .filter((col): col is IprimengColumnsMetadata => col !== undefined)
+            .filter(col => !this.columnsNonSelectable.includes(col));
+          this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
+          this.updateColumnsSpecialProperties(forceColumns);
+        }
         if (continueAction) { // Check if a continue action is specified
           continueAction(); // Execute the continue action
           if (uponContinueActionEndModalHttp) { // Check if the loading indicator should be set to inactive
@@ -329,9 +352,10 @@ export class PrimengTableComponent {
    * @param {Function} [continueAction] - (Optional) A function to be executed after fetching the columns and allowed paginations. The function can take optional data as a parameter.
    * @param {boolean} [uponContinueActionEndModalHttp=false] - (Optional) A boolean indicating whether to end the modal HTTP waiting state upon the completion of the continue action. Defaults to false.
    */
-  getColumns(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false) {
+  getColumns(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, clearTableState: boolean = false) {
     Constants.waitingHTTP = true; // Set the HTTP waiting state to true
     this.columnsFetched = false;
+    this.canPerformActions = false;
     this.sharedService.handleHttpResponse(this.primengSharedService.fetchTableColumnsAndAllowedPaginations(this.columnsSourceURL)).subscribe({
         next: (responseData: IprimengColumnsAndAllowedPagination) => { // Handle successful response
             this.allowedRowsPerPage = responseData.allowedItemsPerPage; // Update the number of rows allowed per page
@@ -343,17 +367,40 @@ export class PrimengTableComponent {
             this.dateFormat = responseData.dateFormat;
             this.dateTimezone = responseData.dateTimezone;
             this.dateCulture = responseData.dateCulture;
-            this.columnsFetched = true; // Indicate that we have fetched the columns
-            this.updateData(this.tableLazyLoadEventInformation, continueAction, uponContinueActionEndModalHttp); // Update data with the fetched columns and execute continue action if provided
+            this.currentPage = 0;
+            if(clearTableState){
+              this.clearFilters(this.dt, true, false);
+              this.clearSorts(this.dt, true);
+              this.tableLazyLoadEventInformation.multiSortMeta=[];
+            }
+            setTimeout(() => {
+              this.columnsFetched = true; // Indicate that we have fetched the columns
+              this.canPerformActions = true;
+              this.updateData(this.tableLazyLoadEventInformation, continueAction, uponContinueActionEndModalHttp); // Update data with the fetched columns and execute continue action if provided
+            }, 500); // We need this delay so it doesn't launch another call
         },
         error: err => { // Handle error response
             this.sharedService.dataFecthError("ERROR IN GET COLUMNS AND ALLOWED PAGINATIONS", err); // Log the error
         }
     });
   }
+
+
   saveTableState(){
-    const columns: string[] = this.dt.columns!.map(column => column.field);
-    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.dt.filters);
+    const columns: { field: string; wrapIsActive: boolean, dataAlignHorizontal: enumDataAlignHorizontal, dataAlignVertical: enumDataAlignVertical }[] = this.dt.columns!.map(column => ({
+      field: column.field,
+      wrapIsActive: column.wrapIsActive,
+      dataAlignHorizontal: column.dataAlignHorizontal,
+      dataAlignVertical: column.dataAlignVertical
+    }));
+    const filtersWithoutGlobalAndSelectedRows = {...this.modifyFiltersWithoutGlobalAndSelectedRows(JSON.parse(JSON.stringify(this.dt.filters)))};
+    if (filtersWithoutGlobalAndSelectedRows['id']) {
+        filtersWithoutGlobalAndSelectedRows['id'][0].value = null;
+    }
+  
+    if (filtersWithoutGlobalAndSelectedRows['selector']) {
+        filtersWithoutGlobalAndSelectedRows['selector'][0].value = null;
+    }
     const tableState: any = {
       columns: columns,
       multiSortMeta: this.dt.multiSortMeta,
@@ -362,10 +409,67 @@ export class PrimengTableComponent {
       currentPage: this.currentPage,
       currentRowsPerPage: this.currentRowsPerPage
     }
-    //console.log("tableState:",tableState);
+    switch(this.tableStateSaveAs){
+      case enumTableStateSaveMode.sessionStorage:
+        sessionStorage.setItem(this.tableStateSaveKey, JSON.stringify(tableState));
+      break;
+      case enumTableStateSaveMode.localStorage:
+        localStorage.setItem(this.tableStateSaveKey, JSON.stringify(tableState));
+      break;
+      default:
+        this.sharedService.showToast("error","NOT IMPLEMENTED", "This type os save state has not been implemented yet.");
+        return;
+    }
+    this.sharedService.showToast("info","Table state saved", "The state of the table has been saved.");
   }
+
+  hasLoadState(): boolean {
+    let tableStateNotParsed: string | null = null;
+    switch (this.tableStateSaveAs) {
+        case enumTableStateSaveMode.sessionStorage:
+            tableStateNotParsed = sessionStorage.getItem(this.tableStateSaveKey);
+            break;
+        case enumTableStateSaveMode.localStorage:
+            tableStateNotParsed = localStorage.getItem(this.tableStateSaveKey);
+            break;
+        default:
+            return false;
+    }
+    return tableStateNotParsed !== null; // Devuelve true si hay un valor, false si es null
+}
+  loadTableState(){
+    let tableStateNotParsed: string | null = null;
+    switch(this.tableStateSaveAs){
+      case enumTableStateSaveMode.sessionStorage:
+        tableStateNotParsed = sessionStorage.getItem(this.tableStateSaveKey);
+      break;
+      case enumTableStateSaveMode.localStorage:
+        tableStateNotParsed = localStorage.getItem(this.tableStateSaveKey);
+      break;
+      default:
+        this.sharedService.showToast("error","NOT IMPLEMENTED", "This type os save state has not been implemented yet.");
+        return;
+    }
+    const tableState = tableStateNotParsed ? JSON.parse(tableStateNotParsed) : null;
+    this.currentPage = tableState.currentPage;
+    this.currentRowsPerPage = tableState.currentRowsPerPage;
+    this.globalSearchText = tableState.globalSearchText;
+    this.tableLazyLoadEventInformation.multiSortMeta = [...(tableState.multiSortMeta ?? [])];
+    this.dt.multiSortMeta = [...(tableState.multiSortMeta ?? [])];
+    this.canPerformActions=false;
+    this.dt.sortMultiple();
+    this.canPerformActions=true;
+
+    this.tableLazyLoadEventInformation.filters = {...tableState.filters};
+    this.dt.filters = {...tableState.filters};
+
+    this.updateData(this.tableLazyLoadEventInformation,undefined,undefined,tableState.columns);
+    this.sharedService.showToast("info","Table state restored", "The table state has been restored.");
+  }
+
   resetTableState(){
-    this.getColumns(this.clearSortsAndFilters(this.dt,true)!,false);
+    this.getColumns(undefined,undefined,true);
+    this.sharedService.showToast("info","Table state reseted", "The state of the table has been reset to its original state.");
   }
   
   /**
@@ -397,7 +501,7 @@ export class PrimengTableComponent {
     }
   }
 
-  clearFilters(dt: Table, force: boolean = false): void{
+  clearFilters(dt: Table, force: boolean = false, doTableUpdate: boolean = true): void{
     let hasToClear = this.hasToClearFilters(dt, this.globalSearchText, force);
     if(hasToClear){
       for (const key in dt.filters) {
@@ -418,8 +522,8 @@ export class PrimengTableComponent {
           dt.filter(null, element.field, element.matchMode)
         }
       );
-      this.dt.filters = filters;
       this.globalSearchText = null;
+      this.dt.filters = filters;
       dt.filterGlobal('','');
     }
   }
@@ -628,7 +732,7 @@ export class PrimengTableComponent {
     ); // Update selected columns
 
     //PERFORM UPDATES TO THE COLUMNS
-    const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
+    /*const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
     const columnModalDataMap = new Map(this.columnModalData.map((item: any) => [item.field, { 
         wrapIsActive: item.wrapIsActive, 
         dataAlignHorizontal: item.dataAlignHorizontal,
@@ -647,10 +751,34 @@ export class PrimengTableComponent {
                 }
             }
         });
-    });
+    });*/
+    this.updateColumnsSpecialProperties(this.columnModalData);
 
     this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
     this.columnModalShow=false;
+  }
+
+  private updateColumnsSpecialProperties(columnsSource: any[]){
+    const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
+    const columnModalDataMap = new Map(columnsSource.map((item: any) => [item.field, { 
+        wrapIsActive: item.wrapIsActive, 
+        dataAlignHorizontal: item.dataAlignHorizontal,
+        dataAlignVertical: item.dataAlignVertical
+    }]));
+    const updatedFields = new Set(); // To track updated fields
+    allColumns.forEach((columnList) => {
+        columnList.forEach((col: any) => {
+            if (columnModalDataMap.has(col.field) && !updatedFields.has(col.field)) {
+                const columnData = columnModalDataMap.get(col.field);
+                if (columnData) {
+                    col.wrapIsActive = columnData.wrapIsActive;
+                    col.dataAlignHorizontal = columnData.dataAlignHorizontal;
+                    col.dataAlignVertical = columnData.dataAlignVertical;
+                    updatedFields.add(col.field);
+                }
+            }
+        });
+    });
   }
 
   filterColumnModal(event: any) {
@@ -669,7 +797,13 @@ export class PrimengTableComponent {
 
   onColResize(event: any) {
     //console.log(event)
-    //console.log(this.dt)
+    const resizedColumn = this.columns.find(col => col.field === event.field);
+    console.log(event)
+    if (resizedColumn) {
+      resizedColumn.columnWidth = event.newWidth; // Actualiza el ancho de la columna
+    }
+    console.log(this.dt)
+    console.log(this.columnsToShow)
     //_initialColWidths
   }
 

@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { PrimengTableComponent } from '../primeng-table/primeng-table.component';
+import { enumTableStateSaveMode, PrimengTableComponent } from '../primeng-table/primeng-table.component';
 
 import { SharedService } from '../../services/shared/shared.service';
 
@@ -15,7 +15,7 @@ import { Constants } from '../../../constants';
 export class HomeComponent implements OnInit{
   constructor(private sharedService: SharedService){}
   @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
-
+  enumTableStateSaveMode = enumTableStateSaveMode;
   employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
   predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
     employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter

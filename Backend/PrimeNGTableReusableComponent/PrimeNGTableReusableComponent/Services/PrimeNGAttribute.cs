@@ -46,6 +46,7 @@
         public EnumFrozenColumnAlign FrozenColumnAlign { get; }
         public bool WrapIsActive { get; }
         public bool WrapAllowUserEdit { get; }
+        public double ColumnWidth { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrimeNGAttribute"/> class.
@@ -96,7 +97,9 @@
             string dataTooltipCustomColumnSource = "",
             EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone,
             bool wrapIsActive = false,
-            bool wrapAllowUserEdit = true
+            bool wrapAllowUserEdit = true,
+            double columnWidth = 0
+
         ) {
             Header = header;
             DataType = dataType;
@@ -119,6 +122,7 @@
             FrozenColumnAlign = frozenColumnAlign;
             WrapIsActive = wrapIsActive;
             WrapAllowUserEdit = wrapAllowUserEdit;
+            ColumnWidth = columnWidth;
         }
     }
 }

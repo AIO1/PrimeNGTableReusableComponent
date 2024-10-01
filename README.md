@@ -538,6 +538,8 @@ This project offers some additional things that you can do with the tables and a
 - **rowSelectorColumnAligmentRight** (boolean): By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
 - **rowSelectorColumnFrozen** (boolean): By default true. If true, the row selector column will be frozen.
 - **computeScrollHeight** (boolean): By default true. If true, the table will try to keep the footer within the view's height.
+- **tableStateSaveAs** (enum): Default value is noone and the possible values are sessionStorage, localStorage and databaseStorage. It indicated were the table state should be saved to.
+- **tableStateSaveKey** (string): If specified (and tableStateSaveAs is different than noone), the save and load table state will be available. The key is used to save the table data with this reference. Different tables should have different keys so that they are now overwriten.
 
 There is an output which you can access from other components:
 

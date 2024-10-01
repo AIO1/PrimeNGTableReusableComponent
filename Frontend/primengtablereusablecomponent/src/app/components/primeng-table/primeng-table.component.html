@@ -1,5 +1,3 @@
-<!--[style]="{'height': 'calc(100vh - 400px)'}"-->
-<!--[scrollHeight]="'calc(100vh - 400px)'"-->
 <div #tableContainer style="position: relative;">
 <p-table #dt
     [scrollHeight]="computeScrollHeight ? scrollHeight : undefined"
@@ -8,8 +6,8 @@
     [resizableColumns]="true" columnResizeMode="expand"
     [reorderableColumns]="true"
     scrollDirection="both"
-    [lazy]="true" (onLazyLoad)="updateData($event)" (onColResize)="onColResize($event)"
-    (onSort)="saveTableState()" (onFilter)="saveTableState()" (onColReorder)="saveTableState()"> <!--(onColResize)="saveTableState($event)"-->
+    [lazy]="true" (onLazyLoad)="updateData($event)">
+    <!-- (onColResize)="onColResize($event)"-->
     
     <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
     <ng-template #actionColumnHeaderTemplate>
@@ -86,9 +84,20 @@
                     tooltipPosition="top">
                 </button>
             </div>
-            <!--<div style="display: flex; align-items: center; gap: 10px;">
-                <button pButton pRipple icon="pi pi-eraser" severity="danger" (click)="resetTableState()"></button>
-            </div>-->
+            <div *ngIf="tableStateSaveAs !== enumTableStateSaveMode.noone && tableStateSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
+                <button pButton pRipple icon="pi pi-save" severity="success" (click)="saveTableState()"
+                    pTooltip="Save table state"
+                    showDelay="700"
+                    tooltipPosition="top"></button>
+                <button pButton pRipple icon="pi pi-folder-open" (click)="loadTableState()" [disabled]="!hasLoadState()"
+                    pTooltip="Load table state"
+                    showDelay="700"
+                    tooltipPosition="top"></button>
+                <button pButton pRipple icon="pi pi-eraser" severity="danger" (click)="resetTableState()"
+                    pTooltip="Delete table state"
+                    showDelay="700"
+                    tooltipPosition="top"></button>
+            </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--GLOBAL FILTER-->
                 <span *ngIf="globalSearchEnabled" class="p-input-icon-left p-ml-auto">
@@ -139,6 +148,7 @@
                     pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                     [pSortableColumn]="col.field" [pSortableColumnDisabled]="!col.canBeSorted ? true : false"
                     style="text-align: center;"
+                    [style.width]="col.columnWidth > 1 ? col.columnWidth + 'px' : 'auto'" 
                     [id]="col.field + '-header'" [attr.scope]="'col'">
                     <div class="p-d-flex p-jc-between p-ai-center">
                         {{col.header}}
