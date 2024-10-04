@@ -377,7 +377,7 @@ export class PrimengTableComponent {
               this.columnsFetched = true; // Indicate that we have fetched the columns
               this.canPerformActions = true;
               this.updateData(this.tableLazyLoadEventInformation, continueAction, uponContinueActionEndModalHttp); // Update data with the fetched columns and execute continue action if provided
-            }, 500); // We need this delay so it doesn't launch another call
+            }, 450); // We need this delay so it doesn't launch another call
         },
         error: err => { // Handle error response
             this.sharedService.dataFecthError("ERROR IN GET COLUMNS AND ALLOWED PAGINATIONS", err); // Log the error
