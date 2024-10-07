@@ -211,6 +211,6 @@ namespace PrimeNG.DTOs {
 
         public bool WrapAllowUserEdit { get; set; }
 
-        public double ColumnWidth { get; set; }
+        public double Width { get; set; }
     }
 }

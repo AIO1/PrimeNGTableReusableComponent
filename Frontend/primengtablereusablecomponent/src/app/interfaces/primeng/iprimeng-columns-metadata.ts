@@ -41,5 +41,5 @@ export interface IprimengColumnsMetadata {
     frozenColumnAlign: enumFrozenColumnAlign;
     wrapIsActive: boolean;
     wrapAllowUserEdit: boolean;
-    columnWidth: number;
+    width: number;
 }

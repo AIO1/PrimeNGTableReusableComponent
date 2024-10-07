@@ -46,7 +46,7 @@
         public EnumFrozenColumnAlign FrozenColumnAlign { get; }
         public bool WrapIsActive { get; }
         public bool WrapAllowUserEdit { get; }
-        public double ColumnWidth { get; }
+        public double Width { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrimeNGAttribute"/> class.
@@ -98,7 +98,7 @@
             EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone,
             bool wrapIsActive = false,
             bool wrapAllowUserEdit = true,
-            double columnWidth = 0
+            double width = 0
 
         ) {
             Header = header;
@@ -122,7 +122,7 @@
             FrozenColumnAlign = frozenColumnAlign;
             WrapIsActive = wrapIsActive;
             WrapAllowUserEdit = wrapAllowUserEdit;
-            ColumnWidth = columnWidth;
+            Width = width;
         }
     }
 }

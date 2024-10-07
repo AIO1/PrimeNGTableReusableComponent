@@ -7,7 +7,6 @@
         [reorderableColumns]="true"
         scrollDirection="both"
         [lazy]="true" (onLazyLoad)="updateData($event)">
-        <!-- (onColResize)="onColResize($event)"-->
         
         <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
         <ng-template #actionColumnHeaderTemplate>
@@ -148,7 +147,6 @@
                         pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                         [pSortableColumn]="col.field" [pSortableColumnDisabled]="!col.canBeSorted ? true : false"
                         style="text-align: center;"
-                        [style.width]="col.columnWidth > 1 ? col.columnWidth + 'px' : 'auto'" 
                         [id]="col.field + '-header'" [attr.scope]="'col'">
                         <div class="p-d-flex p-jc-between p-ai-center">
                             {{col.header}}
@@ -223,7 +221,11 @@
                 <!-- REST OF COLUMNS -->
                 <ng-container *ngFor="let col of columns">
                     <td 
-                        [ngStyle]="col.wrapIsActive ? {'white-space': 'normal', 'word-wrap': 'break-word', 'word-break': 'break-all'} : {}"
+                        [ngStyle]="{
+                            'white-space': col.wrapIsActive ? 'normal' : 'nowrap',
+                            'word-wrap': col.wrapIsActive ? 'break-word' : 'normal',
+                            'word-break': col.wrapIsActive ? 'break-all' : 'normal'
+                        }"
                         pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                         [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" 
                         [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)"

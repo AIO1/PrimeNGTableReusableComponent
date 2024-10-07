@@ -1,5 +1,5 @@
 import { Table, TableLazyLoadEvent } from 'primeng/table';
-import { Component, ElementRef, Input, Output, ViewChild} from '@angular/core';
+import { Component, ElementRef, Input, Output, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 // Import services
@@ -19,6 +19,8 @@ import { Constants } from '../../../constants';
 import { FilterMetadata } from 'primeng/api';
 import { DatePipe } from '@angular/common';
 import { PaginatorState } from 'primeng/paginator';
+import { DomHandler } from 'primeng/dom';
+import { IPrimengSaveState } from '../../interfaces/primeng/iprimeng-save-state';
 
 export enum enumTableStateSaveMode {
   noone,
@@ -179,6 +181,7 @@ export class PrimengTableComponent {
   columnModalData: any[] = []; // The array of data that is used to display the information about the columns
   filteredColumnData: any[] = []; // The array of data that shows the columns that are currently being shown in the columns modal (to count to show the filters)
 
+
   isRowSelected(id: any): boolean {
     return this.selectedRows.includes(id);
   }
@@ -289,7 +292,7 @@ export class PrimengTableComponent {
    * 
    * updateData(event, continueAction, uponContinueActionEndModalHttp);
    */
-  updateData(event: TableLazyLoadEvent, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, forceColumns?: any[]): void {
+  updateData(event: TableLazyLoadEvent, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, tableState?: IPrimengSaveState): void {
     if (!this.canPerformActions) { // Check if actions can be performed
       return; // Exit if actions cannot be performed
     }
@@ -306,8 +309,8 @@ export class PrimengTableComponent {
       sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
       filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
-      columns: (forceColumns && forceColumns.length > 0) 
-        ? forceColumns.map(col => col.field)
+      columns: (tableState && tableState.columnsShown && tableState.columnsShown.length > 0) 
+        ? tableState.columnsShown.map(col => col.field)
         : this.columnsToShow.map(col => col.field), // Set the columns to show
         
       dateFormat: this.dateFormat,
@@ -322,13 +325,14 @@ export class PrimengTableComponent {
         this.totalRecords = responseData.totalRecords; // Update the total number of records
         this.totalRecordsNotFiltered = responseData.totalRecordsNotFiltered; // Update the total records not filtered
         this.currentPage = responseData.page; // Update the current page
-        if(forceColumns && forceColumns.length > 0) {
-          this.columnsSelected = forceColumns
+        if(tableState && tableState.columnsShown && tableState.columnsShown.length > 0) {
+          this.columnsSelected = tableState.columnsShown
             .map(data => this.columns.find((col: any) => col.field === data.field))
             .filter((col): col is IprimengColumnsMetadata => col !== undefined)
             .filter(col => !this.columnsNonSelectable.includes(col));
           this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
-          this.updateColumnsSpecialProperties(forceColumns);
+          this.updateColumnsSpecialProperties(tableState.columnsShown);
+          this.dt.restoreColumnWidths();
         }
         if (continueAction) { // Check if a continue action is specified
           continueAction(); // Execute the continue action
@@ -385,14 +389,16 @@ export class PrimengTableComponent {
     });
   }
 
-
   saveTableState(){
-    const columns: { field: string; wrapIsActive: boolean, dataAlignHorizontal: enumDataAlignHorizontal, dataAlignVertical: enumDataAlignVertical }[] = this.dt.columns!.map(column => ({
-      field: column.field,
-      wrapIsActive: column.wrapIsActive,
-      dataAlignHorizontal: column.dataAlignHorizontal,
-      dataAlignVertical: column.dataAlignVertical
-    }));
+    let widths: number[] = [];
+    let headers = DomHandler.find(this.dt.containerViewChild?.nativeElement, '.p-datatable-thead > tr > th');
+    headers.forEach((header) => widths.push(DomHandler.getOuterWidth(header)));
+    let colWidth = widths.join(',');
+    let tableWidth=0
+    if (this.dt.columnResizeMode === 'expand') {
+      tableWidth = DomHandler.getOuterWidth(this.dt.tableViewChild?.nativeElement);
+    }
+
     const filtersWithoutGlobalAndSelectedRows = {...this.modifyFiltersWithoutGlobalAndSelectedRows(JSON.parse(JSON.stringify(this.dt.filters)))};
     if (filtersWithoutGlobalAndSelectedRows['id']) {
         filtersWithoutGlobalAndSelectedRows['id'][0].value = null;
@@ -401,13 +407,15 @@ export class PrimengTableComponent {
     if (filtersWithoutGlobalAndSelectedRows['selector']) {
         filtersWithoutGlobalAndSelectedRows['selector'][0].value = null;
     }
-    const tableState: any = {
-      columns: columns,
+    const tableState: IPrimengSaveState = {
+      columnsShown: [...this.dt.columns!],
       multiSortMeta: this.dt.multiSortMeta,
       filters: filtersWithoutGlobalAndSelectedRows,
       globalSearchText: this.globalSearchText,
       currentPage: this.currentPage,
-      currentRowsPerPage: this.currentRowsPerPage
+      currentRowsPerPage: this.currentRowsPerPage,
+      tableWidth: tableWidth,
+      columnsWidth: colWidth
     }
     switch(this.tableStateSaveAs){
       case enumTableStateSaveMode.sessionStorage:
@@ -436,7 +444,8 @@ export class PrimengTableComponent {
             return false;
     }
     return tableStateNotParsed !== null; // Devuelve true si hay un valor, false si es null
-}
+  }
+
   loadTableState(){
     let tableStateNotParsed: string | null = null;
     switch(this.tableStateSaveAs){
@@ -450,7 +459,7 @@ export class PrimengTableComponent {
         this.sharedService.showToast("error","NOT IMPLEMENTED", "This type os save state has not been implemented yet.");
         return;
     }
-    const tableState = tableStateNotParsed ? JSON.parse(tableStateNotParsed) : null;
+    const tableState: IPrimengSaveState = tableStateNotParsed ? JSON.parse(tableStateNotParsed) : null;
     this.currentPage = tableState.currentPage;
     this.currentRowsPerPage = tableState.currentRowsPerPage;
     this.globalSearchText = tableState.globalSearchText;
@@ -463,7 +472,10 @@ export class PrimengTableComponent {
     this.tableLazyLoadEventInformation.filters = {...tableState.filters};
     this.dt.filters = {...tableState.filters};
 
-    this.updateData(this.tableLazyLoadEventInformation,undefined,undefined,tableState.columns);
+    this.dt.tableWidthState = tableState.tableWidth;
+    this.dt.columnWidthsState = tableState.columnsWidth;
+
+    this.updateData(this.tableLazyLoadEventInformation,undefined,undefined,tableState);
     this.sharedService.showToast("info","Table state restored", "The table state has been restored.");
   }
 
@@ -527,6 +539,7 @@ export class PrimengTableComponent {
       dt.filterGlobal('','');
     }
   }
+
   hasToClearFilters(dt: Table, globalSearchText: string|null, force:boolean = false): boolean{
     let hasToClear: boolean = false;
     const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(dt.filters)
@@ -537,6 +550,7 @@ export class PrimengTableComponent {
     }
     return hasToClear;
   }
+
   clearSorts(dt: Table, force: boolean = false): void{
     let hasToClear = this.hasToClearSorts(dt, force);
     if(hasToClear){
@@ -544,6 +558,7 @@ export class PrimengTableComponent {
       dt.sortMultiple();
     }
   }
+
   hasToClearSorts(dt: Table, force: boolean = false): boolean{
     let hasToClear: boolean = false;
     const hasSorts = (dt.multiSortMeta && dt.multiSortMeta.length > 0);
@@ -662,7 +677,6 @@ export class PrimengTableComponent {
   pageChange(event: PaginatorState): void {
     this.currentPage = event.page!; // Update the current page
     this.currentRowsPerPage = event.rows!; // Update the number of rows per page
-    //this.saveTableState();
     this.updateData(this.tableLazyLoadEventInformation); // Force the data to be updated
   }
 
@@ -680,7 +694,8 @@ export class PrimengTableComponent {
           dataAlignHorizontal: column.dataAlignHorizontal,
           dataAlignHorizontalDisabled: !column.dataAlignHorizontalAllowUserEdit,
           dataAlignVertical: column.dataAlignVertical,
-          dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit
+          dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit,
+          width: column.width
       };
     });
     tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
@@ -731,27 +746,6 @@ export class PrimengTableComponent {
       !this.columnsNonSelectable.some(nonSelectable => nonSelectable.field === column.field)
     ); // Update selected columns
 
-    //PERFORM UPDATES TO THE COLUMNS
-    /*const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
-    const columnModalDataMap = new Map(this.columnModalData.map((item: any) => [item.field, { 
-        wrapIsActive: item.wrapIsActive, 
-        dataAlignHorizontal: item.dataAlignHorizontal,
-        dataAlignVertical: item.dataAlignVertical
-    }]));
-    const updatedFields = new Set(); // To track updated fields
-    allColumns.forEach((columnList) => {
-        columnList.forEach((col: any) => {
-            if (columnModalDataMap.has(col.field) && !updatedFields.has(col.field)) {
-                const columnData = columnModalDataMap.get(col.field);
-                if (columnData) {
-                    col.wrapIsActive = columnData.wrapIsActive;
-                    col.dataAlignHorizontal = columnData.dataAlignHorizontal;
-                    col.dataAlignVertical = columnData.dataAlignVertical;
-                    updatedFields.add(col.field);
-                }
-            }
-        });
-    });*/
     this.updateColumnsSpecialProperties(this.columnModalData);
 
     this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
@@ -763,7 +757,8 @@ export class PrimengTableComponent {
     const columnModalDataMap = new Map(columnsSource.map((item: any) => [item.field, { 
         wrapIsActive: item.wrapIsActive, 
         dataAlignHorizontal: item.dataAlignHorizontal,
-        dataAlignVertical: item.dataAlignVertical
+        dataAlignVertical: item.dataAlignVertical,
+        width: item.width
     }]));
     const updatedFields = new Set(); // To track updated fields
     allColumns.forEach((columnList) => {
@@ -774,11 +769,13 @@ export class PrimengTableComponent {
                     col.wrapIsActive = columnData.wrapIsActive;
                     col.dataAlignHorizontal = columnData.dataAlignHorizontal;
                     col.dataAlignVertical = columnData.dataAlignVertical;
+                    col.width = columnData.width;
                     updatedFields.add(col.field);
                 }
             }
         });
     });
+    console.log("ALL COLUMNS", allColumns)
   }
 
   filterColumnModal(event: any) {
@@ -793,18 +790,6 @@ export class PrimengTableComponent {
     this.filteredColumnData = this.columnModalData.filter(column => 
         column.header.toLowerCase().includes(filterValue)
     );
-  }
-
-  onColResize(event: any) {
-    //console.log(event)
-    const resizedColumn = this.columns.find(col => col.field === event.field);
-    console.log(event)
-    if (resizedColumn) {
-      resizedColumn.columnWidth = event.newWidth; // Actualiza el ancho de la columna
-    }
-    console.log(this.dt)
-    console.log(this.columnsToShow)
-    //_initialColWidths
   }
 
   /**

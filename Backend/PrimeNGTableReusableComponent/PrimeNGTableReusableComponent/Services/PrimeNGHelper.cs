@@ -70,7 +70,7 @@ namespace PrimeNG.HelperFunctions {
                         FrozenColumnAlign = primeNGAttributes.FrozenColumnAlign,
                         WrapIsActive = primeNGAttributes.WrapIsActive,
                         WrapAllowUserEdit = primeNGAttributes.WrapAllowUserEdit,
-                        ColumnWidth = primeNGAttributes.ColumnWidth
+                        Width = primeNGAttributes.Width
                     });
                 }
             }
