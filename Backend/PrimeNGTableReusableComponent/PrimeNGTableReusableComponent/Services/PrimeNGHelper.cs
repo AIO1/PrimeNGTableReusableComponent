@@ -194,7 +194,7 @@ namespace PrimeNG.HelperFunctions {
         private static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<PrimeNGTableFilterModel>> columnFilters, List<string> visibleColumns, MethodInfo stringDateFormatMethod) {
             foreach(var entry in columnFilters) { // Iterate through the column filters
                 string key = entry.Key; // Get the key of the current column filter
-                if(/*!visibleColumns.Contains(key)*/key == "selector") { // If the column is not visible
+                if((!visibleColumns.Contains(key) && key !="id") || key == "selector") {
                     continue; // Skip processing if the column is not visible
                 }
                 List<PrimeNGTableFilterModel> values = entry.Value; // Get the filter values for the column

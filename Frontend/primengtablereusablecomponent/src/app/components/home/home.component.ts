@@ -23,14 +23,6 @@ export class HomeComponent implements OnInit{
 
   headerActionButtons: IprimengActionButtons[] = [
     {
-      icon: 'pi pi-calculator',
-      action: () => {
-        this.sharedService.clearToasts();
-        this.sharedService.showToast("success","Clicked on the calculator","Cool! It wokrs :)");
-      },
-      tooltip: 'Example of action button'
-    },
-    {
       icon: 'pi pi-file',
       color: 'p-button-success',
       action: () => {

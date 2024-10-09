@@ -12,9 +12,9 @@
         <ng-template #actionColumnHeaderTemplate>
             <th *ngIf="rowActionButtons.length > 0" 
                 pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable"
+                pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)"
                 id="actions-header" [attr.scope]="'col'"
-                style="text-align: center;"
-                pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+                style="text-align: center;">
                 {{actionColumnName}}
             </th>
         </ng-template>
@@ -41,8 +41,9 @@
         <!--TEMPLATE FOR THE ROW SELECTOR HEADER COLUMN-->
         <ng-template #rowSelectorColumnHeaderTemplate>
             <th id="rowSelector-header" [attr.scope]="'col'"
-                style="text-align: center;"
-                pFrozenColumn [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+                pResizableColumn [pResizableColumnDisabled]="!rowselectorColumnResizable"
+                pFrozenColumn [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)"
+                style="text-align: center;">
                 <div class="p-d-flex p-jc-between p-ai-center">
                     {{rowSelectorColumName}}
                     <p-columnFilter type="boolean" field="selector" display="menu" showButtons="false"/>
@@ -83,17 +84,20 @@
                         tooltipPosition="top">
                     </button>
                 </div>
-                <div *ngIf="tableStateSaveAs !== enumTableStateSaveMode.noone && tableStateSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
-                    <button pButton pRipple icon="pi pi-save" severity="success" (click)="saveTableState()"
+                <div *ngIf="tableStateSaveAs !== enumTableStateSaveMode.noone && tableSaveStateFirstFetch===true && tableStateSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
+                    <p-splitButton icon="pi pi-save" severity="success" (onClick)="saveTableState()"
                         pTooltip="Save table state"
                         showDelay="700"
-                        tooltipPosition="top"></button>
-                    <button pButton pRipple icon="pi pi-folder-open" (click)="loadTableState()" [disabled]="!hasLoadState()"
+                        tooltipPosition="top"
+                        [model]="tableState_saveItems"></p-splitButton>
+                    <p-splitButton icon="pi pi-folder-open" (onClick)="loadTableState()" [disabled]="!hasLoadState()"
                         pTooltip="Load table state"
                         showDelay="700"
-                        tooltipPosition="top"></button>
-                    <button pButton pRipple icon="pi pi-eraser" severity="danger" (click)="resetTableState()"
-                        pTooltip="Delete table state"
+                        tooltipPosition="top"
+                        [model]="tableState_loadItems"
+                        [menuStyle]="{'width': '350px'}"></p-splitButton>
+                    <button pButton pRipple icon="pi pi-eraser" (click)="resetTableState()"
+                        pTooltip="Reset table state"
                         showDelay="700"
                         tooltipPosition="top"></button>
                 </div>
@@ -435,5 +439,28 @@
     <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
         <p-button (click)="columnModalShow = false" label="Cancel changes" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
         <p-button (click)="applyColumnModalChanges()" label="Save changes" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!--TABLE STATE SAVE-->
+<p-dialog [(visible)]="tableStateNewModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
+    <ng-template pTemplate="header">
+        <div class="inline-flex align-items-center justify-content-center gap-2">
+            <span class="white-space-nowrap"><b>CREATE NEW TABLE STATE</b></span>
+        </div>
+    </ng-template>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label for="newtablestatename"><strong>State alias<span style="color: red;">*</span></strong></label>
+        <input 
+            pInputText 
+            id="newtablestatename" 
+            aria-describedby="newtablestatename-help" 
+            style="width: 400px;"
+            maxlength="50"
+            [(ngModel)]="tableStateNewAlias"/>
+    </div>
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="tableStateNewModalShow = false" label="Cancel" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="createTableSate()" label="Create" severity="success" [style]="{'margin-top': '20px'}"></p-button>
     </ng-template>
 </p-dialog>

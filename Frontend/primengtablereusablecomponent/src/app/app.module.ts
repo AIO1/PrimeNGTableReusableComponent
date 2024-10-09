@@ -16,6 +16,7 @@ import { TagModule } from 'primeng/tag';
 import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputGroupModule } from 'primeng/inputgroup';
+import { SplitButtonModule } from 'primeng/splitbutton';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DatePipe, registerLocaleData } from '@angular/common'; // registerLocaleData import is optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
 
@@ -57,6 +58,7 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     TooltipModule,
     InputGroupModule,
     CheckboxModule,
+    SplitButtonModule,
 
     DialogModule, // Optional import to show the loading indicator in HTTP calls
     ProgressSpinnerModule // Optional import to show the loading indicator in HTTP calls

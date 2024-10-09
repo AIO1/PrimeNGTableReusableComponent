@@ -4,7 +4,7 @@ import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 // Import services
 import { SharedService } from '../../services/shared/shared.service';
-import { PrimengSharedService } from '../../services/shared/primengShared.service';
+import { PrimengTableService } from '../../services/primeng-table/primengTable.service';
 
 // Import interfaces
 import { enumDataAlignHorizontal, enumDataAlignVertical, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
@@ -16,11 +16,11 @@ import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-pred
 
 // Import other
 import { Constants } from '../../../constants';
-import { FilterMetadata } from 'primeng/api';
+import { FilterMetadata, MenuItem } from 'primeng/api';
 import { DatePipe } from '@angular/common';
 import { PaginatorState } from 'primeng/paginator';
-import { DomHandler } from 'primeng/dom';
-import { IPrimengSaveState } from '../../interfaces/primeng/iprimeng-save-state';
+import { IPrimengSaveState, IPrimengSaveStateList } from '../../interfaces/primeng/iprimeng-save-state';
+import { PrimengTableStateService } from '../../services/primeng-table/primengTableState.service';
 
 export enum enumTableStateSaveMode {
   noone,
@@ -36,7 +36,8 @@ export enum enumTableStateSaveMode {
 
 export class PrimengTableComponent {
   constructor(
-    private primengSharedService: PrimengSharedService,
+    private primengTableService: PrimengTableService,
+    private primengTableStateService: PrimengTableStateService,
     private sharedService: SharedService, 
     private datePipe: DatePipe,
     private sanitizer: DomSanitizer){}
@@ -63,6 +64,7 @@ export class PrimengTableComponent {
   @Input() rowSelectorColumName: string = "Selected"; // The title of the row selection column. By default is "Selected"
   @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
   @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
+  @Input() rowselectorColumnResizable: boolean = false;
   @Input() computeScrollHeight: boolean = true; // If true, the table will try not to grow more than the total height of the window vertically
   @Input() tableStateSaveAs: enumTableStateSaveMode = enumTableStateSaveMode.noone; // How the table state will be saved
   @Input() tableStateSaveKey: string = ""; // The key used to save the table state
@@ -79,6 +81,26 @@ export class PrimengTableComponent {
   enumTableStateSaveMode = enumTableStateSaveMode;
 
   scrollHeight: string = "0px";
+
+  tableState_saveItems: MenuItem[] = [
+    {
+      label: 'New table state',
+      command: () => {
+          this.tableStateNewAlias = "";
+          this.tableStateNewModalShow=true;
+      }
+    }
+  ];
+  tableState_loadItems: MenuItem[] = [];
+
+  private tableSaveStateInit: boolean = false;
+  tableSaveStateFirstFetch: boolean = false;
+  tableSaveStateList: IPrimengSaveStateList[] = [];
+  tableStateNewModalShow: boolean = false;
+  tableStateNewAlias: string = "";
+  tableStateCurrentSelectedAlias: string | null = null;
+
+  
   @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
   @ViewChild('paginatorContainer', { static: false }) paginatorContainer!: ElementRef;
   @ViewChild('headerContainer', { static: false }) headerContainer!: ElementRef;
@@ -318,7 +340,7 @@ export class PrimengTableComponent {
       dateCulture: this.dateCulture
     };
     this.sharedService.handleHttpResponse(
-      this.primengSharedService.fetchTableData(this.dataSoureURL, requestData) // Fetch table data from the server
+      this.primengTableService.fetchTableData(this.dataSoureURL, requestData) // Fetch table data from the server
     ).subscribe({
       next: (responseData: IprimengTableDataReturn) => { // Handle the successful data retrieval
         this.data = responseData.data; // Update the table data
@@ -333,6 +355,10 @@ export class PrimengTableComponent {
           this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
           this.updateColumnsSpecialProperties(tableState.columnsShown);
           this.dt.restoreColumnWidths();
+        }
+        if(!this.tableSaveStateInit){
+          this.tableSaveStateInit=true;
+          this.tableStateListGet();
         }
         if (continueAction) { // Check if a continue action is specified
           continueAction(); // Execute the continue action
@@ -360,7 +386,7 @@ export class PrimengTableComponent {
     Constants.waitingHTTP = true; // Set the HTTP waiting state to true
     this.columnsFetched = false;
     this.canPerformActions = false;
-    this.sharedService.handleHttpResponse(this.primengSharedService.fetchTableColumnsAndAllowedPaginations(this.columnsSourceURL)).subscribe({
+    this.sharedService.handleHttpResponse(this.primengTableService.fetchTableColumnsAndAllowedPaginations(this.columnsSourceURL)).subscribe({
         next: (responseData: IprimengColumnsAndAllowedPagination) => { // Handle successful response
             this.allowedRowsPerPage = responseData.allowedItemsPerPage; // Update the number of rows allowed per page
             this.currentRowsPerPage = Math.min(...this.allowedRowsPerPage); // Update the current rows per page to use the minimum value of allowed rows per page by default
@@ -389,77 +415,115 @@ export class PrimengTableComponent {
     });
   }
 
-  saveTableState(){
-    let widths: number[] = [];
-    let headers = DomHandler.find(this.dt.containerViewChild?.nativeElement, '.p-datatable-thead > tr > th');
-    headers.forEach((header) => widths.push(DomHandler.getOuterWidth(header)));
-    let colWidth = widths.join(',');
-    let tableWidth=0
-    if (this.dt.columnResizeMode === 'expand') {
-      tableWidth = DomHandler.getOuterWidth(this.dt.tableViewChild?.nativeElement);
+  createTableSate(){
+    const aliasToSave: string = this.tableStateNewAlias.trim();
+    if(aliasToSave.length < 3 || aliasToSave.length > 50){
+      this.sharedService.showToast("error", "INCORRECT TABLE STATE ALIAS LENGTH", "The table state alias must be between 3 and 50 characters.");
+      return;
     }
+    if(this.primengTableStateService.get(this.tableSaveStateList, aliasToSave) !== undefined){
+      this.sharedService.showToast("error", "ALIAS ALREADY EXISTS", "A save state with this alias already exists.");
+      return;
+    }
+    const newState: IPrimengSaveStateList = {
+      stateAlias: aliasToSave,
+      state: this.primengTableStateService.generateSaveData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
+    };
+    this.tableSaveStateList.push(newState);
+    this.tableStateCurrentSelectedAlias = aliasToSave;
+    this.saveTableState(true);
+  }
 
-    const filtersWithoutGlobalAndSelectedRows = {...this.modifyFiltersWithoutGlobalAndSelectedRows(JSON.parse(JSON.stringify(this.dt.filters)))};
-    if (filtersWithoutGlobalAndSelectedRows['id']) {
-        filtersWithoutGlobalAndSelectedRows['id'][0].value = null;
+  saveTableState(closeCreateNewModal: boolean = false, skipCreate: boolean = false){
+    if(this.tableStateCurrentSelectedAlias===null && !skipCreate){
+      this.tableStateNewAlias="";
+      this.tableStateNewModalShow=true;
+      return;
     }
-  
-    if (filtersWithoutGlobalAndSelectedRows['selector']) {
-        filtersWithoutGlobalAndSelectedRows['selector'][0].value = null;
+    if(!skipCreate && this.tableStateCurrentSelectedAlias!==null){
+      let itemToUpdate = this.primengTableStateService.get(this.tableSaveStateList, this.tableStateCurrentSelectedAlias);
+      if (itemToUpdate === undefined) {
+        this.sharedService.showToast("error","ERROR SAVING STATE", `The table state '${this.tableStateCurrentSelectedAlias}' no longer exists.`);
+        this.tableStateCurrentSelectedAlias=null;
+        return;
+      }
+      itemToUpdate.state = this.primengTableStateService.generateSaveData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this));
     }
-    const tableState: IPrimengSaveState = {
-      columnsShown: [...this.dt.columns!],
-      multiSortMeta: this.dt.multiSortMeta,
-      filters: filtersWithoutGlobalAndSelectedRows,
-      globalSearchText: this.globalSearchText,
-      currentPage: this.currentPage,
-      currentRowsPerPage: this.currentRowsPerPage,
-      tableWidth: tableWidth,
-      columnsWidth: colWidth
-    }
+    let tableState: string = JSON.stringify(this.tableSaveStateList);
     switch(this.tableStateSaveAs){
       case enumTableStateSaveMode.sessionStorage:
-        sessionStorage.setItem(this.tableStateSaveKey, JSON.stringify(tableState));
+        sessionStorage.setItem(this.tableStateSaveKey, tableState);
       break;
       case enumTableStateSaveMode.localStorage:
-        localStorage.setItem(this.tableStateSaveKey, JSON.stringify(tableState));
+        localStorage.setItem(this.tableStateSaveKey, tableState);
       break;
       default:
         this.sharedService.showToast("error","NOT IMPLEMENTED", "This type os save state has not been implemented yet.");
         return;
     }
-    this.sharedService.showToast("info","Table state saved", "The state of the table has been saved.");
+    if(!skipCreate){
+      this.sharedService.showToast("info","Table state saved", `The table state '${this.tableStateCurrentSelectedAlias}' has been saved.`);
+    }
+    this.primengTableStateService.sort(this.tableSaveStateList);
+    if(closeCreateNewModal){
+      this.tableState_loadItems=[...this.primengTableStateService.updateMenuItems(this.tableSaveStateList, this.loadTableState.bind(this), this.deleteTableState.bind(this))];
+      this.tableStateNewModalShow=false;
+    }
+  }
+  deleteTableState(aliasToDelete: string){
+    let itemToFind = this.primengTableStateService.get(this.tableSaveStateList, aliasToDelete);
+    if (itemToFind === undefined) {
+      this.sharedService.showToast("error","ERROR SAVING STATE", `Table state '${aliasToDelete}' no longer exists.`);
+      return;
+    }
+    this.tableSaveStateList = this.tableSaveStateList.filter(item => item.stateAlias !== aliasToDelete);
+    this.tableState_loadItems=[...this.primengTableStateService.updateMenuItems(this.tableSaveStateList, this.loadTableState.bind(this), this.deleteTableState.bind(this))];
+    if(this.tableStateCurrentSelectedAlias===aliasToDelete){
+      if(this.tableSaveStateList.length>0){
+        this.tableStateCurrentSelectedAlias=this.tableSaveStateList[0].stateAlias;
+      } else {
+        this.tableStateCurrentSelectedAlias=null;
+      }
+    }
+    this.saveTableState(false,true);
+    this.sharedService.showToast("error","DELETED TABLE STATE", `Table state '${aliasToDelete}' has been deleted.`);
+  }
+
+  tableStateListGet(): void {
+    this.tableSaveStateList = [...this.primengTableStateService.recoverList(this.tableStateSaveAs, this.tableStateSaveKey)];
+    this.tableState_loadItems=[...this.primengTableStateService.updateMenuItems(this.tableSaveStateList, this.loadTableState.bind(this), this.deleteTableState.bind(this))];
+    this.tableSaveStateFirstFetch=true;
+    if(this.tableSaveStateList.length > 0){
+      this.primengTableStateService.sort(this.tableSaveStateList);
+      this.tableStateCurrentSelectedAlias = this.tableSaveStateList[0].stateAlias;
+    }
   }
 
   hasLoadState(): boolean {
-    let tableStateNotParsed: string | null = null;
-    switch (this.tableStateSaveAs) {
-        case enumTableStateSaveMode.sessionStorage:
-            tableStateNotParsed = sessionStorage.getItem(this.tableStateSaveKey);
-            break;
-        case enumTableStateSaveMode.localStorage:
-            tableStateNotParsed = localStorage.getItem(this.tableStateSaveKey);
-            break;
-        default:
-            return false;
+    if(this.tableStateSaveKey === "" || this.tableStateSaveAs===enumTableStateSaveMode.noone || this.tableSaveStateList.length == 0){
+      return false;
     }
-    return tableStateNotParsed !== null; // Devuelve true si hay un valor, false si es null
+    return true;
   }
 
-  loadTableState(){
-    let tableStateNotParsed: string | null = null;
-    switch(this.tableStateSaveAs){
-      case enumTableStateSaveMode.sessionStorage:
-        tableStateNotParsed = sessionStorage.getItem(this.tableStateSaveKey);
-      break;
-      case enumTableStateSaveMode.localStorage:
-        tableStateNotParsed = localStorage.getItem(this.tableStateSaveKey);
-      break;
-      default:
-        this.sharedService.showToast("error","NOT IMPLEMENTED", "This type os save state has not been implemented yet.");
-        return;
+  loadTableState(aliasToSet?: string){
+    if(aliasToSet){
+      this.tableStateCurrentSelectedAlias=aliasToSet;
     }
-    const tableState: IPrimengSaveState = tableStateNotParsed ? JSON.parse(tableStateNotParsed) : null;
+    if(this.tableStateCurrentSelectedAlias===null){
+      if(this.tableSaveStateList.length>0){
+        this.tableStateCurrentSelectedAlias=this.tableSaveStateList[0].stateAlias;
+      } else {
+        return;
+      }
+    }
+    let itemToFind = this.primengTableStateService.get(this.tableSaveStateList, this.tableStateCurrentSelectedAlias);
+    if (itemToFind === undefined) {
+      this.sharedService.showToast("error","ERROR SAVING STATE", `Table state '${this.tableStateCurrentSelectedAlias}' no longer exists.`);
+      this.tableStateCurrentSelectedAlias=null;
+      return;
+    }
+    const tableState: IPrimengSaveState = itemToFind.state;
     this.currentPage = tableState.currentPage;
     this.currentRowsPerPage = tableState.currentRowsPerPage;
     this.globalSearchText = tableState.globalSearchText;
@@ -476,7 +540,7 @@ export class PrimengTableComponent {
     this.dt.columnWidthsState = tableState.columnsWidth;
 
     this.updateData(this.tableLazyLoadEventInformation,undefined,undefined,tableState);
-    this.sharedService.showToast("info","Table state restored", "The table state has been restored.");
+    this.sharedService.showToast("info","Table state restored", `The table state '${this.tableStateCurrentSelectedAlias}' has been restored.`);
   }
 
   resetTableState(){
@@ -775,7 +839,6 @@ export class PrimengTableComponent {
             }
         });
     });
-    console.log("ALL COLUMNS", allColumns)
   }
 
   filterColumnModal(event: any) {
@@ -792,46 +855,8 @@ export class PrimengTableComponent {
     );
   }
 
-  /**
-   * Generates SafeHtml with highlighted text based on global search criteria.
-   *
-   * @param {any} cellValue - The value of the cell to be highlighted.
-   * @param {IprimengColumnsMetadata} colMetadata - The column configuration for the cell.
-   * @param {string | null} globalSearchText - The global search text to highlight within the cell value.
-   * @returns {SafeHtml} - HTML content with highlighted text if it matches the global search criteria.
-   * 
-   * @example
-   * // Define column configuration
-   * const colMetadata: IprimengColumnsMetadata = { dataType: 'string', canBeGlobalFiltered: true, etc... };
-   * 
-   * // Cell value to be highlighted
-   * const cellValue: string = 'Example text';
-   * 
-   * // Global search text
-   * const globalSearchText: string = 'text';
-   * 
-   * // Use highlightText to get SafeHtml with highlighted text
-   * const highlightedHtml: SafeHtml = highlightText(cellValue, colMetadata, globalSearchText);
-   */
   highlightText(cellValue: any, colMetadata: IprimengColumnsMetadata, globalSearchText: string | null): SafeHtml {
-    if (colMetadata.dataType !== enumDataType.Boolean && globalSearchText !== null) { // Check if the column data type is not boolean and global search text is not null
-      const valueToUse = String(cellValue); // Convert cell value to string
-      if (colMetadata.canBeGlobalFiltered) { // Check if the column can be globally filtered
-        const searchLowerCase = globalSearchText.toUpperCase(); // Convert global search text to uppercase for case-insensitive comparison
-        const cellValueLowerCase = valueToUse.toUpperCase(); // Convert cell value to uppercase for case-insensitive comparison
-        if (cellValueLowerCase.includes(searchLowerCase)) { // Check if the cell value contains the search text
-          // Determine the start and end indices of the search text within the cell value
-          const startIndex = cellValueLowerCase.indexOf(searchLowerCase);
-          const endIndex = startIndex + globalSearchText.length;
-          // Extract the prefix, highlight, and suffix of the cell value
-          const prefix = valueToUse.substring(0, startIndex);
-          const highlight = valueToUse.substring(startIndex, endIndex);
-          const suffix = valueToUse.substring(endIndex);
-          return `${prefix}<span class="highlighted-text">${highlight}</span>${suffix}`; // Construct SafeHtml with highlighted text using the <mark> element
-        }
-      }
-    }
-    return cellValue; // Return the original cell value if it doesn't meet the highlighting conditions
+    return this.primengTableService.highlightText(cellValue, colMetadata, globalSearchText);
   }
 
   /**
