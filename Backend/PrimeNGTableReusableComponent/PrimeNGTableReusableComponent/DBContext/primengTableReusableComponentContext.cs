@@ -14,6 +14,8 @@ public partial class primengTableReusableComponentContext : DbContext
 
     public virtual DbSet<EmploymentStatusCategory> EmploymentStatusCategories { get; set; }
 
+    public virtual DbSet<TableSaveState> TableSaveStates { get; set; }
+
     public virtual DbSet<TestTable> TestTables { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -59,6 +61,37 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasMaxLength(255)
                 .HasComment("The name of the employment status.")
                 .HasColumnName("statusName");
+        });
+
+        modelBuilder.Entity<TableSaveState>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("TableSaveStates_PK");
+
+            entity.ToTable(tb => tb.HasTrigger("TableSaveStates_tg_dateUpdated"));
+
+            entity.HasIndex(e => new { e.Username, e.TableKey, e.StateName }, "TableSaveStates_data_UNIQUE").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("ID");
+            entity.Property(e => e.DateCreated)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnName("dateCreated");
+            entity.Property(e => e.DateUpdated)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getutcdate())")
+                .HasColumnName("dateUpdated");
+            entity.Property(e => e.StateData).HasColumnName("stateData");
+            entity.Property(e => e.StateName)
+                .HasMaxLength(50)
+                .HasColumnName("stateName");
+            entity.Property(e => e.TableKey)
+                .HasMaxLength(255)
+                .HasColumnName("tableKey");
+            entity.Property(e => e.Username)
+                .HasMaxLength(255)
+                .HasColumnName("username");
         });
 
         modelBuilder.Entity<TestTable>(entity =>

@@ -6,6 +6,8 @@ using PrimeNGTableReusableComponent.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Models.PrimengTableReusableComponent;
+using Newtonsoft.Json;
 
 namespace PrimeNGTableReusableComponent.Controllers {
     [ApiController]
@@ -86,6 +88,62 @@ namespace PrimeNGTableReusableComponent.Controllers {
                 }).AsNoTracking().ToListAsync();
                 return Ok(data);
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+            }
+        }
+        #endregion
+        #region 
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetSaveState([FromBody] PrimeNGGetSaveStateRequestDTO request) {
+            try {
+                var stateData = await _context.TableSaveStates
+                .Where(s => s.Username == request.Username && s.TableKey == request.TableStateSaveKey)
+                .ToListAsync();
+                if(stateData.Any()) {
+                    var result = stateData.Select(s => new PrimeNGSaveStateListDTO {
+                        StateAlias = s.StateName, // Asumiendo que StateName es el alias
+                        State = s.StateData
+                    }).ToList();
+                    return Ok(result);
+                }
+                return Ok(new List<PrimeNGSaveStateListDTO>());
+            } catch(Exception ex) {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+            }
+        }
+        #endregion
+        #region 
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SetSaveState([FromBody] PrimeNGSetSaveStateRequestDTO request) {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try {
+                List<TableSaveState>? existingStates = await _context.TableSaveStates
+                    .Where(t => t.Username == request.Username && t.TableKey == request.TableStateSaveKey)
+                    .ToListAsync();
+                List<string>? receivedAliases = request.SaveStates.Select(s => s.StateAlias).ToList();
+                foreach(PrimeNGSaveStateListDTO saveState in request.SaveStates) {
+                    TableSaveState? existingState = existingStates.Find(s => s.StateName == saveState.StateAlias);
+                    if(existingState != null) {
+                        existingState.StateData = saveState.State;
+                    } else {
+                        TableSaveState newState = new TableSaveState {
+                            Username = request.Username,
+                            TableKey = request.TableStateSaveKey,
+                            StateName = saveState.StateAlias,
+                            StateData = saveState.State
+                        };
+                        await _context.TableSaveStates.AddAsync(newState);
+                    }
+                }
+                var statesToDelete = existingStates.Where(e => !receivedAliases.Contains(e.StateName)).ToList();
+                if(statesToDelete.Count != 0) {
+                    _context.TableSaveStates.RemoveRange(statesToDelete);
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Ok();
+            } catch(Exception ex) {
+                await transaction.RollbackAsync();
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
         }

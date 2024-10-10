@@ -1,0 +1,22 @@
+CREATE TABLE primengtablereusablecomponent.dbo.TableSaveStates (
+	ID uniqueidentifier DEFAULT newid() NOT NULL,
+	dateCreated datetime2(0) DEFAULT getutcdate() NOT NULL,
+	dateUpdated datetime2(0) DEFAULT getutcdate() NOT NULL,
+	username nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	tableKey nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	stateName nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	stateData nvarchar(MAX) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	CONSTRAINT TableSaveStates_PK PRIMARY KEY (ID),
+	CONSTRAINT TableSaveStates_data_UNIQUE UNIQUE (username,tableKey,stateName)
+);
+
+
+CREATE TRIGGER [TableSaveStates_tg_dateUpdated]
+    ON [TableSaveStates]
+    AFTER UPDATE 
+    AS BEGIN
+       UPDATE [TableSaveStates]
+       SET dateUpdated = getutcdate()
+       FROM INSERTED i
+       WHERE i.ID = [TableSaveStates].ID
+    END;

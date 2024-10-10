@@ -213,4 +213,19 @@ namespace PrimeNG.DTOs {
 
         public double Width { get; set; }
     }
+
+    public class PrimeNGGetSaveStateRequestDTO {
+        public string Username { get; set; } = null!;
+        public string TableStateSaveKey { get; set; } = null!;
+    }
+    public class PrimeNGSetSaveStateRequestDTO {
+        public string Username { get; set; } = null!;
+        public string TableStateSaveKey { get; set; } = null!;
+        public PrimeNGSaveStateListDTO[] SaveStates { get; set; } = null!;
+    }
+
+    public class PrimeNGSaveStateListDTO {
+        public string StateAlias { get; set; } = null!;
+        public string State { get; set; } = null!;
+    }
 }

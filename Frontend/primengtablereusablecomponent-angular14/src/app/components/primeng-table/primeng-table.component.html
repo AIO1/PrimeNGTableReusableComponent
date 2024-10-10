@@ -1,0 +1,465 @@
+<div #tableContainer style="position: relative;">
+    <p-table #dt
+        [scrollHeight]="computeScrollHeight ? scrollHeight : ''"
+        [columns]="columnsToShow" [value]="data" dataKey="id" [scrollable]="true" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+        sortMode="multiple"
+        [resizableColumns]="true" columnResizeMode="expand"
+        [reorderableColumns]="true"
+        scrollDirection="both"
+        [lazy]="true" (onLazyLoad)="updateData($event)">
+        
+        <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
+        <ng-template #actionColumnHeaderTemplate>
+            <th *ngIf="rowActionButtons.length > 0" 
+                pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable"
+                pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)"
+                id="actions-header" [attr.scope]="'col'"
+                style="text-align: center;">
+                {{actionColumnName}}
+            </th>
+        </ng-template>
+
+        <!--TEMPLATE FOR THE ACTIONS ROW COLUMN-->
+        <ng-template #actionColumnTemplate let-rowData="rowData">
+            <td *ngIf="rowActionButtons.length > 0" style="text-align: center; vertical-align: middle;"
+                pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+                <ng-container *ngFor="let button of rowActionButtons">
+                    <button [disabled]="button.condition ? !button.condition(rowData) : false"
+                            pButton pRipple
+                            [ngClass]="button.color || 'p-button-outlined'"
+                            [icon]="button.icon ? button.icon : ''" 
+                            [label]="button.label ? button.label : ''" 
+                            (click)="button.action && handleButtonsClick(button.action, rowData)" 
+                            size="small" 
+                            class="p-button-sm" 
+                            style="height: 28px; margin-right: 10px;">
+                    </button>
+                </ng-container>
+            </td>
+        </ng-template>
+
+        <!--TEMPLATE FOR THE ROW SELECTOR HEADER COLUMN-->
+        <ng-template #rowSelectorColumnHeaderTemplate>
+            <th id="rowSelector-header" [attr.scope]="'col'"
+                pResizableColumn [pResizableColumnDisabled]="!rowselectorColumnResizable"
+                pFrozenColumn [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)"
+                style="text-align: center;">
+                <div class="p-d-flex p-jc-between p-ai-center">
+                    {{rowSelectorColumName}}
+                    <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"></p-columnFilter>
+                </div>
+            </th>
+        </ng-template>
+
+        <!--TEMPLATE FOR THE ROW SELECTOR ROW COLUMN-->
+        <ng-template #rowSelectorColumnTemplate let-rowData="rowData">
+            <td style="text-align: center; vertical-align: middle;"
+                pFrozenColumn [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
+                <p-checkbox 
+                    [ngModel]="isRowSelected(rowData.id)"
+                    (onChange)="onRowSelectChange($event, rowData.id)"
+                    [binary]="true"></p-checkbox>
+            </td>
+        </ng-template>
+        
+        <ng-template pTemplate="caption"> <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
+            <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <!--CHOOSE COLUMNS TO SHOW-->
+                    <button pButton pRipple icon="pi pi-objects-column" (click)="showColumnModal()"
+                        pTooltip="Modify columns"
+                        [showDelay]="700"
+                        tooltipPosition="top">
+                    </button>
+
+                    <!--CLEAR SORTS AND FILTERS-->
+                    <button pButton pRipple icon="pi pi-sort-alt-slash" (click)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
+                        pTooltip="Clear sorts"
+                        [showDelay]="700"
+                        tooltipPosition="top">
+                    </button>
+                    <button pButton pRipple icon="pi pi-filter-slash" (click)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
+                        pTooltip="Clear filters"
+                        [showDelay]="700"
+                        tooltipPosition="top">
+                    </button>
+                </div>
+                <div *ngIf="tableStateSaveAs !== enumTableStateSaveMode.noone && tableSaveStateFirstFetch===true && tableStateSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
+                    <p-splitButton icon="pi pi-save" severity="success" (onClick)="saveTableState()"
+                        pTooltip="Save table state"
+                        [showDelay]="700"
+                        tooltipPosition="top"
+                        [model]="tableState_saveItems"></p-splitButton>
+                    <p-splitButton icon="pi pi-folder-open" (onClick)="loadTableState()" [disabled]="!hasLoadState()"
+                        pTooltip="Load table state"
+                        [showDelay]="700"
+                        tooltipPosition="top"
+                        [model]="tableState_loadItems"
+                        [menuStyle]="{'width': '350px'}"></p-splitButton>
+                    <button pButton pRipple icon="pi pi-eraser" (click)="resetTableState()"
+                        pTooltip="Reset table state"
+                        [showDelay]="700"
+                        tooltipPosition="top"></button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <!--GLOBAL FILTER-->
+                    <span *ngIf="globalSearchEnabled" class="p-input-icon-left p-ml-auto">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" [placeholder]="globalSearchPlaceholder" [(ngModel)]="globalSearchText" [style]="{width: '220px'}"/>
+                    </span>
+
+                    <!--REFRESH DATA-->
+                    <button pButton pRipple icon="pi pi-refresh" (click)="updateData(this.tableLazyLoadEventInformation)"
+                        pTooltip="Refresh data"
+                        [showDelay]="700"
+                        tooltipPosition="top"></button>
+                    
+                    <!--HEADER ACTION BUTTONS-->
+                    <td *ngIf="headerActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;">
+                        <ng-container *ngFor="let button of headerActionButtons">
+                            <button *ngIf="!button.condition || button.condition(null)"
+                                    [pTooltip]="button.tooltip || ''"
+                                    [tooltipDisabled]="!button.tooltip || button.tooltip.length === 0"
+                                    [showDelay]="700"
+                                    tooltipPosition="top"
+                                    pButton pRipple
+                                    [ngClass]="button.color"
+                                    [icon]="button.icon ? button.icon : ''" 
+                                    [label]="button.label ? button.label : ''" 
+                                    (click)="button.action && handleButtonsClick(button.action, null)"
+                                    style="margin-right: 10px;">
+                            </button>
+                        </ng-container>
+                    </td>
+                </div>
+            </div>
+        </ng-template>
+
+        <!-- LOGIC FOR DRAWING TABLE HEADERS -->
+        <ng-template pTemplate="header" let-columns> 
+            <tr>
+                <ng-container *ngIf="!actionsColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
+                </ng-container>
+                <ng-container *ngIf="rowSelectorColumnActive && !rowSelectorColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="rowSelectorColumnHeaderTemplate"></ng-container>
+                </ng-container>
+                <ng-container *ngFor="let col of columns">
+                    <th 
+                        pResizableColumn [pResizableColumnDisabled]="!col.canBeResized ? true : false"
+                        pReorderableColumn [pReorderableColumnDisabled]="!col.canBeReordered ? true : false"
+                        pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
+                        [pSortableColumn]="col.field" [pSortableColumnDisabled]="!col.canBeSorted ? true : false"
+                        style="text-align: center;"
+                        [id]="col.field + '-header'" [attr.scope]="'col'">
+                        <div class="p-d-flex p-jc-between p-ai-center">
+                            {{col.header}}
+                            <ng-container *ngIf="col.canBeSorted">
+                                <p-sortIcon [field]="col.field"></p-sortIcon>
+                            </ng-container>
+                            <ng-container *ngIf="col.canBeFiltered">
+                                <ng-container *ngIf="!col.filterPredifinedValuesName || col.filterPredifinedValuesName.length === 0">
+                                    <p-columnFilter type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu" [showButtons]="false"></p-columnFilter>
+                                </ng-container>
+                                <ng-container *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
+                                    <p-columnFilter
+                                        type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu" [showButtons]="false"
+                                        matchMode="in" operator="or"
+                                        [showMatchModes]="false" [showOperator]="false" [showAddButton]="false" [showClearButton]="false" [showApplyButton]="false">
+                                        <ng-template pTemplate="filter">
+                                            <p-multiSelect [style]="{minWidth: '400px'}"
+                                                [(ngModel)]="predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName]"
+                                                [options]="getPredifinedFilterValues(col.filterPredifinedValuesName)"
+                                                [placeholder]="predifinedFiltersNoSelectionPlaceholder"
+                                                (onChange)="onPredifinedFilterChange(col.field, $event.value)"
+                                                optionLabel="name">
+                                                <ng-template pTemplate="selectedItems">
+                                                    <ng-container *ngIf="predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName] && predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName].length > 0; else noSelectionPlaceholder">
+                                                        <div class="flex align-items-center gap-2">
+                                                            <div>{{ predifinedFiltersSelectedValuesText(col.filterPredifinedValuesName) }}</div>
+                                                        </div>
+                                                    </ng-container>
+                                                    <ng-template #noSelectionPlaceholder>
+                                                        <div>{{ predifinedFiltersNoSelectionPlaceholder }}</div>
+                                                    </ng-template>
+                                                </ng-template>
+                                                <ng-template let-option pTemplate="item">
+                                                    <div class="inline-block vertical-align-middle">
+                                                        <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'"></i>
+                                                        <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2" />
+                                                        <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2" />
+                                                        <p-tag *ngIf="option.displayTag === true" [style]="option.tagStyle" [value]="option.name" class="vertical-align-middle mr-2"></p-tag>
+                                                        <span *ngIf="option.displayName === true" class="ml-1 mt-1">{{ option.name }}</span>
+                                                    </div>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </ng-template>
+                                    </p-columnFilter>
+                                </ng-container>
+                            </ng-container>
+                            <ng-container *ngIf="col.columnDescription && col.columnDescription.length > 0">
+                                <i [pTooltip]="col.columnDescription" tooltipPosition="top" class="pi pi-info-circle"></i>
+                            </ng-container>
+                        </div>
+                    </th>
+                </ng-container>
+                <ng-container *ngIf="rowSelectorColumnActive && rowSelectorColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="rowSelectorColumnHeaderTemplate"></ng-container>
+                </ng-container>
+                <ng-container *ngIf="actionsColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
+                </ng-container>
+            </tr>
+        </ng-template>
+
+        <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
+        <ng-template pTemplate="body" let-rowData let-columns="columns"> 
+            <tr>
+                <ng-container *ngIf="!actionsColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
+                </ng-container>
+                <ng-container *ngIf="rowSelectorColumnActive && !rowSelectorColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="rowSelectorColumnTemplate; context: { rowData: rowData }"></ng-container>
+                </ng-container>
+
+                <!-- REST OF COLUMNS -->
+                <ng-container *ngFor="let col of columns">
+                    <td 
+                        [ngStyle]="{
+                            'white-space': col.wrapIsActive ? 'normal' : 'nowrap',
+                            'word-wrap': col.wrapIsActive ? 'break-word' : 'normal',
+                            'word-break': col.wrapIsActive ? 'break-all' : 'normal'
+                        }"
+                        pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
+                        [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" 
+                        [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)"
+                        [ngSwitch]="col.dataType">
+                        <div *ngIf="rowData[col.field] !== null; else nullContent">
+                            <div *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
+                                <div class="inline-block vertical-align-middle">
+                                    <ng-container *ngIf="getPredfinedFilterMatch(col, rowData[col.field]) as option">
+                                        <div class="inline-block vertical-align-middle"
+                                            [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                                ? rowData[col.dataTooltipCustomColumnSource] 
+                                                : rowData[col.field]"
+                                            [tooltipDisabled]="!col.dataTooltipShow"
+                                            [showDelay]="700"
+                                            tooltipPosition="top">
+                                            <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'"></i>
+                                            <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2" />
+                                            <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2" />
+                                            <p-tag *ngIf="option.displayTag === true" [style]="option.tagStyle" [value]="option.name" class="vertical-align-middle mr-2"></p-tag>
+                                            <span *ngIf="option.displayName === true" [innerHtml]="highlightText(option.name, col, globalSearchText)" class="ml-1 mt-1">{{rowData[col.field]}}</span>
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div *ngIf="!col.filterPredifinedValuesName || col.filterPredifinedValuesName.length === 0">
+                                <div *ngSwitchCase="enumDataType.Boolean">
+                                    <i class="pi" 
+                                        [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                            ? rowData[col.dataTooltipCustomColumnSource] 
+                                            : rowData[col.field]"  
+                                        [tooltipDisabled]="!col.dataTooltipShow || !col.dataTooltipCustomColumnSource || col.dataTooltipCustomColumnSource.length === 0"
+                                        [showDelay]="700"
+                                        tooltipPosition="top"
+                                        [style.color]="rowData[col.field] ? 'green' : 'red'"
+                                        [ngClass]="{ 'pi-check-circle': rowData[col.field],
+                                        'pi-times-circle': !rowData[col.field] }"></i>
+                                </div>
+                                <div *ngSwitchCase="enumDataType.Date">
+                                    <div [innerHtml]="highlightText(formatDate(rowData[col.field]), col, globalSearchText)"
+                                        [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                            ? rowData[col.dataTooltipCustomColumnSource] 
+                                            : formatDate(rowData[col.field])" 
+                                        [tooltipDisabled]="!col.dataTooltipShow"
+                                        [showDelay]="700"
+                                        tooltipPosition="top">
+                                        {{ formatDate(rowData[col.field]) }}
+                                    </div>
+                                </div>
+                                <div *ngSwitchDefault>
+                                    <div [innerHtml]="highlightText(rowData[col.field], col, globalSearchText)"
+                                        [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                            ? rowData[col.dataTooltipCustomColumnSource] 
+                                            : rowData[col.field]"
+                                        [tooltipDisabled]="!col.dataTooltipShow"
+                                        [showDelay]="700"
+                                        tooltipPosition="top">
+                                        {{ rowData[col.field] }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <ng-template #nullContent>
+                            <!-- Content for null cases, by default, don't draw anything -->
+                        </ng-template>
+                    </td>
+                </ng-container>
+                <ng-container *ngIf="rowSelectorColumnActive && rowSelectorColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="rowSelectorColumnTemplate; context: { rowData: rowData }"></ng-container>
+                </ng-container>
+                <ng-container *ngIf="actionsColumnAligmentRight">
+                    <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
+                </ng-container>
+            </tr>
+        </ng-template>
+
+        <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS NO CONTENTS -->
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="999">{{noDataFoundText}}</td>
+            </tr>
+        </ng-template>
+
+        <!-- LOGIC FOR DRAWING PAGINATION -->
+        <ng-template pTemplate="summary"> 
+            <div #paginatorContainer style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                <div class="p-d-flex mt-2">
+                    Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records
+                </div>
+                <div class="p-d-flex">
+                    <p-paginator 
+                        [style]="{'background-color': 'transparent'}"
+                        [first]="currentPage * currentRowsPerPage"
+                        [rows]="currentRowsPerPage"
+                        [totalRecords]="totalRecords"
+                        (onPageChange)="pageChange($event)"
+                        [rowsPerPageOptions]="allowedRowsPerPage"
+                        [showCurrentPageReport]="false"></p-paginator>
+                </div>
+            </div>
+        </ng-template>
+    </p-table>
+</div>
+<!--COLUMN MODAL DIALOG-->
+<p-dialog [(visible)]="columnModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
+    <ng-template pTemplate="header">
+        <div class="inline-flex align-items-center justify-content-center gap-2">
+            <span class="white-space-nowrap"><b>MODIFY COLUMNS</b></span>
+        </div>
+    </ng-template>
+    <div style="padding: 20px;">
+        <p-table #dt_columnDialog [value]="columnModalData" [scrollable]="true"
+            responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+            scrollDirection="both" [globalFilterFields]="['header']" scrollHeight="400px" [tableStyle]="{'min-width': '25rem'}"
+            (onFilter)="onColumnModalFilter($event)">
+            <ng-template pTemplate="caption">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;"></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input type="text" pInputText (input)="filterColumnModal($event)" placeholder="Search column name"/>
+                        </span>
+                    </div>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pFrozenColumn alignFrozen="left" style="text-align: center;">Show column</th>
+                    <th pFrozenColumn alignFrozen="left" style="text-align: center;">Column name</th>
+                    <th style="text-align: center;">Word wrap</th>
+                    <th style="text-align: center;">Horizontal aligment</th>
+                    <th style="text-align: center;">Vertical aligment</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowData>
+                <tr>
+                    <td pFrozenColumn alignFrozen="left" style="text-align: center;">
+                        <p-checkbox 
+                            [(ngModel)]="rowData.selected" 
+                            [binary]="true"
+                            [disabled]="rowData.selectDisabled"></p-checkbox>
+                    </td>
+                    <td pFrozenColumn alignFrozen="left" >{{rowData.header}}</td>
+                    <td style="text-align: center;">
+                        <p-checkbox 
+                            [(ngModel)]="rowData.wrapIsActive" 
+                            [binary]="true"
+                            [disabled]="rowData.wrapDisabled"></p-checkbox>
+                    </td>
+                    <td>
+                        <div class="p-inputgroup">
+                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-left" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Left}" 
+                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Left)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-center" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Center}" 
+                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Center)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-right" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Right}" 
+                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Right)" 
+                                style="height: 28px;">
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="p-inputgroup">
+                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-angle-up" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Top}" 
+                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Top)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-align-justify" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Middle}" 
+                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Middle)" 
+                                style="height: 28px;">
+                            </button>
+                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-angle-down" 
+                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Bottom}" 
+                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Bottom)" 
+                                style="height: 28px;">
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="999">There are no columns</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary"> 
+                <div #paginatorContainer style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                    <div class="p-d-flex mt-2">
+                        Showing {{filteredColumnData ? filteredColumnData.length : 0}} records of {{columnModalData ? columnModalData.length : 0}} available records
+                    </div>
+                    <div class="p-d-flex">
+                    </div>
+                </div>
+            </ng-template>
+        </p-table>
+    </div>
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="columnModalShow = false" label="Cancel changes" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="applyColumnModalChanges()" label="Save changes" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!--TABLE STATE SAVE-->
+<p-dialog [(visible)]="tableStateNewModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
+    <ng-template pTemplate="header">
+        <div class="inline-flex align-items-center justify-content-center gap-2">
+            <span class="white-space-nowrap"><b>CREATE NEW TABLE STATE</b></span>
+        </div>
+    </ng-template>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label for="newtablestatename"><strong>State alias<span style="color: red;">*</span></strong></label>
+        <input 
+            pInputText 
+            id="newtablestatename" 
+            aria-describedby="newtablestatename-help" 
+            style="width: 400px;"
+            maxlength="50"
+            [(ngModel)]="tableStateNewAlias"/>
+    </div>
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="tableStateNewModalShow = false" label="Cancel" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="createTableSate()" label="Create" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+    </ng-template>
+</p-dialog>
