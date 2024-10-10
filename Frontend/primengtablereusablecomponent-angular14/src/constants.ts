@@ -10,7 +10,7 @@ export const Constants: any = {
     */
     function getApiBaseUrl(): string {
         if (isDevelopment) { // Check if we are in development
-            return 'https://localhost:7020/';
+            return 'https://localhost:7287/';
         } else { // If we are in production
             return 'yourproductionAPIURL';
         }

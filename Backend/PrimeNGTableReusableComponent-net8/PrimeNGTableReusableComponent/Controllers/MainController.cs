@@ -7,7 +7,6 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Models.PrimengTableReusableComponent;
-using Newtonsoft.Json;
 
 namespace PrimeNGTableReusableComponent.Controllers {
     [ApiController]

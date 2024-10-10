@@ -8,7 +8,7 @@ using PrimeNG.Attributes;
 using System.Text.Json;
 namespace PrimeNG.HelperFunctions {
     public static class PrimeNGHelper {
-        public static readonly int[] allowedItemsPerPage = [10, 25, 50, 75, 100]; // The number of items per page allowed
+        public static readonly int[] allowedItemsPerPage = new int[] { 10, 25, 50, 75, 100 }; // The number of items per page allowed
 
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
@@ -43,7 +43,7 @@ namespace PrimeNG.HelperFunctions {
         /// The exception message includes the name of the property that is missing attributes.
         /// </exception>
         public static PrimeNGTableColsAndAllowedPagination GetColumnsInfo<T>(string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz", string dateTimezone = "+00:00", string dateCulture = "en-US") {
-            List<PrimeNGTableReturnColumnMetadata> columnsInfo = []; // Prepare the list to be returned
+            List<PrimeNGTableReturnColumnMetadata> columnsInfo = new List<PrimeNGTableReturnColumnMetadata>(); // Prepare the list to be returned
             PropertyInfo[] properties = typeof(T).GetProperties(); // Get the properties of the provided class
             foreach(var property in properties) { // Loop through each property of the class
                 PrimeNGAttribute? primeNGAttributes = property.GetCustomAttribute<PrimeNGAttribute>() ?? throw new ArgumentException("The following column is missing its PrimeNG attributes ", property.Name); // Try to get the PrimeNG attributes for the current property, and if its null throw an error
