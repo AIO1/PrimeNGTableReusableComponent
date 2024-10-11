@@ -50,7 +50,7 @@ export class SharedService {
         }
     //#endregion
 
-    private getHttpOptions(customhttpOptions?: HttpHeaders | null): HttpHeaders {
+    private getHttpOptions(showSpinner: boolean, customhttpOptions?: HttpHeaders | null): HttpHeaders {
       let httpOptions = new HttpHeaders({
         'accept': 'application/json',
         'Content-Type': 'application/json'
@@ -58,16 +58,21 @@ export class SharedService {
       if (customhttpOptions) {
         httpOptions = customhttpOptions;
       }
+      if (showSpinner) {
+        httpOptions = httpOptions.set('X-Show-Spinner', 'true');
+      } else {
+        httpOptions = httpOptions.set('X-Show-Spinner', 'false');
+      }
       return httpOptions;
     }
-    handleHttpGetRequest<T>(servicePoint: string, httpOptions: HttpHeaders | null = null, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
-      return this.http.get<T>(`${Constants.APIbaseURL}${servicePoint}`, { ...this.getHttpOptions(httpOptions), observe: 'response' }).pipe(
+    handleHttpGetRequest<T>(servicePoint: string, httpOptions: HttpHeaders | null = null, showSpinner: boolean = true, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
+      return this.http.get<T>(`${Constants.APIbaseURL}${servicePoint}`, { ...this.getHttpOptions(showSpinner, httpOptions), observe: 'response'}).pipe(
         timeout(Constants.timeoutTime) as OperatorFunction<HttpResponse<T>, HttpResponse<T>>,
         catchError(error => this.handleHttpError(error, customErrorHandler, showAPIError))
       );
     }
-    handleHttpPostRequest<T>(servicePoint: string, data: any, httpOptions: HttpHeaders | null = null, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
-      return this.http.post<T>(`${Constants.APIbaseURL}${servicePoint}`, data, { ...this.getHttpOptions(httpOptions), observe: 'response' }).pipe(
+    handleHttpPostRequest<T>(servicePoint: string, data: any, httpOptions: HttpHeaders | null = null, showSpinner: boolean = true, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
+      return this.http.post<T>(`${Constants.APIbaseURL}${servicePoint}`, data, { ...this.getHttpOptions(showSpinner, httpOptions), observe: 'response'}).pipe(
         timeout(Constants.timeoutTime) as OperatorFunction<HttpResponse<T>, HttpResponse<T>>,
         catchError(error => this.handleHttpError(error, customErrorHandler, showAPIError))
       );
