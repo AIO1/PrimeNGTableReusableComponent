@@ -49,21 +49,21 @@ namespace PrimeNGTableReusableComponent.Controllers {
                 IQueryable<TestDto> baseQuery = _context.TestTables
                     .Select(
                         u => new TestDto {
-                            id = u.Id,
-                            canBeDeleted = u.CanBeDeleted,
-                            username = u.Username,
-                            age = u.Age,
-                            employmentStatusName =
+                            RowID = u.Id,
+                            CanBeDeleted = u.CanBeDeleted,
+                            Username = u.Username,
+                            Age = u.Age,
+                            EmploymentStatusName =
                                 u.EmploymentStatusId != null ?
                                     _context.EmploymentStatusCategories
                                         .Where(d => d.Id == u.EmploymentStatusId)
                                         .Select(d => d.StatusName).FirstOrDefault() 
                                     : null,
-                            birthdate = u.Birthdate,
-                            payedTaxes = u.PayedTaxes
+                            Birthdate = u.Birthdate,
+                            PayedTaxes = u.PayedTaxes
                         }
                     ).AsNoTracking();
-                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1));
+                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "Username", 1));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }

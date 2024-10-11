@@ -57,7 +57,6 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     TagModule,
     RippleModule,
     TooltipModule,
-    //InputGroupModule,
     CheckboxModule,
     SplitButtonModule,
 

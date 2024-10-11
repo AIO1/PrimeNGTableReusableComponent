@@ -1,7 +1,7 @@
 <div #tableContainer style="position: relative;">
     <p-table #dt
         [scrollHeight]="computeScrollHeight ? scrollHeight : ''"
-        [columns]="columnsToShow" [value]="data" dataKey="id" [scrollable]="true" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+        [columns]="columnsToShow" [value]="data" dataKey="rowID" [scrollable]="true" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
         sortMode="multiple"
         [resizableColumns]="true" columnResizeMode="expand"
         [reorderableColumns]="true"
@@ -56,8 +56,8 @@
             <td style="text-align: center; vertical-align: middle;"
                 pFrozenColumn [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
                 <p-checkbox 
-                    [ngModel]="isRowSelected(rowData.id)"
-                    (onChange)="onRowSelectChange($event, rowData.id)"
+                    [ngModel]="isRowSelected(rowData.rowID)"
+                    (onChange)="onRowSelectChange($event, rowData.rowID)"
                     [binary]="true"></p-checkbox>
             </td>
         </ng-template>

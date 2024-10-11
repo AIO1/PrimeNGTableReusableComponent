@@ -13,6 +13,23 @@ namespace PrimeNG.HelperFunctions {
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
         public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, string? defaultSortColumnName=null, int defaultSortOrder = 1) {
+            if(inputData.columns != null) {
+                for(int i = 0; i < inputData.columns.Count; i++) {
+                    string column = inputData.columns[i];
+                    inputData.columns[i] = char.ToUpper(column[0]) + column.Substring(1);
+                }
+            }
+            if(inputData.sort != null) {
+                foreach(var sortItem in inputData.sort) {
+                    sortItem.Field = char.ToUpper(sortItem.Field[0]) + sortItem.Field.Substring(1);
+                }
+            }
+            var updatedFilter = new Dictionary<string, List<PrimeNGTableFilterModel>>();
+            foreach(var entry in inputData.filter) {
+                string updatedKey = char.ToUpper(entry.Key[0]) + entry.Key.Substring(1);
+                updatedFilter[updatedKey] = entry.Value;
+            }
+            inputData.filter = updatedFilter;
             baseQuery = ApplySorting(baseQuery, inputData.sort, defaultSortColumnName, defaultSortOrder); // Apply the sorting
             long totalRecordsNotFiltered = baseQuery.Count(); // Count all the available records (before applying filters)
             baseQuery = ApplyGlobalFilter(baseQuery, inputData.globalFilter, inputData.columns!, stringDateFormatMethod, inputData.dateFormat, inputData.dateTimezone, inputData.dateCulture); // Apply the global filter
@@ -48,8 +65,9 @@ namespace PrimeNG.HelperFunctions {
             foreach(var property in properties) { // Loop through each property of the class
                 PrimeNGAttribute? primeNGAttributes = property.GetCustomAttribute<PrimeNGAttribute>() ?? throw new ArgumentException("The following column is missing its PrimeNG attributes ", property.Name); // Try to get the PrimeNG attributes for the current property, and if its null throw an error
                 if(primeNGAttributes.SendColumnAttributes) { // If we have to send the column
+                    string propertyName = char.ToLower(property.Name[0]) + property.Name.Substring(1); // Get the property name with the first letter to lower
                     columnsInfo.Add(new PrimeNGTableReturnColumnMetadata {
-                        Field = property.Name,
+                        Field = propertyName,
                         Header = primeNGAttributes.Header,
                         DataType = primeNGAttributes.DataType,
                         DataAlignHorizontal = primeNGAttributes.DataAlignHorizontal,
@@ -194,7 +212,7 @@ namespace PrimeNG.HelperFunctions {
         private static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<PrimeNGTableFilterModel>> columnFilters, List<string> visibleColumns, MethodInfo stringDateFormatMethod) {
             foreach(var entry in columnFilters) { // Iterate through the column filters
                 string key = entry.Key; // Get the key of the current column filter
-                if((!visibleColumns.Contains(key) && key !="id") || key == "selector") {
+                if((!visibleColumns.Contains(key) && key !="RowID") || key == "Selector") {
                     continue; // Skip processing if the column is not visible
                 }
                 List<PrimeNGTableFilterModel> values = entry.Value; // Get the filter values for the column

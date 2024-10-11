@@ -205,15 +205,15 @@ export class PrimengTableComponent {
   filteredColumnData: any[] = []; // The array of data that shows the columns that are currently being shown in the columns modal (to count to show the filters)
 
 
-  isRowSelected(id: any): boolean {
-    return this.selectedRows.includes(id);
+  isRowSelected(rowID: any): boolean {
+    return this.selectedRows.includes(rowID);
   }
 
-  onRowSelectChange(event: any, id: any): void {
+  onRowSelectChange(event: any, rowID: any): void {
     if (event.checked) { // Add the selected item
-        this.selectedRows.push(id);
+        this.selectedRows.push(rowID);
     } else { // Remove the selected item
-        this.selectedRows = this.selectedRows.filter(selectedId => selectedId !== id);
+        this.selectedRows = this.selectedRows.filter(selectedId => selectedId !== rowID);
     }
   }
 
@@ -669,8 +669,8 @@ export class PrimengTableComponent {
     }
     if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('selector')) {
       const selectorFilter = filtersWithoutGlobalAndSelectedRows['selector'][0];
-      if (!filtersWithoutGlobalAndSelectedRows.hasOwnProperty('id')) {
-          filtersWithoutGlobalAndSelectedRows['id'] = [
+      if (!filtersWithoutGlobalAndSelectedRows.hasOwnProperty('rowID')) {
+          filtersWithoutGlobalAndSelectedRows['rowID'] = [
               {
                   "value": null,
                   "matchMode": "in",
@@ -678,7 +678,7 @@ export class PrimengTableComponent {
               }
           ];
       }
-      const idFilter = filtersWithoutGlobalAndSelectedRows['id'][0];
+      const idFilter = filtersWithoutGlobalAndSelectedRows['rowID'][0];
       if (selectorFilter.value === true) {
           idFilter.matchMode = "in";
           idFilter.value = this.selectedRows;
@@ -748,11 +748,11 @@ export class PrimengTableComponent {
    * @example
    * // Define an action for a button
    * const deleteAction = (rowData) => {
-   *   console.log(`Delete row with id: ${rowData.id}`);
+   *   console.log(`Delete row with id: ${rowData.rowID}`);
    * };
    * 
    * // Use handleButtonsClick with row data
-   * handleButtonsClick(deleteAction, { id: 1, name: 'John Doe' });
+   * handleButtonsClick(deleteAction, { rowID: 1, name: 'John Doe' });
    */
   handleButtonsClick(action: (rowData: any) => void, rowData: any = null): void {
     if (action) { // If the button has an assigned action

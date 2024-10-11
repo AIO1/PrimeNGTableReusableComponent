@@ -22,8 +22,8 @@ export class PrimengTableStateService {
           tableWidth = DomHandler.getOuterWidth(dt.tableViewChild?.nativeElement);
         }
         const filtersWithoutGlobalAndSelectedRows = {...modifyFiltersFn(JSON.parse(JSON.stringify(dt.filters)))};
-        if (filtersWithoutGlobalAndSelectedRows['id']) {
-            filtersWithoutGlobalAndSelectedRows['id'][0].value = null;
+        if (filtersWithoutGlobalAndSelectedRows['rowID']) {
+            filtersWithoutGlobalAndSelectedRows['rowID'][0].value = null;
         }
         if (filtersWithoutGlobalAndSelectedRows['selector']) {
             filtersWithoutGlobalAndSelectedRows['selector'][0].value = null;
