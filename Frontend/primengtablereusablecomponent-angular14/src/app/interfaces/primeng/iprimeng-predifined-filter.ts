@@ -3,25 +3,40 @@
  */
 export interface IPrimengPredifinedFilter {
     /** 
-     * Gets or sets the URL of the icon to be displayed for the option.
-     * The value should be a string representing the URL of the icon image.
+     * The value of the PrimeNG icon.
      */
     icon?: string;
+
     iconURL?:string
+
+
+    iconBlobSourceEndpoint?: string
+    iconBlobSourceEndpointResponseError?: boolean
+
+    /** 
+     * The icon as a blob.
+     */
     iconBlob?: Blob;
     
     /** 
-     * Gets or sets the display name of the option.
-     * The value should be a string representing the name to be shown in the UI.
+     * A string representing the name to be shown in the UI.
      */
     name?: string;
+
+    /** 
+     * If the name needs to be shown in the UI
+     */
     displayName?: boolean;
+
     /**
-     * Gets or sets the underlying value of the option.
-     * The value can be of any type and represents the data managed behind the scenes.
+     * The underlying value of the option. The value can be of any type and represents the data managed behind the scenes.
      */
     value: any;
 
+    /**
+     * If the value needs to be displayed with a tag
+     */
     displayTag?: boolean
+
     tagStyle?: { [key: string]: string }
 }

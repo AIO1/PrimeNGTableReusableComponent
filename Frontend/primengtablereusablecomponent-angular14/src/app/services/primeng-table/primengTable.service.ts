@@ -18,6 +18,9 @@ export class PrimengTableService {
     fetchTableData(url: string, postData: IprimengTableDataPost): Observable<HttpResponse<IprimengTableDataReturn>> {
         return this.sharedService.handleHttpPostRequest<IprimengTableDataReturn>(url, postData);
     }
+    getIconBlob(url: string): Observable<HttpResponse<Blob>> {
+      return this.sharedService.handleHttpGetRequest<Blob>(url,null,false);
+    }
 
 
     /**

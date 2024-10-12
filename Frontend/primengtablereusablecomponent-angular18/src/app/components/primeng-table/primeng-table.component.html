@@ -66,7 +66,7 @@
             <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--CHOOSE COLUMNS TO SHOW-->
-                    <button pButton pRipple icon="pi pi-objects-column" (click)="showColumnModal()"
+                    <button pButton pRipple icon="pi pi-info" (click)="showColumnModal()"
                         pTooltip="Modify columns"
                         [showDelay]="700"
                         tooltipPosition="top">
@@ -186,8 +186,9 @@
                                                 <ng-template let-option pTemplate="item">
                                                     <div class="inline-block vertical-align-middle">
                                                         <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'"></i>
-                                                        <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2" />
-                                                        <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2" />
+                                                        <p-skeleton *ngIf="!option.iconBlob && option.iconBlobSourceEndpoint" size="28px" class="vertical-align-middle mr-2"/>
+                                                        <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2"/>
+                                                        <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2"/>
                                                         <p-tag *ngIf="option.displayTag === true" [style]="option.tagStyle" [value]="option.name" class="vertical-align-middle mr-2"></p-tag>
                                                         <span *ngIf="option.displayName === true" class="ml-1 mt-1">{{ option.name }}</span>
                                                     </div>
@@ -236,7 +237,13 @@
                         [ngSwitch]="col.dataType">
                         <div *ngIf="rowData[col.field] !== null; else nullContent">
                             <div *ngIf="col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0">
-                                <div class="inline-block vertical-align-middle">
+                                <div 
+                                    class="inline-block vertical-align-middle" 
+                                    [ngStyle]="{
+                                        'display': 'flex',
+                                        'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
+                                        'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
+                                    }">
                                     <ng-container *ngIf="getPredfinedFilterMatch(col, rowData[col.field]) as option">
                                         <div class="inline-block vertical-align-middle"
                                             [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
@@ -246,6 +253,7 @@
                                             [showDelay]="700"
                                             tooltipPosition="top">
                                             <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'"></i>
+                                            <p-skeleton *ngIf="!option.iconBlob && option.iconBlobSourceEndpoint" size="28px" class="vertical-align-middle mr-2"/>
                                             <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2" />
                                             <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2" />
                                             <p-tag *ngIf="option.displayTag === true" [style]="option.tagStyle" [value]="option.name" class="vertical-align-middle mr-2"></p-tag>

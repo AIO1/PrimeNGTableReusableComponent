@@ -910,6 +910,30 @@ export class PrimengTableComponent {
     return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
   }
 
+  updateIconBlobsForCollections(): void {
+    Object.keys(this.predifinedFiltersCollection).forEach(key => {
+      const filters = this.predifinedFiltersCollection[key];
+      if (Array.isArray(filters)  && filters.length > 0) {
+        filters.forEach(filter => {
+          if (filter.iconBlobSourceEndpoint && !filter.iconBlob) {
+            filter.iconBlob = undefined;
+            filter.iconBlobSourceEndpointResponseError = false;
+            this.sharedService.handleHttpResponse(this.primengTableService.getIconBlob(filter.iconBlobSourceEndpoint)).subscribe({
+              next: (blobData: Blob) => {
+                filter.iconBlob = blobData;
+              },
+              error: err => { // Handle error response
+                filter.iconBlobSourceEndpointResponseError = true;
+              }
+            });
+          }
+        });
+      }else {
+        console.warn(`Filters for key ${key} is not an array:`, filters);
+      }
+    });
+  }
+
   /**
    * Converts a blob from the database to a safe URL that can be used to display an image.
    *

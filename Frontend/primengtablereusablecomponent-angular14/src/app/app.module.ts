@@ -16,6 +16,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TagModule } from 'primeng/tag';
 import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
+import { SkeletonModule } from 'primeng/skeleton';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DatePipe, registerLocaleData } from '@angular/common';
@@ -57,6 +58,7 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     TagModule,
     RippleModule,
     TooltipModule,
+    SkeletonModule,
     CheckboxModule,
     SplitButtonModule,
 

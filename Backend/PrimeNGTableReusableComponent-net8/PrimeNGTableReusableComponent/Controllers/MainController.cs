@@ -7,6 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Models.PrimengTableReusableComponent;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PrimeNGTableReusableComponent.Controllers {
     [ApiController]
@@ -80,6 +81,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
         public async Task<IActionResult> GetEmploymentStatus() {
             try {
                 List<EmploymentStatusDto> data = await _context.EmploymentStatusCategories.OrderBy(t => t.StatusName).Select(t => new EmploymentStatusDto {
+                    ID = t.Id,
                     StatusName = t.StatusName,
                     ColorR = t.ColorR,
                     ColorG = t.ColorG,
