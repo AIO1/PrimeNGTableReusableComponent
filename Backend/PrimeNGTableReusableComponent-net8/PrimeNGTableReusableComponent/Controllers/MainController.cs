@@ -7,7 +7,6 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Models.PrimengTableReusableComponent;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PrimeNGTableReusableComponent.Controllers {
     [ApiController]
@@ -93,7 +92,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
             }
         }
         #endregion
-        #region 
+        #region HttpPost - GetSaveState
         [HttpPost("[action]")]
         public async Task<IActionResult> GetSaveState([FromBody] PrimeNGGetSaveStateRequestDTO request) {
             try {
@@ -102,7 +101,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
                 .ToListAsync();
                 if(stateData.Any()) {
                     var result = stateData.Select(s => new PrimeNGSaveStateListDTO {
-                        StateAlias = s.StateName, // Asumiendo que StateName es el alias
+                        StateAlias = s.StateName,
                         State = s.StateData
                     }).ToList();
                     return Ok(result);
@@ -113,7 +112,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
             }
         }
         #endregion
-        #region 
+        #region HttpPost - SetSaveState
         [HttpPost("[action]")]
         public async Task<IActionResult> SetSaveState([FromBody] PrimeNGSetSaveStateRequestDTO request) {
             using var transaction = await _context.Database.BeginTransactionAsync();

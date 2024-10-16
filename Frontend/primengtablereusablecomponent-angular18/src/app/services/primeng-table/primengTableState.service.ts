@@ -82,26 +82,9 @@ export class PrimengTableStateService {
         };
         return this.sharedService.handleHttpPostRequest<any>(setListEndpoint,postData);
     }
-    updateMenuItems(tableSaveStateList: IPrimengSaveStateList[], loadTableStateFn: (aliasToSet?: string) => void, deleteTableStateFn: (aliasToDelete: string) => void): MenuItem[]{
+    updateMenuItems(tableSaveStateList: IPrimengSaveStateList[]): MenuItem[]{
         return tableSaveStateList.map(item => ({
-            label: item.stateAlias,
-            items: [
-                {
-                    label: 'LOAD',
-                    icon: 'pi pi-upload',
-                    command: () => {
-                        loadTableStateFn(item.stateAlias); 
-                    }
-                },
-                {
-                    label: 'DELETE',
-                    icon: 'pi pi-trash',
-                    command: () => {
-                        deleteTableStateFn(item.stateAlias); 
-                    }
-                }
-            ]
-            
+            label: item.stateAlias
         }));
     }
     sort(tableSaveStateList: IPrimengSaveStateList[]): void{

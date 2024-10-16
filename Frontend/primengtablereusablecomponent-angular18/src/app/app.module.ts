@@ -19,6 +19,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { CheckboxModule } from 'primeng/checkbox';
+import { MenuModule } from 'primeng/menu';
 import { DatePipe, registerLocaleData } from '@angular/common'; // registerLocaleData import is optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
 
 import es from '@angular/common/locales/es'; // Optional. Needed for scenarios were you would like to manage different locales from "en-US", like "es-ES".
@@ -60,6 +61,7 @@ import { PrimengTableComponent } from './components/primeng-table/primeng-table.
     SkeletonModule,
     CheckboxModule,
     SplitButtonModule,
+    MenuModule,
 
     DialogModule, // Optional import to show the loading indicator in HTTP calls
     ProgressSpinnerModule // Optional import to show the loading indicator in HTTP calls

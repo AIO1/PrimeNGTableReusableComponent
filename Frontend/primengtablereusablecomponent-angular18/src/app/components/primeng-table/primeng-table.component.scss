@@ -1,0 +1,43 @@
+.custom-inputgroup {
+    background-color: var(--primary-color); 
+    border-radius: 4px;
+    border: 1px solid var(--primary-color);
+
+    position: relative;
+    height: 40px; /* Define la altura del input group */
+}
+
+.custom-inputgroup .p-inputgroup-addon {
+    background-color: var(--primary-color);
+    color: white; 
+    border: none;
+}
+
+.custom-inputgroup input {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.custom-inputgroup button.p-button {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+}
+
+.custom-inputgroup .pi {
+    color: white;
+}
+
+.vertical-separator {
+    width: 3px; /* Grosor de la línea */
+    height: 80%; /* Altura de la línea: 80% del contenedor */
+    background-color: #666; /* Color de la línea */
+    margin: 0 5px; /* Margen para separarlo de los otros elementos */
+}
+
+.custom-refresh-button {
+    height: 100%; /* Asegura que el botón tenga la misma altura que el input group */
+    padding: 0; /* Elimina el padding del botón para un tamaño uniforme */
+    display: flex; /* Asegura que el contenido del botón esté centrado */
+    align-items: center; /* Centra verticalmente el contenido del botón */
+}
