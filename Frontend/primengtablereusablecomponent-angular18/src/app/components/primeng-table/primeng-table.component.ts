@@ -72,6 +72,7 @@ export class PrimengTableComponent {
   @Input() stateListGetSourceURL: string = "";
   @Input() stateListSaveSourceURL: string = "";
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
+  @Input() tableViewUsername: string = ""; // The name of the user that will be used when saving and loading views
 
   @Output() selectedRows: any[] = []; // An array to keep all the selected rows
 
@@ -453,7 +454,7 @@ export class PrimengTableComponent {
         localStorage.setItem(this.tableStateSaveKey, tableState);
       break;
       case enumTableStateSaveMode.databaseStorage:
-        const saveObsv = this.primengTableStateService.databaseSaveList(this.tableViewsList, this.stateListSaveSourceURL, "user test", this.tableStateSaveKey);
+        const saveObsv = this.primengTableStateService.databaseSaveList(this.tableViewsList, this.stateListSaveSourceURL, this.tableViewUsername, this.tableStateSaveKey);
           this.sharedService.handleHttpResponse(saveObsv,200,false).subscribe({
           next: () => {
             this.finishSaveState(skipCreate, closeCreateNewModal);
@@ -501,7 +502,7 @@ export class PrimengTableComponent {
   }
 
   tableStateListGet(): void {
-    const tableState = this.primengTableStateService.recoverList(this.tableStateSaveAs, this.stateListGetSourceURL, "user test", this.tableStateSaveKey);
+    const tableState = this.primengTableStateService.recoverList(this.tableStateSaveAs, this.stateListGetSourceURL, this.tableViewUsername, this.tableStateSaveKey);
       if (tableState instanceof Observable) {
         this.sharedService.handleHttpResponse(tableState).subscribe({
           next: (responseData: any) => {

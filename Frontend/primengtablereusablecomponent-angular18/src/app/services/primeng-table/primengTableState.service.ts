@@ -48,7 +48,7 @@ export class PrimengTableStateService {
     recoverList(tableStateSaveAs: enumTableStateSaveMode, recoverListEndpoint: string, username: string, tableStateSaveKey: string): IPrimengSaveStateList[] | Observable<HttpResponse<IPrimengSaveStateList[]>>{
         let tableStateList: IPrimengSaveStateList[] = [];
         let tableStateNotParsed: string | null = null;
-        if(tableStateSaveKey !== ""){
+        if(tableStateSaveKey !== "" && tableStateSaveKey !== '' && username!==''){
             switch(tableStateSaveAs){
                 case enumTableStateSaveMode.sessionStorage:
                     tableStateNotParsed = sessionStorage.getItem(tableStateSaveKey);

@@ -84,7 +84,7 @@
                         tooltipPosition="top">
                     </button>
                 </div>
-                <div *ngIf="tableStateSaveAs !== enumTableStateSaveMode.noone && tableViewsFirstFetchDone===true && tableStateSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
+                <div *ngIf="tableStateSaveAs !== enumTableStateSaveMode.noone && tableViewsFirstFetchDone===true && tableStateSaveKey !== '' && tableViewUsername!==''" style="display: flex; align-items: center; gap: 10px;">
                     <p-menu [model]="tableViews_menuItems" [popup]="true" [appendTo]="'body'" #menu [style]="{ 'min-width': '375px' }">
                         <ng-template pTemplate="start">
                             <div (click)="newViewModalShow()" style="display: flex; cursor: pointer; justify-content: center; align-items: center; padding: 5px 10px; margin-top: 5px;">
