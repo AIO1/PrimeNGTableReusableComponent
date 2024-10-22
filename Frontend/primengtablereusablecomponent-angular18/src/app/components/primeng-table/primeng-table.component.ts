@@ -1,5 +1,5 @@
 import { Table, TableLazyLoadEvent } from 'primeng/table';
-import { Component, ElementRef, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
 // Import services
@@ -74,7 +74,11 @@ export class PrimengTableComponent {
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
   @Input() tableViewUsername: string = ""; // The name of the user that will be used when saving and loading views
 
-  @Output() selectedRows: any[] = []; // An array to keep all the selected rows
+  @Output() selectedRowsChange = new EventEmitter<{
+    rowID: any,
+    selected: boolean
+  }>(); // Emitter that returns the column selected and if it was selected or unselected
+  selectedRows: any[] = []; // An array to keep all the selected rows
 
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   @ViewChild('dt_columnDialog') dt_columnDialog!: Table;
@@ -210,6 +214,10 @@ export class PrimengTableComponent {
     } else { // Remove the selected item
         this.selectedRows = this.selectedRows.filter(selectedId => selectedId !== rowID);
     }
+    this.selectedRowsChange.emit({
+      rowID: rowID,
+      selected: event.checked
+    });
   }
 
   /**
