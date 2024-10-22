@@ -100,6 +100,16 @@ export class PrimengTableComponent {
   newViewAlias: string = "";
   tableViewCurrentSelectedAlias: string | null = null;
 
+  dataAlignHorizontalOptions = [
+    {icon: 'pi pi-align-left', val: enumDataAlignHorizontal.Left},
+    {icon: 'pi pi-align-center', val: enumDataAlignHorizontal.Center},
+    {icon: 'pi pi-align-right', val: enumDataAlignHorizontal.Right}
+  ];
+  dataAlignVerticalOptions = [
+    {icon: 'pi pi-angle-up', val: enumDataAlignVertical.Top},
+    {icon: 'pi pi-align-justify', val: enumDataAlignVertical.Middle},
+    {icon: 'pi pi-angle-down', val: enumDataAlignVertical.Bottom}
+  ];
   
   @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
   @ViewChild('paginatorContainer', { static: false }) paginatorContainer!: ElementRef;
@@ -807,14 +817,6 @@ export class PrimengTableComponent {
     this.columnModalData = [...tempData];
     this.filteredColumnData = this.columnModalData;
     this.columnModalShow=true;
-  }
-
-  setHorizontalAlignment(rowData: any, alignment: enumDataAlignHorizontal) {
-    rowData.dataAlignHorizontal = alignment;
-  }
-
-  setVerticalAlignment(rowData: any, alignment: enumDataAlignVertical) {
-    rowData.dataAlignVertical = alignment;
   }
 
   applyColumnModalChanges(){

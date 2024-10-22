@@ -422,43 +422,19 @@
                             [binary]="true"
                             [disabled]="rowData.wrapDisabled"></p-checkbox>
                     </td>
-                    <td>
-                        <div class="p-inputgroup">
-                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-left" 
-                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Left}" 
-                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Left)" 
-                                style="height: 28px;">
-                            </button>
-                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-center" 
-                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Center}" 
-                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Center)" 
-                                style="height: 28px;">
-                            </button>
-                            <button pButton [disabled]="rowData.dataAlignHorizontalDisabled" pRipple icon="pi pi-align-right" 
-                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignHorizontal !== enumDataAlignHorizontal.Right}" 
-                                (click)="setHorizontalAlignment(rowData, enumDataAlignHorizontal.Right)" 
-                                style="height: 28px;">
-                            </button>
-                        </div>
+                    <td style="text-align: center;">
+                        <p-selectButton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon">
+                            <ng-template let-item pTemplate>
+                                <i [class]="item.icon" style="margin: -20px; transform: translateX(12px);"></i>
+                            </ng-template>
+                        </p-selectButton>
                     </td>
-                    <td>
-                        <div class="p-inputgroup">
-                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-angle-up" 
-                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Top}" 
-                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Top)" 
-                                style="height: 28px;">
-                            </button>
-                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-align-justify" 
-                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Middle}" 
-                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Middle)" 
-                                style="height: 28px;">
-                            </button>
-                            <button pButton [disabled]="rowData.dataAlignVerticalDisabled" pRipple icon="pi pi-angle-down" 
-                                [ngClass]="{'p-button-sm': true, 'p-button-secondary': rowData.dataAlignVertical !== enumDataAlignVertical.Bottom}" 
-                                (click)="setVerticalAlignment(rowData, enumDataAlignVertical.Bottom)" 
-                                style="height: 28px;">
-                            </button>
-                        </div>
+                    <td style="text-align: center;">
+                        <p-selectButton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon">
+                            <ng-template let-item pTemplate>
+                                <i [class]="item.icon" style="margin: -20px; transform: translateX(12px);"></i>
+                            </ng-template>
+                        </p-selectButton>
                     </td>
                 </tr>
             </ng-template>
