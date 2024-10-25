@@ -252,11 +252,21 @@ namespace PrimeNG.HelperFunctions {
                 foreach(object item in items) {
                     FilterPredicateBuilder(property, attribute, item, MatchModeEquals, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
                 }
+            } else { // Workaround for .NET 5
+                List<object> items = JsonSerializer.Deserialize<List<object>>(value.Value!.ToString()!);
+                foreach(object item in items) {
+                    FilterPredicateBuilder(property, attribute, item, MatchModeEquals, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                }
             }
         }
         private static void FilterPredicateNotInClauseBuilder<T>(PrimeNGTableFilterModel value, PropertyInfo property, PrimeNGAttribute attribute, MethodInfo stringDateFormatMethod, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate) {
             if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
+                foreach(object item in items) {
+                    FilterPredicateBuilder(property, attribute, item, "notEquals", stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                }
+            } else { // Workaround for .NET 5
+                List<object> items = JsonSerializer.Deserialize<List<object>>(value.Value!.ToString()!);
                 foreach(object item in items) {
                     FilterPredicateBuilder(property, attribute, item, "notEquals", stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
                 }
