@@ -35,6 +35,7 @@ export class HomeComponent implements OnInit{
   rowActionButtons: IprimengActionButtons[] = [
     {
       icon: 'pi pi-trash',
+      tooltip: 'Delete record',
       color: 'p-button-danger',
       action: (rowData) => {
         this.sharedService.showToast("warn","Clicked on delete row",`The record ID is\n\n${rowData.rowID}\n\nThis button only appears if a condition is met. Remember that a backend validation should be done anyways because users can tamper with the exposed variables in the frontend.`);
@@ -42,6 +43,7 @@ export class HomeComponent implements OnInit{
       condition: (rowData) => (rowData.canBeDeleted === true)
     }, {
       icon: 'pi pi-file-edit',
+      tooltip: 'Edit record',
       color: 'p-button-primary',
       action: (rowData) => {
         this.sharedService.showToast("success","Clicked on edit row",`The record ID is\n\n${rowData.rowID}\n\nHere you could open a modal for the user to edit this record (you can retrieve data through the ID) and then call 'this.dt.updateDataExternal()' to refresh the table data.`);

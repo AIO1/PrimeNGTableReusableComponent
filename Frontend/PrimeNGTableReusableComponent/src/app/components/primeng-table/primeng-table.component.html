@@ -35,7 +35,10 @@
                             (click)="button.action && handleButtonsClick(button.action, rowData)" 
                             size="small" 
                             class="p-button-sm" 
-                            style="height: 28px; margin-right: 10px;">
+                            style="height: 28px; margin-right: 10px;"
+                            [pTooltip]="button.tooltip || ''" 
+                            [showDelay]="700"
+                            tooltipPosition="top">
                     </button>
                 </ng-container>
             </td>
