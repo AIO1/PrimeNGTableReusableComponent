@@ -72,6 +72,7 @@ export class PrimengTableComponent {
   @Input() viewsGetSourceURL: string = "";
   @Input() viewsSaveSourceURL: string = "";
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
+  @Input() actionsColumnWidth: number = 60; // The amount in pixels for the size of the actions column
 
   @Output() selectedRowsChange = new EventEmitter<{
     rowID: any,

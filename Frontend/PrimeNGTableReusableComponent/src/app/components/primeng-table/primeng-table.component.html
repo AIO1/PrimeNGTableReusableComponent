@@ -11,6 +11,7 @@
         <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
         <ng-template #actionColumnHeaderTemplate>
             <th *ngIf="rowActionButtons.length > 0" 
+                [ngStyle]="{'max-width': actionsColumnWidth + 'px'}"
                 pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable"
                 pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)"
                 id="actions-header" [attr.scope]="'col'"
@@ -21,7 +22,9 @@
 
         <!--TEMPLATE FOR THE ACTIONS ROW COLUMN-->
         <ng-template #actionColumnTemplate let-rowData="rowData">
-            <td *ngIf="rowActionButtons.length > 0" style="text-align: center; vertical-align: middle;"
+            <td *ngIf="rowActionButtons.length > 0" 
+                [ngStyle]="{'max-width': actionsColumnWidth +'px'}"
+                style="text-align: center; vertical-align: middle;"
                 pFrozenColumn [frozen]="actionsColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? enumFrozenColumnAlign.Right : enumFrozenColumnAlign.Left)">
                 <ng-container *ngFor="let button of rowActionButtons">
                     <button [disabled]="button.condition ? !button.condition(rowData) : false"
