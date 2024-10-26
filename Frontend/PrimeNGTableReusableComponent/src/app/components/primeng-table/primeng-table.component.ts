@@ -74,6 +74,7 @@ export class PrimengTableComponent {
   @Input() viewsGetSourceURL: string = "";
   @Input() viewsSaveSourceURL: string = "";
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
+  @Input() columnEditorShow: boolean = true; // If the column editor button must be shown or not
 
 
   @Output() selectedRowsChange = new EventEmitter<{

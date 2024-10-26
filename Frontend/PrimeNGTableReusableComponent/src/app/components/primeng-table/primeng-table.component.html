@@ -74,11 +74,13 @@
             <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--CHOOSE COLUMNS TO SHOW-->
-                    <button pButton pRipple icon="pi pi-info" (click)="showColumnModal()"
-                        pTooltip="Modify columns"
-                        [showDelay]="700"
-                        tooltipPosition="top">
-                    </button>
+                    <div *ngIf="columnEditorShow">
+                        <button pButton pRipple icon="pi pi-info" (click)="showColumnModal()"
+                            pTooltip="Modify columns"
+                            [showDelay]="700"
+                            tooltipPosition="top">
+                        </button>
+                    </div>
 
                     <!--CLEAR SORTS AND FILTERS-->
                     <button pButton pRipple icon="pi pi-sort-alt-slash" (click)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
