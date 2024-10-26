@@ -1,10 +1,10 @@
 import { SortMeta } from "primeng/api";
 import { IprimengColumnsMetadata } from "./iprimeng-columns-metadata";
-export interface IPrimengSaveStateList {
-    stateAlias: string;
-    state: IPrimengSaveState;
+export interface IPrimeNgView {
+    viewAlias: string;
+    viewData: IPrimeNgViewData;
 }
-export interface IPrimengSaveState {
+export interface IPrimeNgViewData {
     columnsShown: IprimengColumnsMetadata[];
     tableWidth: any;
     columnsWidth: string;

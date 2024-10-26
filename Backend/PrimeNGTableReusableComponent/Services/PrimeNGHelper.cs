@@ -13,31 +13,31 @@ namespace PrimeNG.HelperFunctions {
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
         public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, string? defaultSortColumnName=null, int defaultSortOrder = 1) {
-            if(inputData.columns != null) {
-                for(int i = 0; i < inputData.columns.Count; i++) {
-                    string column = inputData.columns[i];
-                    inputData.columns[i] = char.ToUpper(column[0]) + column.Substring(1);
+            if(inputData.Columns != null) {
+                for(int i = 0; i < inputData.Columns.Count; i++) {
+                    string column = inputData.Columns[i];
+                    inputData.Columns[i] = char.ToUpper(column[0]) + column.Substring(1);
                 }
             }
-            if(inputData.sort != null) {
-                foreach(var sortItem in inputData.sort) {
+            if(inputData.Sort != null) {
+                foreach(var sortItem in inputData.Sort) {
                     sortItem.Field = char.ToUpper(sortItem.Field[0]) + sortItem.Field.Substring(1);
                 }
             }
             var updatedFilter = new Dictionary<string, List<PrimeNGTableFilterModel>>();
-            foreach(var entry in inputData.filter) {
+            foreach(var entry in inputData.Filter) {
                 string updatedKey = char.ToUpper(entry.Key[0]) + entry.Key.Substring(1);
                 updatedFilter[updatedKey] = entry.Value;
             }
-            inputData.filter = updatedFilter;
-            baseQuery = ApplySorting(baseQuery, inputData.sort, defaultSortColumnName, defaultSortOrder); // Apply the sorting
+            inputData.Filter = updatedFilter;
+            baseQuery = ApplySorting(baseQuery, inputData.Sort, defaultSortColumnName, defaultSortOrder); // Apply the sorting
             long totalRecordsNotFiltered = baseQuery.Count(); // Count all the available records (before applying filters)
-            baseQuery = ApplyGlobalFilter(baseQuery, inputData.globalFilter, inputData.columns!, stringDateFormatMethod, inputData.dateFormat, inputData.dateTimezone, inputData.dateCulture); // Apply the global filter
-            baseQuery = ApplyColumnFilters(baseQuery, inputData.filter, inputData.columns!, stringDateFormatMethod); // Apply the column filters
+            baseQuery = ApplyGlobalFilter(baseQuery, inputData.GlobalFilter, inputData.Columns!, stringDateFormatMethod, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture); // Apply the global filter
+            baseQuery = ApplyColumnFilters(baseQuery, inputData.Filter, inputData.Columns!, stringDateFormatMethod); // Apply the column filters
             long totalRecords = baseQuery.Count(); // Count all the available records (after applying filters)
-            int currentPage = inputData.page; // Get the current page that the user is viewing
-            IQueryable<T> pagedItems = PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.pageSize); // Perform the pagination
-            List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.columns!); // Limit the columns that are going to be selected
+            int currentPage = inputData.Page; // Get the current page that the user is viewing
+            IQueryable<T> pagedItems = PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.PageSize); // Perform the pagination
+            List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.Columns!); // Limit the columns that are going to be selected
             return new PrimeNGPostReturn {
                 Page = currentPage,
                 TotalRecords = totalRecords,

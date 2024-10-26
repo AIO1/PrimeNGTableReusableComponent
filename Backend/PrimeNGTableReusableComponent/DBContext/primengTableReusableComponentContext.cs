@@ -14,7 +14,7 @@ public partial class primengTableReusableComponentContext : DbContext
 
     public virtual DbSet<EmploymentStatusCategory> EmploymentStatusCategories { get; set; }
 
-    public virtual DbSet<TableSaveState> TableSaveStates { get; set; }
+    public virtual DbSet<TableView> TableViews { get; set; }
 
     public virtual DbSet<TestTable> TestTables { get; set; }
 
@@ -63,13 +63,13 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasColumnName("statusName");
         });
 
-        modelBuilder.Entity<TableSaveState>(entity =>
+        modelBuilder.Entity<TableView>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("TableSaveStates_PK");
 
-            entity.ToTable(tb => tb.HasTrigger("TableSaveStates_tg_dateUpdated"));
+            entity.ToTable(tb => tb.HasTrigger("TableViews_tg_dateUpdated"));
 
-            entity.HasIndex(e => new { e.Username, e.TableKey, e.StateName }, "TableSaveStates_data_UNIQUE").IsUnique();
+            entity.HasIndex(e => new { e.Username, e.TableKey, e.ViewAlias }, "TableSaveStates_data_UNIQUE").IsUnique();
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("(newid())")
@@ -82,16 +82,16 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasPrecision(0)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnName("dateUpdated");
-            entity.Property(e => e.StateData).HasColumnName("stateData");
-            entity.Property(e => e.StateName)
-                .HasMaxLength(50)
-                .HasColumnName("stateName");
             entity.Property(e => e.TableKey)
                 .HasMaxLength(255)
                 .HasColumnName("tableKey");
             entity.Property(e => e.Username)
                 .HasMaxLength(255)
                 .HasColumnName("username");
+            entity.Property(e => e.ViewAlias)
+                .HasMaxLength(50)
+                .HasColumnName("viewAlias");
+            entity.Property(e => e.ViewData).HasColumnName("viewData");
         });
 
         modelBuilder.Entity<TestTable>(entity =>

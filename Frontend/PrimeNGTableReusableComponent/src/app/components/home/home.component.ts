@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { enumTableStateSaveMode, PrimengTableComponent } from '../primeng-table/primeng-table.component';
+import { enumTableViewSaveMode, PrimengTableComponent } from '../primeng-table/primeng-table.component';
 
 import { SharedService } from '../../services/shared/shared.service';
 
@@ -14,7 +14,7 @@ import { IprimengActionButtons } from '../../interfaces/primeng/iprimeng-action-
 export class HomeComponent implements OnInit{
   constructor(private sharedService: SharedService){}
   @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
-  enumTableStateSaveMode = enumTableStateSaveMode;
+  enumTableViewSaveMode = enumTableViewSaveMode;
   employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
   predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
     employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter

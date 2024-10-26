@@ -84,7 +84,7 @@
                         tooltipPosition="top">
                     </button>
                 </div>
-                <div *ngIf="tableStateSaveAs !== enumTableStateSaveMode.noone && tableViewsFirstFetchDone===true && tableStateSaveKey !== '' && tableViewUsername!==''" style="display: flex; align-items: center; gap: 10px;">
+                <div *ngIf="tableViewSaveAs !== enumTableViewSaveMode.noone && tableViewsFirstFetchDone===true && tableViewSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
                     <p-menu [model]="tableViews_menuItems" [popup]="true" [appendTo]="'body'" #menu [style]="{ 'min-width': '375px' }">
                         <ng-template pTemplate="start">
                             <div (click)="newViewModalShow()" style="display: flex; cursor: pointer; justify-content: center; align-items: center; padding: 5px 10px; margin-top: 5px;">
@@ -94,12 +94,12 @@
                             <div style="border-top: 1px solid #ccc; margin: 5px auto; width: 80%; margin-bottom: 20px;"></div> <!-- Línea de separación -->
                         </ng-template>
                         <ng-template pTemplate="item" let-item>
-                            <div (click)="loadTableState(item.label)" 
+                            <div (click)="loadTableView(item.label)" 
                                 [ngStyle]="{'background-color': item.label === tableViewCurrentSelectedAlias ? '#e0f7fa' : 'transparent'}" 
                                 style="display: flex; align-items: center; justify-content: space-between; padding: 10px; cursor: pointer;">
                                 <span style="flex-grow: 1; padding-left: 10px;">{{ item.label }}</span>
                                 <div style="padding-right: 10px;">
-                                    <i class="pi pi-save" (click)="editingAlias=''; saveTableViews(false, false, item.label); $event.stopPropagation()" style="cursor: pointer; margin-right: 15px;"></i>
+                                    <i class="pi pi-save" (click)="editingViewAlias=''; saveTableViews(false, false, item.label); $event.stopPropagation()" style="cursor: pointer; margin-right: 15px;"></i>
                                     <i class="pi pi-pencil" (click)="newViewModalShow(false, item.label); $event.stopPropagation()" style="cursor: pointer; margin-right: 15px;"></i>
                                     <i class="pi pi-trash" (click)="deleteTableView(item.label); $event.stopPropagation()" style="cursor: pointer;"></i>
                                 </div>
@@ -123,14 +123,14 @@
                             pTooltip="Apply view again"
                             tooltipPosition="top"
                             [showDelay]="700"
-                            type="button" icon="pi pi-refresh" (click)="loadTableState()"
-                            class="p-button custom-refresh-button" style="cursor: pointer; height: 100%; padding: 0;" [disabled]="!hasLoadState()">
+                            type="button" icon="pi pi-refresh" (click)="loadTableView()"
+                            class="p-button custom-refresh-button" style="cursor: pointer; height: 100%; padding: 0;" [disabled]="!hasLoadView()">
                         </button>
                         <button pButton 
                             pTooltip="Reset table view to original"
                             tooltipPosition="top"
                             [showDelay]="700"
-                            type="button" icon="pi pi-eraser" (click)="resetTableState()"
+                            type="button" icon="pi pi-eraser" (click)="resetTableView()"
                             class="p-button custom-refresh-button" style="cursor: pointer; height: 100%; padding: 0;">
                         </button>
                     </div>
@@ -460,11 +460,11 @@
     </ng-template>
 </p-dialog>
 
-<!--TABLE STATE SAVE-->
+<!--TABLE VIEW SAVE-->
 <p-dialog [(visible)]="newViewShowModal" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
     <ng-template pTemplate="header">
         <div class="inline-flex align-items-center justify-content-center gap-2">
-            <span class="white-space-nowrap"><b>{{ editingAlias !== '' ? 'UPDATE VIEW' : 'CREATE NEW VIEW' }}</b></span>
+            <span class="white-space-nowrap"><b>{{ editingViewAlias !== '' ? 'UPDATE VIEW' : 'CREATE NEW VIEW' }}</b></span>
         </div>
     </ng-template>
     <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -479,6 +479,6 @@
     </div>
     <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
         <p-button (click)="newViewShowModal = false" label="Cancel" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
-        <p-button (click)="createOrUpdateTableView()" [label]="editingAlias !== '' ? 'Update' : 'Create'" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="createOrUpdateTableView()" [label]="editingViewAlias !== '' ? 'Update' : 'Create'" severity="success" [style]="{'margin-top': '20px'}"></p-button>
     </ng-template>
 </p-dialog>

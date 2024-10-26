@@ -18,11 +18,11 @@ import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-pred
 import { FilterMetadata, MenuItem } from 'primeng/api';
 import { DatePipe } from '@angular/common';
 import { PaginatorState } from 'primeng/paginator';
-import { IPrimengSaveState, IPrimengSaveStateList } from '../../interfaces/primeng/iprimeng-save-state';
-import { PrimengTableStateService } from '../../services/primeng-table/primengTableState.service';
+import { IPrimeNgViewData, IPrimeNgView } from '../../interfaces/primeng/iprimeng-views';
+import { PrimengTableViewsService } from '../../services/primeng-table/primengTableViews.service';
 import { Observable } from 'rxjs';
 
-export enum enumTableStateSaveMode {
+export enum enumTableViewSaveMode {
   noone,
   sessionStorage,
   localStorage,
@@ -38,7 +38,7 @@ export enum enumTableStateSaveMode {
 export class PrimengTableComponent {
   constructor(
     private primengTableService: PrimengTableService,
-    private primengTableStateService: PrimengTableStateService,
+    private primengTableViewsService: PrimengTableViewsService,
     private sharedService: SharedService, 
     private datePipe: DatePipe,
     private sanitizer: DomSanitizer){}
@@ -67,12 +67,11 @@ export class PrimengTableComponent {
   @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
   @Input() rowselectorColumnResizable: boolean = false;
   @Input() computeScrollHeight: boolean = true; // If true, the table will try not to grow more than the total height of the window vertically
-  @Input() tableStateSaveAs: enumTableStateSaveMode = enumTableStateSaveMode.noone; // How the table state will be saved
-  @Input() tableStateSaveKey: string = ""; // The key used to save the table state
-  @Input() stateListGetSourceURL: string = "";
-  @Input() stateListSaveSourceURL: string = "";
+  @Input() tableViewSaveAs: enumTableViewSaveMode = enumTableViewSaveMode.noone; // How the table view will be saved
+  @Input() tableViewSaveKey: string = ""; // The key used to save the table views
+  @Input() viewsGetSourceURL: string = "";
+  @Input() viewsSaveSourceURL: string = "";
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
-  @Input() tableViewUsername: string = ""; // The name of the user that will be used when saving and loading views
 
   @Output() selectedRowsChange = new EventEmitter<{
     rowID: any,
@@ -87,18 +86,19 @@ export class PrimengTableComponent {
   enumDataAlignHorizontal = enumDataAlignHorizontal;
   enumDataAlignVertical = enumDataAlignVertical;
   enumFrozenColumnAlign = enumFrozenColumnAlign;
-  enumTableStateSaveMode = enumTableStateSaveMode;
+  enumTableViewSaveMode = enumTableViewSaveMode;
 
   scrollHeight: string = "0px";
 
   tableViews_menuItems: MenuItem[] = [];
 
-  private tableSaveStateInit: boolean = false;
+  private tableViewsInit: boolean = false;
   tableViewsFirstFetchDone: boolean = false;
-  tableViewsList: IPrimengSaveStateList[] = [];
+  tableViewsList: IPrimeNgView[] = [];
   newViewShowModal: boolean = false;
   newViewAlias: string = "";
   tableViewCurrentSelectedAlias: string | null = null;
+  editingViewAlias:string  ="";
 
   dataAlignHorizontalOptions = [
     {icon: 'pi pi-align-left', val: enumDataAlignHorizontal.Left},
@@ -328,7 +328,7 @@ export class PrimengTableComponent {
    * 
    * updateData(event, continueAction, uponContinueActionEndModalHttp);
    */
-  updateData(event: TableLazyLoadEvent, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, tableState?: IPrimengSaveState): void {
+  updateData(event: TableLazyLoadEvent, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, tableView?: IPrimeNgViewData): void {
     if (!this.canPerformActions) { // Check if actions can be performed
       return; // Exit if actions cannot be performed
     }
@@ -344,8 +344,8 @@ export class PrimengTableComponent {
       sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
       filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
-      columns: (tableState && tableState.columnsShown && tableState.columnsShown.length > 0) 
-        ? tableState.columnsShown.map(col => col.field)
+      columns: (tableView && tableView.columnsShown && tableView.columnsShown.length > 0) 
+        ? tableView.columnsShown.map(col => col.field)
         : this.columnsToShow.map(col => col.field), // Set the columns to show
         
       dateFormat: this.dateFormat,
@@ -360,18 +360,18 @@ export class PrimengTableComponent {
         this.totalRecords = responseData.totalRecords; // Update the total number of records
         this.totalRecordsNotFiltered = responseData.totalRecordsNotFiltered; // Update the total records not filtered
         this.currentPage = responseData.page; // Update the current page
-        if(tableState && tableState.columnsShown && tableState.columnsShown.length > 0) {
-          this.columnsSelected = tableState.columnsShown
+        if(tableView && tableView.columnsShown && tableView.columnsShown.length > 0) {
+          this.columnsSelected = tableView.columnsShown
             .map(data => this.columns.find((col: any) => col.field === data.field))
             .filter((col): col is IprimengColumnsMetadata => col !== undefined)
             .filter(col => !this.columnsNonSelectable.includes(col));
           this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
-          this.updateColumnsSpecialProperties(tableState.columnsShown);
+          this.updateColumnsSpecialProperties(tableView.columnsShown);
           this.dt.restoreColumnWidths();
         }
-        if(!this.tableSaveStateInit){
-          this.tableSaveStateInit=true;
-          this.tableStateListGet();
+        if(!this.tableViewsInit){
+          this.tableViewsInit=true;
+          this.tableViewsGet();
         }
         if (continueAction) { // Check if a continue action is specified
           continueAction(); // Execute the continue action
@@ -384,13 +384,13 @@ export class PrimengTableComponent {
   }
 
   /**
-   * Fetches table columns and allowed paginations, then updates the state with the fetched data.
+   * Fetches table columns and allowed paginations, then updates the view with the fetched data.
    * Optionally continues with a specified action after the data is fetched.
    *
    * @param {Function} [continueAction] - (Optional) A function to be executed after fetching the columns and allowed paginations. The function can take optional data as a parameter.
-   * @param {boolean} [uponContinueActionEndModalHttp=false] - (Optional) A boolean indicating whether to end the modal HTTP waiting state upon the completion of the continue action. Defaults to false.
+   * @param {boolean} [uponContinueActionEndModalHttp=false] - (Optional) A boolean indicating whether to end the modal HTTP waiting view upon the completion of the continue action. Defaults to false.
    */
-  getColumns(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, clearTableState: boolean = false) {
+  getColumns(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, clearTableView: boolean = false) {
     this.columnsFetched = false;
     this.canPerformActions = false;
     this.sharedService.handleHttpResponse(this.primengTableService.fetchTableColumnsAndAllowedPaginations(this.columnsSourceURL)).subscribe({
@@ -405,7 +405,7 @@ export class PrimengTableComponent {
             this.dateTimezone = responseData.dateTimezone;
             this.dateCulture = responseData.dateCulture;
             this.currentPage = 0;
-            if(clearTableState){
+            if(clearTableView){
               this.clearFilters(this.dt, true, false);
               this.clearSorts(this.dt, true);
               this.tableLazyLoadEventInformation.multiSortMeta=[];
@@ -428,54 +428,54 @@ export class PrimengTableComponent {
       this.sharedService.showToast("error", "INCORRECT TABLE VIEW ALIAS LENGTH", "The table view alias must be between 3 and 50 characters.");
       return;
     }
-    if(this.primengTableStateService.get(this.tableViewsList, aliasToSave) !== undefined){
+    if(this.primengTableViewsService.get(this.tableViewsList, aliasToSave) !== undefined){
       this.sharedService.showToast("error", "ALIAS ALREADY EXISTS", "A view with this alias already exists.");
       return;
     }
-    if(this.editingAlias!==""){
-      let itemFetched = this.primengTableStateService.get(this.tableViewsList, this.editingAlias);
+    if(this.editingViewAlias!==""){
+      let itemFetched = this.primengTableViewsService.get(this.tableViewsList, this.editingViewAlias);
       if (itemFetched === undefined) {
-        this.sharedService.showToast("error","ERROR UPDATING VIEW NAME", `The table view '${this.editingAlias}' no longer exists.`);
+        this.sharedService.showToast("error","ERROR UPDATING VIEW NAME", `The table view '${this.editingViewAlias}' no longer exists.`);
         return;
       }
-      if(this.tableViewCurrentSelectedAlias === itemFetched.stateAlias){
+      if(this.tableViewCurrentSelectedAlias === itemFetched.viewAlias){
         this.tableViewCurrentSelectedAlias = aliasToSave;
       }
-      itemFetched.stateAlias = aliasToSave;
+      itemFetched.viewAlias = aliasToSave;
     } else {
-      const newState: IPrimengSaveStateList = {
-        stateAlias: aliasToSave,
-        state: this.primengTableStateService.generateSaveData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
+      const newView: IPrimeNgView = {
+        viewAlias: aliasToSave,
+        viewData: this.primengTableViewsService.generateSaveData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
       };
-      this.tableViewsList.push(newState);
+      this.tableViewsList.push(newView);
       this.tableViewCurrentSelectedAlias = aliasToSave;
     }
     this.saveTableViews(true, false, aliasToSave);
   }
 
   saveTableViews(closeCreateNewModal: boolean = false, skipCreate: boolean = false, viewAliasToUpdate?: string){
-    if(!skipCreate && viewAliasToUpdate && this.editingAlias===""){
-      let itemToUpdate = this.primengTableStateService.get(this.tableViewsList, viewAliasToUpdate);
+    if(!skipCreate && viewAliasToUpdate && this.editingViewAlias===""){
+      let itemToUpdate = this.primengTableViewsService.get(this.tableViewsList, viewAliasToUpdate);
       if (itemToUpdate === undefined) {
         this.sharedService.showToast("error","ERROR SAVING VIEWS", `The table view '${viewAliasToUpdate}' no longer exists.`);
         this.tableViewCurrentSelectedAlias=null;
         return;
       }
-      itemToUpdate.state = this.primengTableStateService.generateSaveData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this));
+      itemToUpdate.viewData = this.primengTableViewsService.generateSaveData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this));
     }
-    let tableState: string = JSON.stringify(this.tableViewsList);
-    switch(this.tableStateSaveAs){
-      case enumTableStateSaveMode.sessionStorage:
-        sessionStorage.setItem(this.tableStateSaveKey, tableState);
+    let tableView: string = JSON.stringify(this.tableViewsList);
+    switch(this.tableViewSaveAs){
+      case enumTableViewSaveMode.sessionStorage:
+        sessionStorage.setItem(this.tableViewSaveKey, tableView);
       break;
-      case enumTableStateSaveMode.localStorage:
-        localStorage.setItem(this.tableStateSaveKey, tableState);
+      case enumTableViewSaveMode.localStorage:
+        localStorage.setItem(this.tableViewSaveKey, tableView);
       break;
-      case enumTableStateSaveMode.databaseStorage:
-        const saveObsv = this.primengTableStateService.databaseSaveList(this.tableViewsList, this.stateListSaveSourceURL, this.tableViewUsername, this.tableStateSaveKey);
+      case enumTableViewSaveMode.databaseStorage:
+        const saveObsv = this.primengTableViewsService.databaseSaveList(this.tableViewsList, this.viewsSaveSourceURL, this.tableViewSaveKey);
           this.sharedService.handleHttpResponse(saveObsv,200,false).subscribe({
           next: () => {
-            this.finishSaveState(skipCreate, closeCreateNewModal);
+            this.finishSaveView(skipCreate, closeCreateNewModal);
           },
           error: err => { // Handle error response
               this.sharedService.dataFecthError("ERROR SAVING TABLE VIEW", err); // Log the error
@@ -483,78 +483,78 @@ export class PrimengTableComponent {
         })
         return;
       default:
-        this.sharedService.showToast("error","NOT IMPLEMENTED", "This type os save state has not been implemented yet.");
+        this.sharedService.showToast("error","NOT IMPLEMENTED", "This type os save view has not been implemented yet.");
         return;
     }
-    this.finishSaveState(skipCreate, closeCreateNewModal);
+    this.finishSaveView(skipCreate, closeCreateNewModal);
   }
-  finishSaveState(skipCreate: boolean, closeCreateNewModal: boolean){
+  finishSaveView(skipCreate: boolean, closeCreateNewModal: boolean){
     if(!skipCreate){
-      if(this.editingAlias===""){
+      if(this.editingViewAlias===""){
         this.sharedService.showToast("info","Table view saved", `The table view '${this.tableViewCurrentSelectedAlias}' has been saved.`);
       } else {
-        this.sharedService.showToast("info","Table view name updated", `The table view '${this.editingAlias}' had its alias updated.`);
-        this.editingAlias="";
+        this.sharedService.showToast("info","Table view name updated", `The table view '${this.editingViewAlias}' had its alias updated.`);
+        this.editingViewAlias="";
       }
     }
-    this.primengTableStateService.sort(this.tableViewsList);
+    this.primengTableViewsService.sort(this.tableViewsList);
     if(closeCreateNewModal){
-      this.tableViews_menuItems=[...this.primengTableStateService.updateMenuItems(this.tableViewsList)];
+      this.tableViews_menuItems=[...this.primengTableViewsService.updateMenuItems(this.tableViewsList)];
       this.newViewShowModal=false;
     }
   }
   deleteTableView(aliasToDelete: string){
-    let itemToFind = this.primengTableStateService.get(this.tableViewsList, aliasToDelete);
+    let itemToFind = this.primengTableViewsService.get(this.tableViewsList, aliasToDelete);
     if (itemToFind === undefined) {
-      this.sharedService.showToast("error","ERROR DELETING STATE", `Table state '${aliasToDelete}' no longer exists.`);
+      this.sharedService.showToast("error","ERROR DELETING VIEW", `Table view '${aliasToDelete}' no longer exists.`);
       return;
     }
-    this.tableViewsList = this.tableViewsList.filter(item => item.stateAlias !== aliasToDelete);
-    this.tableViews_menuItems=[...this.primengTableStateService.updateMenuItems(this.tableViewsList)];
+    this.tableViewsList = this.tableViewsList.filter(item => item.viewAlias !== aliasToDelete);
+    this.tableViews_menuItems=[...this.primengTableViewsService.updateMenuItems(this.tableViewsList)];
     if(this.tableViewCurrentSelectedAlias===aliasToDelete){
       this.tableViewCurrentSelectedAlias=null;
     }
-    this.editingAlias="";
+    this.editingViewAlias="";
     this.saveTableViews(false,true);
     this.sharedService.showToast("info","DELETED TABLE VIEW", `Table view '${aliasToDelete}' has been deleted.`);
   }
 
-  tableStateListGet(): void {
-    const tableState = this.primengTableStateService.recoverList(this.tableStateSaveAs, this.stateListGetSourceURL, this.tableViewUsername, this.tableStateSaveKey);
-      if (tableState instanceof Observable) {
-        this.sharedService.handleHttpResponse(tableState).subscribe({
+  tableViewsGet(): void {
+    const tableView = this.primengTableViewsService.recoverList(this.tableViewSaveAs, this.viewsGetSourceURL, this.tableViewSaveKey);
+      if (tableView instanceof Observable) {
+        this.sharedService.handleHttpResponse(tableView).subscribe({
           next: (responseData: any) => {
             let resultadoParseado = responseData.map((item: any) => ({
-                stateAlias: item.stateAlias,
-                state: JSON.parse(item.state)
+              viewAlias: item.viewAlias,
+              viewData: JSON.parse(item.viewData)
             }));
-            this.tableStateListProcess(resultadoParseado);
+            this.tableViewListProcess(resultadoParseado);
           },
           error: err => { // Handle error response
-              this.sharedService.dataFecthError("ERROR GETTING TABLE STATE", err); // Log the error
+              this.sharedService.dataFecthError("ERROR GETTING TABLE VIEW", err); // Log the error
           }
         })
     } else {
-        this.tableStateListProcess(tableState);
+        this.tableViewListProcess(tableView);
     }
   }
-  tableStateListProcess(tableState: IPrimengSaveStateList[]){
-    this.tableViewsList = [...tableState];
+  tableViewListProcess(tableView: IPrimeNgView[]){
+    this.tableViewsList = [...tableView];
     if(this.tableViewsList.length > 0){
-      this.primengTableStateService.sort(this.tableViewsList);
+      this.primengTableViewsService.sort(this.tableViewsList);
     }
-    this.tableViews_menuItems=[...this.primengTableStateService.updateMenuItems(this.tableViewsList)];
+    this.tableViews_menuItems=[...this.primengTableViewsService.updateMenuItems(this.tableViewsList)];
     this.tableViewsFirstFetchDone=true;
   }
 
-  hasLoadState(): boolean {
-    if(this.tableStateSaveKey === "" || this.tableStateSaveAs===enumTableStateSaveMode.noone || this.tableViewsList.length == 0 || !this.tableViewCurrentSelectedAlias){
+  hasLoadView(): boolean {
+    if(this.tableViewSaveKey === "" || this.tableViewSaveAs===enumTableViewSaveMode.noone || this.tableViewsList.length == 0 || !this.tableViewCurrentSelectedAlias){
       return false;
     }
     return true;
   }
 
-  loadTableState(aliasToSet?: string){
+  loadTableView(aliasToSet?: string){
     if(!aliasToSet){
       if(this.tableViewCurrentSelectedAlias == null){
         this.sharedService.showToast("error","ERROR LOADING VIEW", `There is no selected table view '${aliasToSet}'.`);
@@ -562,37 +562,37 @@ export class PrimengTableComponent {
       }
       aliasToSet=this.tableViewCurrentSelectedAlias!;
     }
-    let itemToFind = this.primengTableStateService.get(this.tableViewsList, aliasToSet);
+    let itemToFind = this.primengTableViewsService.get(this.tableViewsList, aliasToSet);
     if (itemToFind === undefined) {
       this.sharedService.showToast("error","ERROR LOADING VIEW", `Table view '${aliasToSet}' no longer exists.`);
       this.tableViewCurrentSelectedAlias=null;
       return;
     }
     this.tableViewCurrentSelectedAlias=aliasToSet;
-    const tableState: IPrimengSaveState = itemToFind.state;
-    this.currentPage = tableState.currentPage;
-    this.currentRowsPerPage = tableState.currentRowsPerPage;
-    this.globalSearchText = tableState.globalSearchText;
-    this.tableLazyLoadEventInformation.multiSortMeta = [...(tableState.multiSortMeta ?? [])];
-    this.dt.multiSortMeta = [...(tableState.multiSortMeta ?? [])];
+    const tableView: IPrimeNgViewData = itemToFind.viewData;
+    this.currentPage = tableView.currentPage;
+    this.currentRowsPerPage = tableView.currentRowsPerPage;
+    this.globalSearchText = tableView.globalSearchText;
+    this.tableLazyLoadEventInformation.multiSortMeta = [...(tableView.multiSortMeta ?? [])];
+    this.dt.multiSortMeta = [...(tableView.multiSortMeta ?? [])];
     this.canPerformActions=false;
     this.dt.sortMultiple();
     this.canPerformActions=true;
 
-    this.tableLazyLoadEventInformation.filters = {...tableState.filters};
-    this.dt.filters = {...tableState.filters};
+    this.tableLazyLoadEventInformation.filters = {...tableView.filters};
+    this.dt.filters = {...tableView.filters};
 
-    this.dt.tableWidthState = tableState.tableWidth;
-    this.dt.columnWidthsState = tableState.columnsWidth;
+    this.dt.tableWidthState = tableView.tableWidth;
+    this.dt.columnWidthsState = tableView.columnsWidth;
 
-    this.updateData(this.tableLazyLoadEventInformation,undefined,undefined,tableState);
-    this.sharedService.showToast("info","Table state restored", `The table state '${this.tableViewCurrentSelectedAlias}' has been restored.`);
+    this.updateData(this.tableLazyLoadEventInformation,undefined,undefined,tableView);
+    this.sharedService.showToast("info","Table view restored", `The table view '${this.tableViewCurrentSelectedAlias}' has been restored.`);
   }
 
-  resetTableState(){
+  resetTableView(){
     this.tableViewCurrentSelectedAlias=null;
     this.getColumns(undefined,undefined,true);
-    this.sharedService.showToast("info","Table state reseted", "The state of the table has been reset to its original state.");
+    this.sharedService.showToast("info","Table view reseted", "The view of the table has been reset to its original state.");
   }
   
   /**
@@ -974,7 +974,6 @@ export class PrimengTableComponent {
     menu.toggle(event); 
   }
 
-  editingAlias:string  ="";
   newViewModalShow(asNew: boolean = true, aliasToLoad: string = ""){
       if(this.tableViewsList.length>=this.maxTableViews && asNew){
         this.sharedService.showToast("error", "MAX TABLE VIEWS REACHED", `You can't have more than ${this.maxTableViews} views. Please, delete some views before creating new ones.`)
@@ -983,9 +982,9 @@ export class PrimengTableComponent {
       this.newViewAlias = aliasToLoad;
       this.newViewShowModal=true;
       if(!asNew){
-        this.editingAlias=aliasToLoad;
+        this.editingViewAlias=aliasToLoad;
       } else {
-        this.editingAlias="";
+        this.editingViewAlias="";
       }
   }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Models.PrimengTableReusableComponent;
 
-public partial class TableSaveState
+public partial class TableView
 {
     public Guid Id { get; set; }
 
@@ -15,7 +15,7 @@ public partial class TableSaveState
 
     public string TableKey { get; set; } = null!;
 
-    public string StateName { get; set; } = null!;
+    public string ViewAlias { get; set; } = null!;
 
-    public string StateData { get; set; } = null!;
+    public string ViewData { get; set; } = null!;
 }
