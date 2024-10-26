@@ -208,6 +208,7 @@ export class PrimengTableComponent {
   private columnsNonSelectable: IprimengColumnsMetadata[] = []; // Columns which are always displayed
   columnsToShow: IprimengColumnsMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
   columnModalShow: boolean = false; // If the column modal window must be shown
+  viewsModalShow: boolean = false; // If the views modal must be shown
 
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
 
@@ -970,12 +971,6 @@ export class PrimengTableComponent {
   getBlobIconAsUrl(blob: Blob): SafeUrl {
     let objectURL = `data:image/jpeg;base64,${blob}`; // Create a base64 encoded string from the blob data
     return this.sanitizer.bypassSecurityTrustUrl(objectURL); // Bypass Angular's security mechanisms to create a SafeUrl
-  }
-
-
-  toggleMenu(event: Event, menu: any): void {
-    event.stopPropagation();
-    menu.toggle(event); 
   }
 
   newViewModalShow(asNew: boolean = true, aliasToLoad: string = ""){

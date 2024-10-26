@@ -95,31 +95,9 @@
                     </button>
                 </div>
                 <div *ngIf="tableViewSaveAs !== enumTableViewSaveMode.noone && tableViewsFirstFetchDone===true && tableViewSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
-                    <p-menu [model]="tableViews_menuItems" [popup]="true" [appendTo]="'body'" #menu [style]="{ 'min-width': '375px' }">
-                        <ng-template pTemplate="start">
-                            <div (click)="newViewModalShow()" style="display: flex; cursor: pointer; justify-content: center; align-items: center; padding: 5px 10px; margin-top: 5px;">
-                                <span>New view</span>
-                                <i class="pi pi-plus" style="margin-left: 10px;"></i>
-                            </div>
-                            <div style="border-top: 1px solid #ccc; margin: 5px auto; width: 80%; margin-bottom: 20px;"></div> <!-- Línea de separación -->
-                        </ng-template>
-                        <ng-template pTemplate="item" let-item>
-                            <div (click)="loadTableView(item.label)" 
-                                [ngStyle]="{'background-color': item.label === tableViewCurrentSelectedAlias ? '#e0f7fa' : 'transparent'}" 
-                                style="display: flex; align-items: center; justify-content: space-between; padding: 10px; cursor: pointer;">
-                                <span style="flex-grow: 1; padding-left: 10px;">{{ item.label }}</span>
-                                <div style="padding-right: 10px;">
-                                    <i class="pi pi-save" (click)="editingViewAlias=''; saveTableViews(false, false, item.label); $event.stopPropagation()" style="cursor: pointer; margin-right: 15px;"></i>
-                                    <i class="pi pi-pencil" (click)="newViewModalShow(false, item.label); $event.stopPropagation()" style="cursor: pointer; margin-right: 15px;"></i>
-                                    <i class="pi pi-trash" (click)="deleteTableView(item.label); $event.stopPropagation()" style="cursor: pointer;"></i>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </p-menu>
-
                     <div class="p-inputgroup custom-inputgroup" 
                         style="display: flex; align-items: center;">
-                        <div (click)="toggleMenu($event, menu)" style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
+                        <div (click)="viewsModalShow=true; $event.stopPropagation();" style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
                             <input
                                 type="text"
                                 pInputText
@@ -491,4 +469,57 @@
         <p-button (click)="newViewShowModal = false" label="Cancel" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
         <p-button (click)="createOrUpdateTableView()" [label]="editingViewAlias !== '' ? 'Update' : 'Create'" severity="success" [style]="{'margin-top': '20px'}"></p-button>
     </ng-template>
+</p-dialog>
+<!--VIEWS MODAL DIALOG-->
+<p-dialog [(visible)]="viewsModalShow" [modal]="true" [draggable]="false" [resizable]="false"
+    [closable]="true" [closeOnEscape]="false" [maximizable]="false" [style]="{'min-width': '70vw', 'max-width': '70vw'}">
+    <ng-template pTemplate="header">
+        <div>
+            <span class="p-dialog-title">Table Views</span>
+        </div>
+    </ng-template>
+    <div class="p-4 pt-0">
+        <p-table #dt_viewsDialog [value]="tableViews_menuItems" [scrollable]="true" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+            responsiveLayout="scroll" scrollHeight="flex">
+            <ng-template pTemplate="caption">
+                <div #headerContainer class="p-d-flex justify-content-end align-items-center w-100">
+                    <button pButton pRipple icon="pi pi-plus" (click)="newViewModalShow()" 
+                    pTooltip="New View" tooltipPosition="top"></button>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>View name</th>
+                    <th style="max-width: 300px; min-width: 300px; width: 300px;">Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowData>
+                <tr>
+                    <td>
+                        {{rowData.label}}
+                    </td>
+                    <td style="max-width: 300px; min-width: 300px; width: 300px; display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <button pButton icon="pi pi-upload" (click)="loadTableView(rowData.label); viewsModalShow=false;" [showDelay]="700" pTooltip="Restore" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
+                        <button pButton icon="pi pi-save" (click)="editingViewAlias=''; saveTableViews(false, false, rowData.label)" [showDelay]="700" pTooltip="Save" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
+                        <button pButton icon="pi pi-pencil" (click)="newViewModalShow(false, rowData.label)" [showDelay]="700" pTooltip="Edit" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
+                        <button pButton icon="pi pi-trash" (click)="deleteTableView(rowData.label); viewsModalShow=false;" [showDelay]="700" pTooltip="Delete" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px;"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="999">There are no views</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary"> 
+                <div #paginatorContainer>
+                    <div>
+                        Showing {{tableViews_menuItems ? tableViews_menuItems.length : 0}} records
+                    </div>
+                    <div>
+                    </div>
+                </div>
+            </ng-template>
+        </p-table>
+    </div>
 </p-dialog>
