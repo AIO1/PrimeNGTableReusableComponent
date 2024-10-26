@@ -58,11 +58,13 @@ export class PrimengTableComponent {
   @Input() applyingFiltersText: string = "Available records after applying filters"; // The text that is shown next to the number of records after applying filter rules
   @Input() notApplyingFiltersText: string = "Number of available records"; // The text to be shown next to the number of total records available (not applying filters)
   @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
+  @Input() actionsColumnWidth: number = 150; // The amount in pixels for the size of the actions column
   @Input() actionsColumnAligmentRight: boolean = true; // If actions column is put at the right end of the table (or false if its at the left)
   @Input() actionsColumnFrozen: boolean = true; // If the actions column should be frozen
   @Input() actionsColumnResizable: boolean = false; // If the action column can be resized by the user
   @Input() rowSelectorColumnActive: boolean = false; // By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
   @Input() rowSelectorColumName: string = "Selected"; // The title of the row selection column. By default is "Selected"
+  @Input() rowSelectorColumnWidth: number = 150; // The amount in pixels for the size of the selector column
   @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
   @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
   @Input() rowselectorColumnResizable: boolean = false;
@@ -72,7 +74,7 @@ export class PrimengTableComponent {
   @Input() viewsGetSourceURL: string = "";
   @Input() viewsSaveSourceURL: string = "";
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
-  @Input() actionsColumnWidth: number = 60; // The amount in pixels for the size of the actions column
+
 
   @Output() selectedRowsChange = new EventEmitter<{
     rowID: any,
