@@ -211,7 +211,7 @@ namespace PrimeNG.DTOs {
 
         public bool CellOverflowBehaviourAllowUserEdit { get; set; }
 
-        public double Width { get; set; }
+        public double InitialWidth { get; set; }
     }
 
     public class PrimeNgGetViewsRequest {

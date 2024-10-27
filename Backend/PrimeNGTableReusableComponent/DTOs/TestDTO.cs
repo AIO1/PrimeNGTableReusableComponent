@@ -8,7 +8,7 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [PrimeNGAttribute(sendColumnAttributes: false)]
         public bool CanBeDeleted { get; set; }
 
-        [PrimeNGAttribute("Username", dataAlignHorizontal: EnumDataAlignHorizontal.Left, canBeHidden: false, columnDescription: "A random username", frozenColumnAlign: EnumFrozenColumnAlign.Left)]
+        [PrimeNGAttribute("Username", dataAlignHorizontal: EnumDataAlignHorizontal.Left, canBeHidden: false, columnDescription: "A random username", frozenColumnAlign: EnumFrozenColumnAlign.Left, initialWidth: 400)]
         public string Username { get; set; } = null!;
 
         [PrimeNGAttribute("Age", dataType: EnumDataType.Numeric, columnDescription: "The age of the user")]

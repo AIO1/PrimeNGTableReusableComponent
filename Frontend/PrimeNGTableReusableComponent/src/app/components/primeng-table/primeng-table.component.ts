@@ -105,6 +105,9 @@ export class PrimengTableComponent {
   tableViewCurrentSelectedAlias: string | null = null;
   editingViewAlias:string  ="";
   private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
+  private initialColumnWidths: any;
+  private initialTableWidth: any;
+  private getInitialWidths: boolean = true;
   cellOverflowBehaviourOptions = [
     {icon: 'pi pi-minus', val: enumCellOverflowBehaviour.Hidden},
     {icon: 'pi pi-equals', val: enumCellOverflowBehaviour.Wrap}/*,
@@ -417,9 +420,19 @@ export class PrimengTableComponent {
             this.dateTimezone = responseData.dateTimezone;
             this.dateCulture = responseData.dateCulture;
             this.currentPage = 0;
+            if(this.getInitialWidths){
+              setTimeout(() => {
+              this.initialColumnWidths = this.primengTableViewsService.computeColumnWidths(this.dt);
+              this.initialTableWidth = this.primengTableViewsService.computeTableWidth(this.dt);
+              this.getInitialWidths = false;
+              },1);
+            }
             if(clearTableView){
               this.clearFilters(this.dt, true, false);
               this.clearSorts(this.dt, true);
+              this.dt.tableWidthState = this.initialTableWidth;
+              this.dt.columnWidthsState = this.initialColumnWidths;
+              this.dt.restoreColumnWidths()
               this.tableLazyLoadEventInformation.multiSortMeta=[];
             }
             setTimeout(() => {
@@ -833,8 +846,7 @@ export class PrimengTableComponent {
           dataAlignHorizontal: column.dataAlignHorizontal,
           dataAlignHorizontalDisabled: !column.dataAlignHorizontalAllowUserEdit,
           dataAlignVertical: column.dataAlignVertical,
-          dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit,
-          width: column.width
+          dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit
       };
     });
     tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
@@ -1027,5 +1039,19 @@ export class PrimengTableComponent {
     if(this.copyCellDataToClipboardTimeSecs>0) {
       clearTimeout(this.copyCellDataTimer);
     }
+  }
+
+  getCellColumnStyle(col: any): Record<string, string> {
+    const styles: Record<string, string> = {
+        'white-space': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
+        'word-wrap': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
+        'word-break': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
+    };
+    if (col.initialWidth > 0) {
+        styles['max-width'] = col.initialWidth + 'px';
+        styles['min-width'] = col.initialWidth + 'px';
+        styles['width'] = col.initialWidth + 'px';
+    }
+    return styles;
   }
 }

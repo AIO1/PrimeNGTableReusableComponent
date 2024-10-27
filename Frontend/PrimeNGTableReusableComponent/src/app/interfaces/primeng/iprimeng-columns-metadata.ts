@@ -46,5 +46,5 @@ export interface IprimengColumnsMetadata {
     frozenColumnAlign: enumFrozenColumnAlign;
     cellOverflowBehaviour: enumCellOverflowBehaviour;
     cellOverflowBehaviourAllowUserEdit: boolean;
-    width: number;
+    initialWidth: number;
 }

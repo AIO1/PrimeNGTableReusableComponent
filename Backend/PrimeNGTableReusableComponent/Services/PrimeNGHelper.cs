@@ -88,7 +88,7 @@ namespace PrimeNG.HelperFunctions {
                         FrozenColumnAlign = primeNGAttributes.FrozenColumnAlign,
                         CellOverflowBehaviour = primeNGAttributes.CellOverflowBehaviour,
                         CellOverflowBehaviourAllowUserEdit = primeNGAttributes.CellOverflowBehaviourAllowUserEdit,
-                        Width = primeNGAttributes.Width
+                        InitialWidth = primeNGAttributes.InitialWidth
                     });
                 }
             }

@@ -12,15 +12,22 @@ import { HttpResponse } from '@angular/common/http';
 })
 export class PrimengTableViewsService {
     constructor(private sharedService: SharedService) {}
-    generateSaveData(dt: Table, globalSearchText: string | null, currentPage: number, currentRowsPerPage: number, modifyFiltersFn: (filters: any) => any): IPrimeNgViewData{
+    computeColumnWidths(dt: Table): any {
         let widths: number[] = [];
         let headers = DomHandler.find(dt.containerViewChild?.nativeElement, '.p-datatable-thead > tr > th');
         headers.forEach((header) => widths.push(DomHandler.getOuterWidth(header)));
-        let colWidth = widths.join(',');
+        return widths.join(',');
+    }
+    computeTableWidth(dt: Table): any {
         let tableWidth = 0;
         if (dt.columnResizeMode === 'expand') {
-          tableWidth = DomHandler.getOuterWidth(dt.tableViewChild?.nativeElement);
+            tableWidth = DomHandler.getOuterWidth(dt.tableViewChild?.nativeElement);
         }
+        return tableWidth;
+    }
+    generateSaveData(dt: Table, globalSearchText: string | null, currentPage: number, currentRowsPerPage: number, modifyFiltersFn: (filters: any) => any): IPrimeNgViewData{
+        let colsWidth = this.computeColumnWidths(dt);
+        let tableWidth = this.computeTableWidth(dt);
         const filtersWithoutGlobalAndSelectedRows = {...modifyFiltersFn(JSON.parse(JSON.stringify(dt.filters)))};
         if (filtersWithoutGlobalAndSelectedRows['rowID']) {
             filtersWithoutGlobalAndSelectedRows['rowID'][0].value = null;
@@ -36,7 +43,7 @@ export class PrimengTableViewsService {
           currentPage: currentPage,
           currentRowsPerPage: currentRowsPerPage,
           tableWidth: tableWidth,
-          columnsWidth: colWidth
+          columnsWidth: colsWidth
         }
         return tableView;
     }

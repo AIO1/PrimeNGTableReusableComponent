@@ -94,6 +94,8 @@
                         tooltipPosition="top">
                     </button>
                 </div>
+
+                <!--TABLE VIEWS-->
                 <div *ngIf="tableViewSaveAs !== enumTableViewSaveMode.noone && tableViewsFirstFetchDone===true && tableViewSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
                     <div class="p-inputgroup custom-inputgroup" 
                         style="display: flex; align-items: center;">
@@ -168,7 +170,11 @@
                     <ng-container *ngTemplateOutlet="rowSelectorColumnHeaderTemplate"></ng-container>
                 </ng-container>
                 <ng-container *ngFor="let col of columns">
-                    <th 
+                    <th [ngStyle]="col.initialWidth > 0 ? {
+                        'max-width': col.initialWidth + 'px',
+                        'min-width': col.initialWidth + 'px',
+                        'width': col.initialWidth + 'px'
+                        } : {}"
                         pResizableColumn [pResizableColumnDisabled]="!col.canBeResized ? true : false"
                         pReorderableColumn [pReorderableColumnDisabled]="!col.canBeReordered ? true : false"
                         pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
@@ -249,11 +255,7 @@
                 <!-- REST OF COLUMNS -->
                 <ng-container *ngFor="let col of columns">
                     <td (mousedown)="col.dataType !== enumDataType.Boolean && copyToClipboardStart($event)" (mouseup)="copyToClipboardCancel()"
-                        [ngStyle]="{
-                            'white-space': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
-                            'word-wrap': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
-                            'word-break': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
-                        }"
+                        [ngStyle]="getCellColumnStyle(col)"
                         pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                         [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" 
                         [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)"
@@ -503,7 +505,7 @@
                         <button pButton icon="pi pi-upload" (click)="loadTableView(rowData.label);" [showDelay]="700" pTooltip="Restore" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
                         <button pButton icon="pi pi-save" (click)="editingViewAlias=''; saveTableViews(false, false, rowData.label)" [showDelay]="700" pTooltip="Save" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
                         <button pButton icon="pi pi-pencil" (click)="newViewModalShow(false, rowData.label)" [showDelay]="700" pTooltip="Edit" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
-                        <button pButton icon="pi pi-trash" (click)="deleteTableView(rowData.label); viewsModalShow=false;" [showDelay]="700" pTooltip="Delete" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px;"></button>
+                        <button pButton icon="pi pi-trash" (click)="deleteTableView(rowData.label);" [showDelay]="700" pTooltip="Delete" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px;"></button>
                     </td>
                 </tr>
             </ng-template>
