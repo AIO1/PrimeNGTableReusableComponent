@@ -1,4 +1,4 @@
-import { Table, TableLazyLoadEvent } from 'primeng/table';
+import { Table } from 'primeng/table';
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 
@@ -17,7 +17,6 @@ import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-pred
 // Import other
 import { FilterMetadata, MenuItem } from 'primeng/api';
 import { DatePipe } from '@angular/common';
-import { PaginatorState } from 'primeng/paginator';
 import { IPrimeNgViewData, IPrimeNgView } from '../../interfaces/primeng/iprimeng-views';
 import { PrimengTableViewsService } from '../../services/primeng-table/primengTableViews.service';
 import { Observable } from 'rxjs';
@@ -32,7 +31,7 @@ export enum enumTableViewSaveMode {
 @Component({
   selector: 'ecs-primeng-table', // Component selector used in HTML to render this component
   templateUrl: './primeng-table.component.html', // Path to the HTML template for this component
-  styleUrl: './primeng-table.component.scss'
+  styleUrls: ['./primeng-table.component.scss']
 })
 
 export class PrimengTableComponent {
@@ -119,26 +118,26 @@ export class PrimengTableComponent {
   @ViewChild('paginatorContainer', { static: false }) paginatorContainer!: ElementRef;
   @ViewChild('headerContainer', { static: false }) headerContainer!: ElementRef;
   ngAfterViewInit() {
-    if(this.computeScrollHeight){
-      this.calculateScrollHeight();
-      window.addEventListener('resize', this.calculateScrollHeight.bind(this));
+    if(this.computeScrollHeight){ // If we have to compute the scroll height
+      window.addEventListener('resize', this.calculateScrollHeight.bind(this)); // Create an event listener for windows resize
+      setTimeout(() => {this.calculateScrollHeight();}, 1); // Delay to compute the scroll height after view init
     }
   }
   calculateScrollHeight() {
     setTimeout(() => {
       if (this.tableContainer && this.paginatorContainer && this.headerContainer) {
-        const containerRect = this.tableContainer.nativeElement.getBoundingClientRect();
-        const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight;
-        const headerHeight = this.headerContainer.nativeElement.offsetHeight;
-        const viewportHeight = window.innerHeight;
-        const topOffset = containerRect.top + window.scrollY;
-        this.scrollHeight = `${(viewportHeight - topOffset - paginatorHeight - headerHeight)-45}px`;
+        const containerRect = this.tableContainer.nativeElement.getBoundingClientRect(); // Get the bounding rectangle of the table container
+        const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight; // Get the height of the paginator container
+        const headerHeight = this.headerContainer.nativeElement.offsetHeight; // Get the height of the header container
+        const viewportHeight = window.innerHeight; // Get the height of the viewport (visible part of the window)
+        const topOffset = containerRect.top + window.scrollY; // Calculate the top offset of the table container relative to the viewport
+        this.scrollHeight = `${(viewportHeight - topOffset - paginatorHeight - headerHeight) - 45}px`; // Calculate and set the scrollable height by subtracting offsets and container heights
       }
-    }, 0);
+    }, 1);
   }
   ngOnDestroy() {
-    if(this.computeScrollHeight){
-      window.removeEventListener('resize', this.calculateScrollHeight.bind(this));
+    if(this.computeScrollHeight){ // If we had to compute the scroll height
+      window.removeEventListener('resize', this.calculateScrollHeight.bind(this)); // Remove the event listener to windows resize
     }
   }
 
@@ -212,7 +211,7 @@ export class PrimengTableComponent {
 
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
 
-  tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
+  tableLazyLoadEventInformation: any = {}; // Data of the last lazy load event of the table
   data: any[] = []; // The array of data to be displayed
 
   columnModalData: any[] = []; // The array of data that is used to display the information about the columns
@@ -319,13 +318,13 @@ export class PrimengTableComponent {
    * A `continueAction` can be specified to execute something upon data retrieval if it succeeded and `canPerformActions` is true.
    * `uponContinueActionEndModalHttp` can be used to set the loading indicator to active or inactive after the query ended successfully.
    *
-   * @param {TableLazyLoadEvent} event - The event object containing pagination, sorting, and filtering information.
+   * @param {any} event - The event object containing pagination, sorting, and filtering information.
    * @param {(optionalData?: any) => void} [continueAction] - Optional action to execute after data retrieval if it succeeded.
    * @param {boolean} [uponContinueActionEndModalHttp=false] - Optional flag to set the loading indicator to inactive after data retrieval and if there is a 'continueAction' defined.
    * 
    * @example
    * // Example usage of updateData function
-   * const event: TableLazyLoadEvent = { eventdata };
+   * const event: any = { eventdata };
    * const continueAction = (optionalData?: any) => {
    *   console.log('Continue action executed.');
    * };
@@ -333,7 +332,7 @@ export class PrimengTableComponent {
    * 
    * updateData(event, continueAction, uponContinueActionEndModalHttp);
    */
-  updateData(event: TableLazyLoadEvent, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, tableView?: IPrimeNgViewData): void {
+  updateData(event: any, continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false, tableView?: IPrimeNgViewData): void {
     if (!this.canPerformActions) { // Check if actions can be performed
       return; // Exit if actions cannot be performed
     }
@@ -342,7 +341,8 @@ export class PrimengTableComponent {
       this.getColumns(continueAction, uponContinueActionEndModalHttp); // Fetch columns if not already fetched
       return; // Exit after fetching columns (when columns load the lazy load event of the table will be triggered again)
     }
-    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
+    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
+    filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
     const requestData: IprimengTableDataPost = {
       page: this.currentPage, // Set the current page number
       pageSize: this.currentRowsPerPage, // Set the number of rows per page
@@ -382,7 +382,7 @@ export class PrimengTableComponent {
           continueAction(); // Execute the continue action
         } 
       },
-      error: err => { // Handle errors during data retrieval
+      error: (err: any) => { // Handle errors during data retrieval
         this.sharedService.dataFecthError("ERROR FETCHING DATA", err); // Display an error message
       }
     });
@@ -421,7 +421,7 @@ export class PrimengTableComponent {
               this.updateData(this.tableLazyLoadEventInformation, continueAction, uponContinueActionEndModalHttp); // Update data with the fetched columns and execute continue action if provided
             }, 450); // We need this delay so it doesn't launch another call
         },
-        error: err => { // Handle error response
+        error: (err: any) => { // Handle error response
             this.sharedService.dataFecthError("ERROR IN GET COLUMNS AND ALLOWED PAGINATIONS", err); // Log the error
         }
     });
@@ -482,7 +482,7 @@ export class PrimengTableComponent {
           next: () => {
             this.finishSaveView(skipCreate, closeCreateNewModal);
           },
-          error: err => { // Handle error response
+          error: (err: any) => { // Handle error response
               this.sharedService.dataFecthError("ERROR SAVING TABLE VIEW", err); // Log the error
           }
         })
@@ -535,7 +535,7 @@ export class PrimengTableComponent {
             }));
             this.tableViewListProcess(resultadoParseado);
           },
-          error: err => { // Handle error response
+          error: (err: any) => { // Handle error response
               this.sharedService.dataFecthError("ERROR GETTING TABLE VIEW", err); // Log the error
           }
         })
@@ -592,6 +592,7 @@ export class PrimengTableComponent {
 
     this.updateData(this.tableLazyLoadEventInformation,undefined,undefined,tableView);
     this.sharedService.showToast("info","Table view restored", `The table view '${this.tableViewCurrentSelectedAlias}' has been restored.`);
+    this.viewsModalShow = false;
   }
 
   resetTableView(){
@@ -719,6 +720,21 @@ export class PrimengTableComponent {
     return filtersWithoutGlobalAndSelectedRows; // Return the filters without global array
   }
 
+  revertDateTimeZoneFilters(inputFilter: any){
+    this.columnsToShow.forEach((column) => {
+      if (column.dataType === enumDataType.Date) { // If its date type
+        if (inputFilter.hasOwnProperty(column.field)) {
+          const originalDate = inputFilter[column.field][0].value;
+          if(originalDate !== null && originalDate instanceof Date){
+            const utcDate = new Date(Date.UTC(originalDate.getFullYear(), originalDate.getMonth(), originalDate.getDate()))
+            inputFilter[column.field][0].value=utcDate;
+          }
+        }
+      }
+    });
+    return inputFilter;
+  }
+
   /**
    * Determines whether sorts and filters in a table should be cleared based on specific conditions, with an optional force option.
    *
@@ -788,9 +804,9 @@ export class PrimengTableComponent {
   /**
    * Handles the change of page and/or rows per page in the table.
    * 
-   * @param {PaginatorState} event - The event object containing page and rows information.
+   * @param {any} event - The event object containing page and rows information.
    */
-  pageChange(event: PaginatorState): void {
+  pageChange(event: any): void {
     this.currentPage = event.page!; // Update the current page
     this.currentRowsPerPage = event.rows!; // Update the number of rows per page
     this.updateData(this.tableLazyLoadEventInformation); // Force the data to be updated
@@ -921,7 +937,7 @@ export class PrimengTableComponent {
   formatDate(value: any): string{
     let formattedDate = undefined; // By default, formattedDate will be undefined
     if(value){ // If value is not undefined
-      formattedDate = this.datePipe.transform(value + 'Z', this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
+      formattedDate = this.datePipe.transform(value, this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
     }
     return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
   }
@@ -938,7 +954,7 @@ export class PrimengTableComponent {
               next: (blobData: Blob) => {
                 filter.iconBlob = blobData;
               },
-              error: err => { // Handle error response
+              error: () => { // Handle error response
                 filter.iconBlobSourceEndpointResponseError = true;
               }
             });
@@ -973,17 +989,17 @@ export class PrimengTableComponent {
     return this.sanitizer.bypassSecurityTrustUrl(objectURL); // Bypass Angular's security mechanisms to create a SafeUrl
   }
 
-  newViewModalShow(asNew: boolean = true, aliasToLoad: string = ""){
-      if(this.tableViewsList.length>=this.maxTableViews && asNew){
-        this.sharedService.showToast("error", "MAX TABLE VIEWS REACHED", `You can't have more than ${this.maxTableViews} views. Please, delete some views before creating new ones.`)
-        return;
-      }
-      this.newViewAlias = aliasToLoad;
-      this.newViewShowModal=true;
-      if(!asNew){
-        this.editingViewAlias=aliasToLoad;
-      } else {
-        this.editingViewAlias="";
-      }
+  newViewModalShow(asNew: boolean = true, aliasToLoad: string = "") {
+    if(this.tableViewsList.length>=this.maxTableViews && asNew){
+      this.sharedService.showToast("error", "MAX TABLE VIEWS REACHED", `You can't have more than ${this.maxTableViews} views. Please, delete some views before creating new ones.`)
+      return;
+    }
+    this.newViewAlias = aliasToLoad;
+    this.newViewShowModal=true;
+    if(!asNew){
+      this.editingViewAlias=aliasToLoad;
+    } else {
+      this.editingViewAlias="";
+    }
   }
 }

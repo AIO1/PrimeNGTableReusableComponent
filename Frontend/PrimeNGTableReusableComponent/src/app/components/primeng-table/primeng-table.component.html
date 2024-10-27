@@ -499,7 +499,7 @@
                         {{rowData.label}}
                     </td>
                     <td style="max-width: 300px; min-width: 300px; width: 300px; display: flex; justify-content: center; align-items: center; height: 100%;">
-                        <button pButton icon="pi pi-upload" (click)="loadTableView(rowData.label); viewsModalShow=false;" [showDelay]="700" pTooltip="Restore" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
+                        <button pButton icon="pi pi-upload" (click)="loadTableView(rowData.label);" [showDelay]="700" pTooltip="Restore" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
                         <button pButton icon="pi pi-save" (click)="editingViewAlias=''; saveTableViews(false, false, rowData.label)" [showDelay]="700" pTooltip="Save" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
                         <button pButton icon="pi pi-pencil" (click)="newViewModalShow(false, rowData.label)" [showDelay]="700" pTooltip="Edit" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
                         <button pButton icon="pi pi-trash" (click)="deleteTableView(rowData.label); viewsModalShow=false;" [showDelay]="700" pTooltip="Delete" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px;"></button>
