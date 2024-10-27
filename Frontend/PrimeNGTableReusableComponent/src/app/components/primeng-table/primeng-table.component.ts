@@ -7,7 +7,7 @@ import { SharedService } from '../../services/shared/shared.service';
 import { PrimengTableService } from '../../services/primeng-table/primengTable.service';
 
 // Import interfaces
-import { enumDataAlignHorizontal, enumDataAlignVertical, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
+import { enumCellOverflowBehaviour, enumDataAlignHorizontal, enumDataAlignVertical, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
 import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
@@ -87,6 +87,7 @@ export class PrimengTableComponent {
   @ViewChild('dt_columnDialog') dt_columnDialog!: Table;
 
   enumDataType = enumDataType;
+  enumCellOverflowBehaviour = enumCellOverflowBehaviour;
   enumDataAlignHorizontal = enumDataAlignHorizontal;
   enumDataAlignVertical = enumDataAlignVertical;
   enumFrozenColumnAlign = enumFrozenColumnAlign;
@@ -104,6 +105,11 @@ export class PrimengTableComponent {
   tableViewCurrentSelectedAlias: string | null = null;
   editingViewAlias:string  ="";
   private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
+  cellOverflowBehaviourOptions = [
+    {icon: 'pi pi-minus', val: enumCellOverflowBehaviour.Hidden},
+    {icon: 'pi pi-equals', val: enumCellOverflowBehaviour.Wrap}/*,
+    {icon: 'pi pi-ellipsis-h', val: enumCellOverflowBehaviour.Ellipsis}*/
+  ];
   dataAlignHorizontalOptions = [
     {icon: 'pi pi-align-left', val: enumDataAlignHorizontal.Left},
     {icon: 'pi pi-align-center', val: enumDataAlignHorizontal.Center},
@@ -822,8 +828,8 @@ export class PrimengTableComponent {
           header: column.header,
           selected: isSelected,
           selectDisabled: isSelectDisabled,
-          wrapIsActive: column.wrapIsActive,
-          wrapDisabled: !column.wrapAllowUserEdit || column.dataType === enumDataType.Boolean,
+          cellOverflowBehaviour: column.cellOverflowBehaviour,
+          cellOverflowBehaviourDisabled: !column.cellOverflowBehaviourAllowUserEdit,
           dataAlignHorizontal: column.dataAlignHorizontal,
           dataAlignHorizontalDisabled: !column.dataAlignHorizontalAllowUserEdit,
           dataAlignVertical: column.dataAlignVertical,
@@ -880,7 +886,7 @@ export class PrimengTableComponent {
   private updateColumnsSpecialProperties(columnsSource: any[]){
     const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsNonSelectable];
     const columnModalDataMap = new Map(columnsSource.map((item: any) => [item.field, { 
-        wrapIsActive: item.wrapIsActive, 
+        cellOverflowBehaviour: item.cellOverflowBehaviour, 
         dataAlignHorizontal: item.dataAlignHorizontal,
         dataAlignVertical: item.dataAlignVertical,
         width: item.width
@@ -891,7 +897,7 @@ export class PrimengTableComponent {
             if (columnModalDataMap.has(col.field) && !updatedFields.has(col.field)) {
                 const columnData = columnModalDataMap.get(col.field);
                 if (columnData) {
-                    col.wrapIsActive = columnData.wrapIsActive;
+                    col.cellOverflowBehaviour = columnData.cellOverflowBehaviour;
                     col.dataAlignHorizontal = columnData.dataAlignHorizontal;
                     col.dataAlignVertical = columnData.dataAlignVertical;
                     col.width = columnData.width;

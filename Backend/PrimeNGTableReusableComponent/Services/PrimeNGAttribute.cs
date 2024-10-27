@@ -20,6 +20,11 @@
         Left,
         Right
     }
+    public enum EnumCellOverflowBehaviour {
+        Hidden,
+        Wrap,
+        Ellipsis
+    }
     /// <summary>
     /// Custom attributes for PrimeNG tables
     /// </summary>
@@ -44,8 +49,8 @@
         public bool DataTooltipShow { get; }
         public string DataTooltipCustomColumnSource { get; }
         public EnumFrozenColumnAlign FrozenColumnAlign { get; }
-        public bool WrapIsActive { get; }
-        public bool WrapAllowUserEdit { get; }
+        public EnumCellOverflowBehaviour CellOverflowBehaviour { get; }
+        public bool CellOverflowBehaviourAllowUserEdit { get; }
         public double Width { get; }
 
         /// <summary>
@@ -96,8 +101,8 @@
             bool dataTooltipShow = true,
             string dataTooltipCustomColumnSource = "",
             EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone,
-            bool wrapIsActive = false,
-            bool wrapAllowUserEdit = true,
+            EnumCellOverflowBehaviour cellOverflowBehaviour = EnumCellOverflowBehaviour.Hidden,
+            bool cellOverflowBehaviourAllowUserEdit = true,
             double width = 0
 
         ) {
@@ -120,8 +125,8 @@
             DataTooltipShow = dataTooltipShow;
             DataTooltipCustomColumnSource = dataTooltipCustomColumnSource;
             FrozenColumnAlign = frozenColumnAlign;
-            WrapIsActive = wrapIsActive;
-            WrapAllowUserEdit = wrapAllowUserEdit;
+            CellOverflowBehaviour = dataType == EnumDataType.Boolean ? EnumCellOverflowBehaviour.Hidden : cellOverflowBehaviour;
+            CellOverflowBehaviourAllowUserEdit = cellOverflowBehaviourAllowUserEdit && dataType != EnumDataType.Boolean;
             Width = width;
         }
     }

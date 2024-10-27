@@ -19,6 +19,11 @@ export enum enumFrozenColumnAlign {
     Left,
     Right
 }
+export enum enumCellOverflowBehaviour {
+    Hidden,
+    Wrap/*,
+    Ellipsis*/
+}
 export interface IprimengColumnsMetadata {
     field: string;
     header: string;
@@ -39,7 +44,7 @@ export interface IprimengColumnsMetadata {
     dataTooltipShow: boolean;
     dataTooltipCustomColumnSource: string;
     frozenColumnAlign: enumFrozenColumnAlign;
-    wrapIsActive: boolean;
-    wrapAllowUserEdit: boolean;
+    cellOverflowBehaviour: enumCellOverflowBehaviour;
+    cellOverflowBehaviourAllowUserEdit: boolean;
     width: number;
 }

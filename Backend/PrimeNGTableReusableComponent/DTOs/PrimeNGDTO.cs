@@ -207,9 +207,9 @@ namespace PrimeNG.DTOs {
 
         public EnumFrozenColumnAlign FrozenColumnAlign { get; set; }
 
-        public bool WrapIsActive { get; set; }
+        public EnumCellOverflowBehaviour CellOverflowBehaviour { get; set; }
 
-        public bool WrapAllowUserEdit { get; set; }
+        public bool CellOverflowBehaviourAllowUserEdit { get; set; }
 
         public double Width { get; set; }
     }

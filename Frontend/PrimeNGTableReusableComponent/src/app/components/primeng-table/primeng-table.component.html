@@ -250,9 +250,9 @@
                 <ng-container *ngFor="let col of columns">
                     <td (mousedown)="col.dataType !== enumDataType.Boolean && copyToClipboardStart($event)" (mouseup)="copyToClipboardCancel()"
                         [ngStyle]="{
-                            'white-space': col.wrapIsActive ? 'normal' : 'nowrap',
-                            'word-wrap': col.wrapIsActive ? 'break-word' : 'normal',
-                            'word-break': col.wrapIsActive ? 'break-all' : 'normal'
+                            'white-space': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
+                            'word-wrap': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
+                            'word-break': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
                         }"
                         pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                         [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" 
@@ -364,7 +364,7 @@
     </p-table>
 </div>
 <!--COLUMN MODAL DIALOG-->
-<p-dialog [(visible)]="columnModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
+<p-dialog [(visible)]="columnModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'min-width': '65vw', 'max-width': '65vw'}">
     <ng-template pTemplate="header">
         <div class="inline-flex align-items-center justify-content-center gap-2">
             <span class="white-space-nowrap"><b>MODIFY COLUMNS</b></span>
@@ -388,37 +388,38 @@
             </ng-template>
             <ng-template pTemplate="header">
                 <tr>
-                    <th pFrozenColumn alignFrozen="left" style="text-align: center;">Show column</th>
+                    <th pFrozenColumn alignFrozen="left" style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">Show column</th>
                     <th pFrozenColumn alignFrozen="left" style="text-align: center;">Column name</th>
-                    <th style="text-align: center;">Word wrap</th>
-                    <th style="text-align: center;">Horizontal aligment</th>
-                    <th style="text-align: center;">Vertical aligment</th>
+                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Cell overflow behaviour</th>
+                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Horizontal aligment</th>
+                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Vertical aligment</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-rowData>
                 <tr>
-                    <td pFrozenColumn alignFrozen="left" style="text-align: center;">
+                    <td pFrozenColumn alignFrozen="left" style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">
                         <p-checkbox 
                             [(ngModel)]="rowData.selected" 
                             [binary]="true"
                             [disabled]="rowData.selectDisabled"></p-checkbox>
                     </td>
                     <td pFrozenColumn alignFrozen="left" >{{rowData.header}}</td>
-                    <td style="text-align: center;">
-                        <p-checkbox 
-                            [(ngModel)]="rowData.wrapIsActive" 
-                            [binary]="true"
-                            [disabled]="rowData.wrapDisabled"></p-checkbox>
-                    </td>
-                    <td style="text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon">
+                    <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
+                        <p-selectButton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="cellOverflowBehaviourOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.cellOverflowBehaviourDisabled">
                             <ng-template let-item pTemplate>
                                 <i [class]="item.icon" style="margin: -20px; transform: translateX(12px);"></i>
                             </ng-template>
                         </p-selectButton>
                     </td>
-                    <td style="text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon">
+                    <td style="max-width: 160px; min-width: 160px; width: 160px; text-align: center;">
+                        <p-selectButton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignHorizontalDisabled">
+                            <ng-template let-item pTemplate>
+                                <i [class]="item.icon" style="margin: -20px; transform: translateX(12px);"></i>
+                            </ng-template>
+                        </p-selectButton>
+                    </td>
+                    <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
+                        <p-selectButton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignVerticalDisabled">
                             <ng-template let-item pTemplate>
                                 <i [class]="item.icon" style="margin: -20px; transform: translateX(12px);"></i>
                             </ng-template>

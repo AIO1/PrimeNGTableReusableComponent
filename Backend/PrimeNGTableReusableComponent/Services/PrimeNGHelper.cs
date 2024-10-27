@@ -86,8 +86,8 @@ namespace PrimeNG.HelperFunctions {
                         DataTooltipShow = primeNGAttributes.DataTooltipShow,
                         DataTooltipCustomColumnSource = primeNGAttributes.DataTooltipCustomColumnSource,
                         FrozenColumnAlign = primeNGAttributes.FrozenColumnAlign,
-                        WrapIsActive = primeNGAttributes.WrapIsActive,
-                        WrapAllowUserEdit = primeNGAttributes.WrapAllowUserEdit,
+                        CellOverflowBehaviour = primeNGAttributes.CellOverflowBehaviour,
+                        CellOverflowBehaviourAllowUserEdit = primeNGAttributes.CellOverflowBehaviourAllowUserEdit,
                         Width = primeNGAttributes.Width
                     });
                 }
