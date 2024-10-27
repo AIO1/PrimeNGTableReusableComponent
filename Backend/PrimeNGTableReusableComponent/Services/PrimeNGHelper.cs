@@ -8,7 +8,7 @@ using PrimeNG.Attributes;
 using System.Text.Json;
 namespace PrimeNG.HelperFunctions {
     public static class PrimeNGHelper {
-        public static readonly int[] allowedItemsPerPage = new int[] { 10, 25, 50, 75, 100 }; // The number of items per page allowed
+        public static readonly int[] allowedItemsPerPage = new int[] { 10, 20, 30 }; // The number of items per page allowed
 
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
