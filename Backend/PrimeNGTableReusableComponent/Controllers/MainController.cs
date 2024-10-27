@@ -7,6 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Models.PrimengTableReusableComponent;
+using System.Globalization;
 
 namespace PrimeNGTableReusableComponent.Controllers {
     [ApiController]
@@ -174,6 +175,29 @@ namespace PrimeNGTableReusableComponent.Controllers {
                 await transaction.RollbackAsync(); // Perform a rollback of any pending changes
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
+        }
+        #endregion
+        #region HttpGet - TimezoneList
+        [HttpGet("[action]")]
+        [Produces("application/json")]
+        [SwaggerOperation(
+            "Returns list of available timezones.",
+            "This API function will return all available timezones."
+            )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(List<dynamic>))]
+        public IActionResult TimezoneList() {
+            CultureInfo currentCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo("en-US");
+            var timeZones = TimeZoneInfo.GetSystemTimeZones()
+                .Where(tz => !tz.Id.Contains("UTC"))
+                .Select(tz => new {
+                    DisplayName = tz.DisplayName,
+                    Id = tz.Id
+                })
+                .OrderBy(tz => tz.DisplayName)
+                .ToList();
+            CultureInfo.CurrentCulture = currentCulture;
+            return Ok(timeZones);
         }
         #endregion
     }
