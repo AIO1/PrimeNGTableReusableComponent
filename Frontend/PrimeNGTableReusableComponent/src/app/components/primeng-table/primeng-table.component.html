@@ -248,7 +248,7 @@
 
                 <!-- REST OF COLUMNS -->
                 <ng-container *ngFor="let col of columns">
-                    <td 
+                    <td (mousedown)="col.dataType !== enumDataType.Boolean && copyToClipboardStart($event)" (mouseup)="copyToClipboardCancel()"
                         [ngStyle]="{
                             'white-space': col.wrapIsActive ? 'normal' : 'nowrap',
                             'word-wrap': col.wrapIsActive ? 'break-word' : 'normal',

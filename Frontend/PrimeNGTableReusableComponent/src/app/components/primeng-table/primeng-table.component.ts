@@ -74,12 +74,13 @@ export class PrimengTableComponent {
   @Input() viewsSaveSourceURL: string = "";
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
   @Input() columnEditorShow: boolean = true; // If the column editor button must be shown or not
-
+  @Input() copyCellDataToClipboardTimeSecs: number = 0.5; // The amount of time since mouse down in a cell for its content to be copied to the clipboard. If you want to disable this functionality, put it to a value less than or equal to 0.
 
   @Output() selectedRowsChange = new EventEmitter<{
     rowID: any,
     selected: boolean
   }>(); // Emitter that returns the column selected and if it was selected or unselected
+  
   selectedRows: any[] = []; // An array to keep all the selected rows
 
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
@@ -102,7 +103,7 @@ export class PrimengTableComponent {
   newViewAlias: string = "";
   tableViewCurrentSelectedAlias: string | null = null;
   editingViewAlias:string  ="";
-
+  private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
   dataAlignHorizontalOptions = [
     {icon: 'pi pi-align-left', val: enumDataAlignHorizontal.Left},
     {icon: 'pi pi-align-center', val: enumDataAlignHorizontal.Center},
@@ -1000,6 +1001,25 @@ export class PrimengTableComponent {
       this.editingViewAlias=aliasToLoad;
     } else {
       this.editingViewAlias="";
+    }
+  }
+
+  copyToClipboardStart(event: MouseEvent) {
+    if(this.copyCellDataToClipboardTimeSecs>0) {
+      const cellContent = (event.target as HTMLElement).innerText;
+      this.copyCellDataTimer = setTimeout(() => {
+        navigator.clipboard.writeText(cellContent).then(() => {
+          this.sharedService.showToast("info", "CELL CONTENT COPIED", "The cell content has been copied to your clipboard.");
+        }).catch(err => {
+          this.sharedService.showToast("error", "CELL CONTENT COPIED", `The cell content failed to copy to your clipboard with error: ${err}`);
+        });
+      }, this.copyCellDataToClipboardTimeSecs*1000 );
+    }
+  }
+
+  copyToClipboardCancel(){
+    if(this.copyCellDataToClipboardTimeSecs>0) {
+      clearTimeout(this.copyCellDataTimer);
     }
   }
 }
