@@ -83,12 +83,12 @@
                     </div>
 
                     <!--CLEAR SORTS AND FILTERS-->
-                    <button pButton pRipple icon="pi pi-sort-alt-slash" (click)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
+                    <button *ngIf="showClearSorts" pButton pRipple icon="pi pi-sort-alt-slash" (click)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
                         pTooltip="Clear sorts"
                         [showDelay]="700"
                         tooltipPosition="top">
                     </button>
-                    <button pButton pRipple icon="pi pi-filter-slash" (click)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
+                    <button *ngIf="showClearFilters" pButton pRipple icon="pi pi-filter-slash" (click)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
                         pTooltip="Clear filters"
                         [showDelay]="700"
                         tooltipPosition="top">

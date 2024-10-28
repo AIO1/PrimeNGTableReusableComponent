@@ -75,6 +75,8 @@ export class PrimengTableComponent {
   @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
   @Input() columnEditorShow: boolean = true; // If the column editor button must be shown or not
   @Input() copyCellDataToClipboardTimeSecs: number = 0.5; // The amount of time since mouse down in a cell for its content to be copied to the clipboard. If you want to disable this functionality, put it to a value less than or equal to 0.
+  @Input() showClearSorts: boolean = true; // If the clear sorts button must be shown
+  @Input() showClearFilters: boolean = true; // If the clear filters buttons must be shown
 
   @Output() selectedRowsChange = new EventEmitter<{
     rowID: any,
