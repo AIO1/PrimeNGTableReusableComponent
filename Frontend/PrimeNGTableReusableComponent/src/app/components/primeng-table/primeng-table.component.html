@@ -134,7 +134,7 @@
                     </span>
 
                     <!--REFRESH DATA-->
-                    <button pButton pRipple icon="pi pi-refresh" (click)="updateData(this.tableLazyLoadEventInformation)"
+                    <button *ngIf="showRefreshData" pButton pRipple icon="pi pi-refresh" (click)="updateData(this.tableLazyLoadEventInformation)"
                         pTooltip="Refresh data"
                         [showDelay]="700"
                         tooltipPosition="top"></button>
