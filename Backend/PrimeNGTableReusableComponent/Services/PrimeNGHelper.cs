@@ -12,7 +12,7 @@ namespace PrimeNG.HelperFunctions {
 
         private const string MatchModeEquals = "equals"; // To avoid SonarQube warnings
 
-        public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, string? defaultSortColumnName=null, int defaultSortOrder = 1) {
+        public static PrimeNGPostReturn PerformDynamicQuery<T>(PrimeNGPostRequest inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, List<string>? defaultSortColumnName=null, List<int>? defaultSortOrder = null) {
             if(inputData.Columns != null) {
                 for(int i = 0; i < inputData.Columns.Count; i++) {
                     string column = inputData.Columns[i];
@@ -162,15 +162,18 @@ namespace PrimeNG.HelperFunctions {
         /// <param name="defaultSortColumnName">The default column name for sorting when no explicit sorting is provided.</param>
         /// <param name="defaultSortColumnOrder">The default sorting order (1 for ascending, -1 for descending) when no explicit sorting is provided.</param>
         /// <returns>An IQueryable representing the query after applying sorting.</returns>
-        private static IQueryable<T> ApplySorting<T>(IQueryable<T> query, List<PrimeNGTableSortModel>? sortModels, string? defaultSortColumnName = null, int defaultSortColumnOrder = 1) {
+        private static IQueryable<T> ApplySorting<T>(IQueryable<T> query, List<PrimeNGTableSortModel>? sortModels, List<string>? defaultSortColumnName = null, List<int>? defaultSortOrder = null) {
             if(sortModels != null && sortModels.Count != 0) { // Check if explicit sorting details are provided
                 string orderByExpression = string.Join(",", sortModels.Select(s => $"{s.Field} {(s.Order == 1 ? "ascending" : "descending")}")); // Apply sorting using dynamic LINQ library
                 query = query.OrderBy(orderByExpression);
-            }
-            else if(!string.IsNullOrWhiteSpace(defaultSortColumnName)) { // If no explicit sorting is provided, check if default sorting is specified
-                query = defaultSortColumnOrder == 1
-                    ? query.OrderBy(u => EF.Property<object>(u!, defaultSortColumnName))
-                    : query.OrderByDescending(u => EF.Property<object>(u!, defaultSortColumnName)); // Use OrderBy or OrderByDescending for default sorting based on the specified column and order
+            } else if(defaultSortColumnName != null && defaultSortColumnName.Count > 0) { // If no explicit sorting is provided, check if default sorting is specified
+                var orderByExpressions = new List<string>();
+                for(int i = 0; i < defaultSortColumnName.Count; i++) {
+                    string direction = (defaultSortOrder != null && i < defaultSortOrder.Count && defaultSortOrder[i] == 1) ? "ascending" : "descending";
+                    orderByExpressions.Add($"{defaultSortColumnName[i]} {direction}");
+                }
+                string finalOrderByExpression = string.Join(",", orderByExpressions);
+                query = query.OrderBy(finalOrderByExpression);
             }
             return query; // Return the modified query with applied sorting
         }

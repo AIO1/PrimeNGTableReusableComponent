@@ -68,7 +68,9 @@ namespace PrimeNGTableReusableComponent.Controllers {
                             PayedTaxes = u.PayedTaxes
                         }
                     );
-                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "Username", 1));
+                List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
+                List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
+                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
