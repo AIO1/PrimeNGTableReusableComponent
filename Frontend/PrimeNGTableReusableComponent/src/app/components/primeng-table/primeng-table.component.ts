@@ -635,27 +635,10 @@ export class PrimengTableComponent {
     return [...frozenLeftColumns, ...nonFrozenColumns, ...frozenRightColumns];
   }
 
-  /**
-   * Clears sorts and filters in a table based on specific conditions, with an optional force option.
-   *
-   * This function checks if sorts and filters need to be cleared by calling `hasToClearSortsAndFilters`.
-   * If clearing is necessary, it resets the global search text and clears the table's sorts and filters.
-   *
-   * @param {Table} dt - A PrimeNG Table object representing the table to which the clearing operations will be applied.
-   * @param {boolean} [force=false] - (Optional) A boolean value indicating whether to force the clear operation even if there are no specific conditions. Defaults to false.
-   */
-  clearSortsAndFilters(dt: Table, force: boolean = false): void { 
-    let hasToClear = this.hasToClearSortsAndFilters(dt, this.globalSearchText, force); // Get if we have to clear sorts and filters
-    this.predifinedFiltersSelectedValuesCollection = {}; // Reset the collection of predefined filter values
-    if (hasToClear) { // If sorts and filters must be cleared
-        this.globalSearchText = null; // Reset the global search text
-        dt.clear(); // Clear sorts and filters in the table
-    }
-  }
-
   clearFilters(dt: Table, force: boolean = false, doTableUpdate: boolean = true): void{
     let hasToClear = this.hasToClearFilters(dt, this.globalSearchText, force);
     if(hasToClear){
+      this.predifinedFiltersSelectedValuesCollection = {};
       for (const key in dt.filters) {
         if (dt.filters.hasOwnProperty(key)) {
           const filters = dt.filters[key];
@@ -887,14 +870,26 @@ export class PrimengTableComponent {
           }
       }
     });
+    let prevColsToShow=this.columnsToShow;
     this.columnsToShow=this.orderColumnsWithFrozens(finalColumns); // Order the columns that must be shown
+    let sameColumnsAsBefore =
+      prevColsToShow.length === this.columnsToShow.length && // Check if lengths are the same
+      prevColsToShow.every((prevCol, index) => prevCol.field === this.columnsToShow[index].field); // Check each 'field' for equality
     this.columnsSelected = this.columnsToShow.filter(column => 
       !this.columnsNonSelectable.some(nonSelectable => nonSelectable.field === column.field)
     ); // Update selected columns
 
     this.updateColumnsSpecialProperties(this.columnModalData);
 
-    this.clearSortsAndFilters(this.dt, true); // Perform a clear of the sort and filters (which will also force the table data to be updated)
+    if(!sameColumnsAsBefore){ // If we don't have the same columns as before, we need to update.
+      this.canPerformActions = false;
+      this.clearSorts(this.dt, true);
+      setTimeout(() => {
+        this.canPerformActions = true;
+        this.clearSorts(this.dt, true);
+      }, 1);
+    }
+
     this.columnModalShow=false;
   }
 
