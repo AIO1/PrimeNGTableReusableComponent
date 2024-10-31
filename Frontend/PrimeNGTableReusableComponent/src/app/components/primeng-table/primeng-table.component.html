@@ -70,6 +70,16 @@
             </td>
         </ng-template>
         
+        <!--TEMPLATE FOR THE PREDIFINED FILTERS-->
+        <ng-template #predifinedFilterTemplate let-option="option">
+            <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'" [style.color]="option.iconColor ? option.iconColor : ''"></i>
+            <p-skeleton *ngIf="!option.iconBlob && option.iconBlobSourceEndpoint" size="28px" class="vertical-align-middle mr-2"></p-skeleton>
+            <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2"/>
+            <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2"/>
+            <p-tag *ngIf="option.displayTag === true" [style]="option.tagStyle" class="vertical-align-middle mr-2">{{ option.name }}</p-tag>
+            <span *ngIf="option.displayName === true" class="ml-1 mt-1">{{ option.name }}</span>
+        </ng-template>
+
         <ng-template pTemplate="caption"> <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
             <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -214,12 +224,7 @@
                                                 </ng-template>
                                                 <ng-template let-option pTemplate="item">
                                                     <div class="inline-block vertical-align-middle">
-                                                        <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'"></i>
-                                                        <p-skeleton *ngIf="!option.iconBlob && option.iconBlobSourceEndpoint" size="28px" class="vertical-align-middle mr-2"/>
-                                                        <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2"/>
-                                                        <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2"/>
-                                                        <p-tag *ngIf="option.displayTag === true" [style]="option.tagStyle" [value]="option.name" class="vertical-align-middle mr-2"></p-tag>
-                                                        <span *ngIf="option.displayName === true" class="ml-1 mt-1">{{ option.name }}</span>
+                                                        <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option }"></ng-container>
                                                     </div>
                                                 </ng-template>
                                             </p-multiSelect>
@@ -277,12 +282,7 @@
                                             [tooltipDisabled]="!col.dataTooltipShow"
                                             [showDelay]="700"
                                             tooltipPosition="top">
-                                            <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'"></i>
-                                            <p-skeleton *ngIf="!option.iconBlob && option.iconBlobSourceEndpoint" size="28px" class="vertical-align-middle mr-2"/>
-                                            <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2" />
-                                            <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2" />
-                                            <p-tag *ngIf="option.displayTag === true" [style]="option.tagStyle" [value]="option.name" class="vertical-align-middle mr-2"></p-tag>
-                                            <span *ngIf="option.displayName === true" [innerHtml]="highlightText(option.name, col, globalSearchText)" class="ml-1 mt-1">{{rowData[col.field]}}</span>
+                                            <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option }"></ng-container>
                                         </div>
                                     </ng-container>
                                 </div>

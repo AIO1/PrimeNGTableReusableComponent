@@ -39,4 +39,5 @@ export interface IPrimengPredifinedFilter {
     displayTag?: boolean
 
     tagStyle?: { [key: string]: string }
+    iconColor?: string;
 }
