@@ -71,7 +71,7 @@
         </ng-template>
         
         <!--TEMPLATE FOR THE PREDIFINED FILTERS-->
-        <ng-template #predifinedFilterTemplate let-option="option">
+        <ng-template #predifinedFilterTemplate let-option="option" let-col="col" let-rowData="rowData">
             <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'" [style.color]="option.iconColor ? option.iconColor : ''" [style]="option.iconStyle ? option.iconStyle : ''"></i>
             <p-skeleton *ngIf="!option.iconBlob && option.iconBlobSourceEndpoint" size="28px" class="vertical-align-middle mr-2"></p-skeleton>
             <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2"/>
@@ -221,7 +221,7 @@
                                                 </ng-template>
                                                 <ng-template let-option pTemplate="item">
                                                     <div class="inline-block vertical-align-middle">
-                                                        <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option }"></ng-container>
+                                                        <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option, col: col, rowData: '' }"></ng-container>
                                                     </div>
                                                 </ng-template>
                                             </p-multiSelect>
@@ -279,7 +279,7 @@
                                             [tooltipDisabled]="!col.dataTooltipShow"
                                             [showDelay]="700"
                                             tooltipPosition="top">
-                                            <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option }"></ng-container>
+                                            <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option, col: col, rowData: rowData }"></ng-container>
                                         </div>
                                     </ng-container>
                                 </div>
