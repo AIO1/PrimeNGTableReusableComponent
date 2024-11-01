@@ -918,6 +918,23 @@ export class PrimengTableComponent {
     });
   }
 
+  //this.columnModalData
+  allColumnsCheckboxActive(): boolean{
+    return this.columnModalData.every(column => column.selected);
+  }
+
+  allColumnsCheckboxClick(event: any): void{
+    if(event.checked){
+      this.columnModalData.forEach(column => {column.selected = true;});
+    } else {
+      this.columnModalData.forEach(column => {
+        if (!column.selectDisabled) {
+          column.selected = false;
+        }
+      });
+    }
+  }
+
   filterColumnModal(event: any) {
     let filterValue = event.target.value;
     this.dt_columnDialog.filterGlobal(filterValue, 'contains');

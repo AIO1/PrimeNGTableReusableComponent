@@ -365,6 +365,7 @@
         </ng-template>
     </p-table>
 </div>
+
 <!--COLUMN MODAL DIALOG-->
 <p-dialog [(visible)]="columnModalShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'min-width': '65vw', 'max-width': '65vw'}">
     <ng-template pTemplate="header">
@@ -379,7 +380,10 @@
             (onFilter)="onColumnModalFilter($event)">
             <ng-template pTemplate="caption">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 10px;"></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <p-checkbox inputId="selectAll" [binary]="true" [ngModel]="allColumnsCheckboxActive()" (onChange)="allColumnsCheckboxClick($event)"></p-checkbox>
+                        <label for="selectAll">Select all columns</label>
+                    </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span class="p-input-icon-left">
                             <i class="pi pi-search"></i>
@@ -473,6 +477,7 @@
         <p-button (click)="createOrUpdateTableView()" [label]="editingViewAlias !== '' ? 'Update' : 'Create'" severity="success" [style]="{'margin-top': '20px'}"></p-button>
     </ng-template>
 </p-dialog>
+
 <!--VIEWS MODAL DIALOG-->
 <p-dialog [(visible)]="viewsModalShow" [modal]="true" [draggable]="false" [resizable]="false"
     [closable]="true" [closeOnEscape]="false" [maximizable]="false" [style]="{'min-width': '70vw', 'max-width': '70vw'}">
