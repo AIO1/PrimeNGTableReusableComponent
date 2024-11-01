@@ -180,11 +180,7 @@
                     <ng-container *ngTemplateOutlet="rowSelectorColumnHeaderTemplate"></ng-container>
                 </ng-container>
                 <ng-container *ngFor="let col of columns">
-                    <th [ngStyle]="col.initialWidth > 0 ? {
-                        'max-width': col.initialWidth + 'px',
-                        'min-width': col.initialWidth + 'px',
-                        'width': col.initialWidth + 'px'
-                        } : {}"
+                    <th [ngStyle]="getColumnStyle(col, true)"
                         pResizableColumn [pResizableColumnDisabled]="!col.canBeResized ? true : false"
                         pReorderableColumn [pReorderableColumnDisabled]="!col.canBeReordered ? true : false"
                         pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
@@ -260,7 +256,7 @@
                 <!-- REST OF COLUMNS -->
                 <ng-container *ngFor="let col of columns">
                     <td (mousedown)="col.dataType !== enumDataType.Boolean && copyToClipboardStart($event)" (mouseup)="copyToClipboardCancel()"
-                        [ngStyle]="getCellColumnStyle(col)"
+                        [ngStyle]="getColumnStyle(col)"
                         pFrozenColumn [frozen]="col.frozenColumnAlign === enumFrozenColumnAlign.Left || col.frozenColumnAlign === enumFrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
                         [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" 
                         [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)"

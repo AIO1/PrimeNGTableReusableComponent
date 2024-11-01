@@ -1056,12 +1056,15 @@ export class PrimengTableComponent {
     }
   }
 
-  getCellColumnStyle(col: any): Record<string, string> {
-    const styles: Record<string, string> = {
-        'white-space': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
-        'word-wrap': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
-        'word-break': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
-    };
+  getColumnStyle(col: any, headerCols: boolean = false): Record<string, string> {
+    let styles: Record<string, string> = {};
+    if(!headerCols){
+      styles = {
+          'white-space': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
+          'word-wrap': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
+          'word-break': col.cellOverflowBehaviour === enumCellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
+      };
+    }
     if (col.initialWidth > 0) {
         styles['max-width'] = col.initialWidth + 'px';
         styles['min-width'] = col.initialWidth + 'px';
