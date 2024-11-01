@@ -44,6 +44,7 @@ export class PrimengTableComponent {
 
   @Input() canPerformActions: boolean = true; // Used to avoid upon entering to perform the searchs. Its usefull when its needed to retrieve other values firsts and then call "updateDataExternal"
   @Input() globalSearchEnabled: boolean = true; // Used to enable or disable the global search (by default enabled)
+  @Input() globalSearchMaxLength: number = 50; // The maximun number of characters that can be input in the global filter
   @Input() globalSearchPlaceholder: string = "Search keyword"; // The placeholder text to show if global search is enabled
   @Input() rowActionButtons: IprimengActionButtons[] = []; // A list that contains all buttons that will appear in the actions column
   @Input() headerActionButtons: IprimengActionButtons[] = []; // A list that contains all buttons that will appear in the right side of the header of the table
@@ -431,7 +432,7 @@ export class PrimengTableComponent {
               },1);
             }
             if(clearTableView){
-              this.clearFilters(this.dt, true, false);
+              this.clearFilters(this.dt, true);
               this.clearSorts(this.dt, true);
               this.dt.tableWidthState = this.initialTableWidth;
               this.dt.columnWidthsState = this.initialColumnWidths;
@@ -635,30 +636,32 @@ export class PrimengTableComponent {
     return [...frozenLeftColumns, ...nonFrozenColumns, ...frozenRightColumns];
   }
 
-  clearFilters(dt: Table, force: boolean = false, doTableUpdate: boolean = true): void{
+  clearFilters(dt: Table, force: boolean = false, onlyGlobalFilter: boolean = false): void{
     let hasToClear = this.hasToClearFilters(dt, this.globalSearchText, force);
     if(hasToClear){
-      this.predifinedFiltersSelectedValuesCollection = {};
-      for (const key in dt.filters) {
-        if (dt.filters.hasOwnProperty(key)) {
-          const filters = dt.filters[key];
-          if (Array.isArray(filters)) {
-            filters.forEach(filter => {
-              filter.value = null;  // Establecer el valor a null
-            });
-          } else {
-            filters.value = null; // Establecer el valor a null
+      if(!onlyGlobalFilter){
+        this.predifinedFiltersSelectedValuesCollection = {};
+        for (const key in dt.filters) {
+          if (dt.filters.hasOwnProperty(key)) {
+            const filters = dt.filters[key];
+            if (Array.isArray(filters)) {
+              filters.forEach(filter => {
+                filter.value = null;  // Establecer el valor a null
+              });
+            } else {
+              filters.value = null; // Establecer el valor a null
+            }
           }
         }
+        let filters = {...this.dt.filters};
+        dt.columns?.forEach(
+          element => {
+            dt.filter(null, element.field, element.matchMode)
+          }
+        );
+        this.dt.filters = filters;
       }
-      let filters = {...this.dt.filters};
-      dt.columns?.forEach(
-        element => {
-          dt.filter(null, element.field, element.matchMode)
-        }
-      );
       this.globalSearchText = null;
-      this.dt.filters = filters;
       dt.filterGlobal('','');
     }
   }
