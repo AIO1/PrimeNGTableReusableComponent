@@ -72,7 +72,7 @@
         
         <!--TEMPLATE FOR THE PREDIFINED FILTERS-->
         <ng-template #predifinedFilterTemplate let-option="option">
-            <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'" [style.color]="option.iconColor ? option.iconColor : ''"></i>
+            <i *ngIf="option.icon" [class]="option.icon + ' vertical-align-middle mr-2'" [style.color]="option.iconColor ? option.iconColor : ''" [style]="option.iconStyle ? option.iconStyle : ''"></i>
             <p-skeleton *ngIf="!option.iconBlob && option.iconBlobSourceEndpoint" size="28px" class="vertical-align-middle mr-2"></p-skeleton>
             <img *ngIf="option.iconBlob" alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" class="vertical-align-middle mr-2"/>
             <img *ngIf="option.iconURL" alt="iconFromURL" [src]="option.iconURL" height="28" class="vertical-align-middle mr-2"/>
