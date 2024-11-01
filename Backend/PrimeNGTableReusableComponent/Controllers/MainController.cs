@@ -52,18 +52,14 @@ namespace PrimeNGTableReusableComponent.Controllers {
                 }
                 IQueryable<TestDto> baseQuery = _context.TestTables
                     .AsNoTracking()
+                    .Include(t => t.EmploymentStatus)
                     .Select(
                         u => new TestDto {
                             RowID = u.Id,
                             CanBeDeleted = u.CanBeDeleted,
                             Username = u.Username,
                             Age = u.Age,
-                            EmploymentStatusName =
-                                u.EmploymentStatusId != null ?
-                                    _context.EmploymentStatusCategories
-                                        .Where(d => d.Id == u.EmploymentStatusId)
-                                        .Select(d => d.StatusName).FirstOrDefault() 
-                                    : null,
+                            EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
                             Birthdate = u.Birthdate,
                             PayedTaxes = u.PayedTaxes
                         }
