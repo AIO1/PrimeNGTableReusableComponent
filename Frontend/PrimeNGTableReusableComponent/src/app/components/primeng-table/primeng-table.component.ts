@@ -745,26 +745,6 @@ export class PrimengTableComponent {
   }
 
   /**
-   * Determines whether sorts and filters in a table should be cleared based on specific conditions, with an optional force option.
-   *
-   * @param {Table} dt - A PrimeNG Table object representing the table to which the clearing operations will be applied.
-   * @param {string | null} globalSearchText - A string representing the global search text. Can be null.
-   * @param {boolean} [force=false] - (Optional) A boolean value indicating whether to force the clear operation even if there are no specific conditions. Defaults to false.
-   * @returns {boolean} A boolean value indicating whether sorts and filters should be cleared. Returns true if clearing is necessary; otherwise, false.
-   */
-  hasToClearSortsAndFilters(dt: Table, globalSearchText: string | null, force: boolean = false) : boolean { 
-    let hasToClear : boolean = false; // Initialize the flag to indicate if clearing is needed
-    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(dt.filters);
-    const hasFilters = this.hasFilters(filtersWithoutGlobalAndSelectedRows); // Check if there are active filters
-    const hasSorts = (dt.multiSortMeta && dt.multiSortMeta.length > 0); // Check if there are active sorts
-    const hasGlobalFilter = (globalSearchText && globalSearchText.trim() !== ""); // Check if there is a global filter with non-empty text
-    if (force || hasSorts || hasFilters || hasGlobalFilter) { // If the clearing is forced or if there are active sorts, filters, or a global filter
-        hasToClear = true; // Indicate that everything must be cleared
-    }
-    return hasToClear; // Return if everything must be cleared or not
-  }
-
-  /**
    * Determines whether there are active filters based on the provided filter rules.
    *
    * @param {any} filterRules An object representing filter rules for each column.
