@@ -79,7 +79,8 @@ Once you have created the database and its schema, you must download all the dat
 - <ins>**05 SaveTableViews.sql**</ins>: An example table that is used to store the user views in the table.
 
 Once all scripts have been executed OK, you should end up with 2 tables that are populated with data, an additional empty table (TableViews) and a function named "FormatDateWithCulture" in your database. The following image shows the ER diagram of all the tables:
-![primengtablereusablecomponent - dbo - ER diagram](https://github.com/AIO1/PrimeNGTableReusableComponent/assets/17305493/2c6f1b8c-d57c-4d23-ba21-5d1024764168)
+![primengtablereusablecomponent - dbo - ER diagram](https://github.com/user-attachments/assets/64edbb30-cc1d-4354-a79a-0ec7cf644c5c)
+
 
 
 ### 2.2 Backend (API in ASP.NET)
