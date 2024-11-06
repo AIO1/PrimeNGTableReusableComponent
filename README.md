@@ -16,41 +16,41 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
     - [2.2.5 API first run](#225-api-first-run)
   - [2.3 Frontend (Angular project that uses PrimeNG components)](#23-frontend-angular-project-that-uses-primeng-components)
 - [3 How to implement in existing projects](#3-how-to-implement-in-existing-projects)
-- [4 How to use the "PrimeNG Table reusable component" and what is included](#4-how-to-use-the-primeng-table-reusable-component-and-what-is-included)
-  - [4.1 Date formating](#41-date-formating)
-  - [4.2 Preparing what is going to be shown in the frontend](#42-preparing-what-is-going-to-be-shown-in-the-frontend)
-  - [4.3 Fetching table columns endpoint](#43-fetching-table-columns-endpoint)
-  - [4.4 Retrieving table data endpoint](#44-retrieving-table-data-endpoint)
-  - [4.5 Implementing a new table in the frontend](#45-implementing-a-new-table-in-the-frontend)
-  - [4.6 Predifined filters](#46-predifined-filters)
-  - [4.7 Declaring header and row action buttons](#47-declaring-header-and-row-action-buttons)
-  - [4.8 Showing a column description](#48-showing-a-column-description)
-  - [4.9 Saving table state (database solution)](#49-saving-table-state-database-solution)
+- [4 How to use the "PrimeNG Table reusable component" and what is included](#4-primeng-table-reusable-component-all-features)
+  - [4.1 Starting with a simple table](#41-starting-with-a-simple-table)
+    - [4.1.1 Creating a basic DTO / Projection](#411-creating-a-basic-dto--projection)
+    - [4.1.2 Creating the column data endpoint](#412-creating-the-column-data-endpoint)
+    - [4.1.3 Creating the table data endpoint](#413-creating-the-table-data-endpoint)
+    - [4.1.4 Implementing a new table in the frontend](#414-implementing-a-new-table-in-the-frontend)
 
 
 ## Introduction
 Hello! My name is Alex Ibrahim Ojea.
 
-This project started because I needed an efficient and reusable way to handle tables on my Angular web applications. On my own webpage of [Eternal Code Studio (ECS)](https://eternalcodestudio.com/) I wanted to create multiple projects that required the used of tables with advance filter options. PrimeNG offers a simple solution in the frontend (which is not optimal since it forces you to bring all the data to the frontend) and this is what started my motivation to find a solution.
+This project started because I needed an efficient and reusable way to handle tables on my Angular web applications. On my own webpage of [Eternal Code Studio (ECS)](https://eternalcodestudio.com/) I wanted to create multiple projects that required the used of tables with advance filter options. PrimeNG offers a simple solution in the frontend, which is not optimal on large datasets since it forces you to bring all the data to the frontend, and this is what started my motivation to find a solution.
 
-This project show how to do a full implementation of the PrimeNG table delegating all the filter logic to the database engine and how the table can be easily reused throughout your application.
+This project shows how to do a full implementation of the PrimeNG table delegating all the filter logic to the database engine, and how the table can be easily reused throughout your application.
 
 I hope this helps you to create very efficient and good looking tables in your web applications :)
 
-Take into account that I'm not an expert programmer, so there will be possibly some things that could be done better of how I made them. Also, I'm not an expert in CSS, so basically this solution uses a simple design given by PrimeNG and you will have to make it prettier yourself.
+Take into account that I'm not an expert programmer, so there will be possibly some things that could be done better of how they are shown in this example project. Also, I'm not an expert in CSS, so basically this solution uses a simple design given by PrimeNG.
 
-This table component offers you all these features from the [PrimeNG table](https://primeng.org/table) with some modifications to delegate all the query building to the backend and the query execution to the database engine:
-- Pagination with lazy load requested directly to the database engine
-- Multiple sort
-- Advance filter (with a list of values per column that can be given)
-- Global filter
-- Column resize
-- Column reorder
-- Column toggle
-- Column descriptions
-- Show data in a tooltip
+This table component offers all the following features:
+- Pagination with lazy load were all the query is built dynamically in the backend and is then executed in the database engine bringing the minimal data needed.
+- Multiple sort.
+- Advance filter (with a list of values per column that can be given).
+- Predifined filters.
+- Global filter.
+- Column resize.
+- Column reorder.
+- Column toggle.
+- Column descriptions.
+- User cell customization (overflow behaviour, horizontal aligment and vertical aligment).
+- Table views
+- Show cell data in a tooltip.
+- Hold mouse in cell to copy data.
 
-An example of this demo viewed by a user:
+An example image of what is seen in the front-end in this demo:
 ![image](https://github.com/user-attachments/assets/c3a2483f-9a87-46d4-b3c2-1b77a438e90c)
 
 
@@ -60,7 +60,7 @@ To run this example, the following software is needed and needs to be setup:
 - [Visual Studio Code](https://code.visualstudio.com/Download): Used for development in the frontend.
 - [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/): Used for development in the backend API of ASP.NET Core. Make sure to select and install the ASP.NET component and the .NET 8 framework (should be already selected) during the installation process, since both things are needed for the API to run.
 - [Node.js](https://nodejs.org/en/download/package-manager): For being able to run in development the Angular application. It is strongly recomended that you manage your Node.js with [NVM](https://github.com/nvm-sh/nvm).
-- [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads): The database engine that will store all the data and perform all the query operations. This actually is optional since with a few modifications in the code, it should with other database engines, but if this is your first time, it is strongly recomended that you use Microsoft SQL Server.
+- [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads): The database engine that will store all the data and perform all the query operations. This actually is optional since with a few modifications in the code, it should work with other database engines, but if this is your first time, it is strongly recomended that you use this database engine.
 - (Optional) [DBeaver](https://dbeaver.io/download/): Used for being able to manage the databases with a user interface. Works with a wide variety of database engines. Other database management softwares should work, but this is the one I normally use.
 
 
@@ -71,18 +71,20 @@ This example has been setup using MSSQL. Any other database engine should work w
 The first step is to create a new database and name it "primengtablereusablecomponent". The newly created database should have been created with an schema named "dbo". You can use other database and schema name, but you will have to adapt the backend and database scripts afterwards for everything to work as expected.
 
 Once you have created the database and its schema, you must download all the database scripts located under [this path](Database%20scripts). These scripts must be executed in order (starting at 00).
-- <ins>**00 Create EmploymentStatusCategories.txt**</ins>: Script to create the table "EmploymentStatusCategories". This table contains a list of all the possible employment categories.
-- <ins>**01 Populate EmploymentStatusCategories.txt**</ins>: Script that generates some intial records for the table "EmploymentStatusCategories".
-- <ins>**02 Create TestTable**</ins>: Script that generates the table used for the test. Contains the general data that will be displayed in the frontend.
-- <ins>**03 Populate TestTable**</ins>: A script that can be slightly altered and generates random data in the "TestTable".
-- <ins>**04 FormatDateWithCulture**</ins>: A script that will generate a function in the database. This function is used by the backend for being able to perform the global search in columns of type date treating them as text, an passing the same mask, timezone and localte that they would have in the frontend.
+- <ins>**00 Create EmploymentStatusCategories.sql**</ins>: Script to create the table "EmploymentStatusCategories". This table contains a list of all the possible employment categories that is later on used to shown an example of the predifined filter functionality.
+- <ins>**01 Populate EmploymentStatusCategories.sql**</ins>: Script that generates some intial records for the table "EmploymentStatusCategories".
+- <ins>**02 Create TestTable.sql**</ins>: Script that generates the table used for the test. Contains the general data that will be displayed in the frontend.
+- <ins>**03 Populate TestTable.sql**</ins>: A script that can be slightly altered and generates random data in the "TestTable".
+- <ins>**04 FormatDateWithCulture.sql**</ins>: A script that will generate a function in the database. This function is used by the backend for being able to perform the global search in columns of type date treating them as text, an passing the same mask, timezone and localte that they would have in the frontend.
+- <ins>**05 SaveTableViews.sql**</ins>: An example table that is used to store the user views in the table.
 
-Once all scripts have been executed OK, you should end up with 2 tables that are populated with data and a function named "FormatDateWithCulture" in your database. The following image shows the ER diagram of the 2 tables:
+Once all scripts have been executed OK, you should end up with 2 tables that are populated with data, an additional empty table (TableViews) and a function named "FormatDateWithCulture" in your database. The following image shows the ER diagram of all the tables:
 ![primengtablereusablecomponent - dbo - ER diagram](https://github.com/AIO1/PrimeNGTableReusableComponent/assets/17305493/2c6f1b8c-d57c-4d23-ba21-5d1024764168)
 
 
 ### 2.2 Backend (API in ASP.NET)
-**NOTE:** You can use other .NET version with its corresponding packages and the solution should still work with no issues.
+> [!NOTE]  
+> You can use other .NET version with its corresponding packages and the solution should still work with no issues.
 
 #### 2.2.1 Open the project
 Using Visual Studio 2022, open the backend solution located in [this path](Backend/PrimeNGTableReusableComponent). Make sure that you have the ASP.NET component and the .NET 8 framework. If you don't have both, you will have to use Visual Studio Installer to include whatever is missing.
@@ -105,7 +107,9 @@ If in the "appsettings.json" you want to modify the identifier name of the conne
 
 
 #### 2.2.4 Scafolding the database
-This is an optional step and only needs to be done if you modify the database structure, if you want to generate in another location of the backend the DBContext or the models, or if you want to use a different database engine that is not MSSQL. To perform a scafolding, from the "Package manager console" in Visual Studio, perform a "cd" command to the root folder of the project (were the .sln file is located).
+> [!NOTE]  
+> This is an optional step and only needs to be done if you modify the database structure, if you want to generate in another location of the backend the DBContext or the models, or if you want to use a different database engine that is not MSSQL.
+To perform a scafolding, from the "Package manager console" in Visual Studio, perform a "cd" command to the root folder of the project (were the .sln file is located).
 
 Once located in the folder, execute the following command (asumming your database is named primengtablereusablecomponent, you are using SQL server engine and you want to locate the DBContext and Model in the same location as in the example code):
 ```sh
@@ -237,6 +241,9 @@ To execute the frontend part of this demo, you will need to open the [frontend f
 
 To make sure you are pointing to the API from the frontend when you execute the project, go to [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) and you will see in the function "getApiBaseUrl" if we are in development, you will see it returns "https://localhost:7020/". Make sure that port is the one your API is being served on, and if its not, update it and save the file.
 
+> [!IMPORTANT]
+> Remember to verify that getApiBaseUrl points to the right port of your API.
+
 From within Visual Studio Code, you can open a new terminal (making sure it is using CMD and not Powershell or other) and execute a "cd" command to go to the [root folder of the frontend project](Frontend/primengtablereusablecomponent). Once you are in the right folder,
 execute the command:
 ```sh
@@ -254,6 +261,11 @@ If you have reached these step, congratulations, you have setup and started OK t
 
 
 ## 3 How to implement in existing projects
+
+> [!CAUTION]
+> WORK IN PROGRESS. All the information in this section could be outdated.
+
+
 This section describes step by step what you need to implement the PrimeNG Table reusable component. 
 - Database
   - You just need to execute the script to create the [FormatDateWithCulture function](Database%20scripts/04%20FormatDateWithCulture.txt). Remember to modify the initial part were it indicates the database and schema names in the script.
@@ -334,11 +346,180 @@ This section describes step by step what you need to implement the PrimeNG Table
 With all these steps done, you should have succesfully imported all required files and perform all the changes in an existing project that are required for being able to use the "PrimeNG Table reusable component".
 
 
-## 4 How to use the "PrimeNG Table reusable component" and what is included
+## 4 "PrimeNG Table reusable component" all features
 The aim of this chapter is to explain all the things that have to be taken into account and what different functionalities are included (and how to implement them).
 
 
-### 4.1 Date formating
+### 4.1 Starting with a simple table
+Assuming you have already done all the needed setup steps in your project and you already have your mapped models that you wish to work with ready, each time you want to add a new table to your application you should do the following things in order:
+1. Create a DTO / Projection of the final data that must be shown in the table. For example if you want to show 3 columns that are strings, you should have a DTO with 3 strings and an additional property that will act as the row ID. The previously DTO / Projection needs to have every of its elements decorated with the "PrimeNGAttribute", which is used to define the type of data of the column and how you want the column to behave in the front-end.
+2. Create an endpoint in your API that will be used later on in the front-end to retrieve all the columns information (and the date mask).
+3. Create an endpoint in the API that will be used by the table in the front-end to request the data.
+4. In your desired component's HTML, add the table and define the needed properties. Additionally, in the TypeScript part of your component you might need to define additional things depending on what you want to show in the table and what features you wish to use.
+
+We will cover in this section all these steps.
+
+
+#### 4.1.1 Creating a basic DTO / Projection
+As mentioned before, lets assume we want to have 3 columns. One of type string, another one of type numeric and a third one of type bool. Our DTO / Projection will look something like this:
+```C#
+public class TestDto {
+	[PrimeNGAttribute(sendColumnAttributes: false)]
+	public Guid RowID { get; set; }
+
+	[PrimeNGAttribute("Username")]
+	public string Username { get; set; } = null!;
+
+	[PrimeNGAttribute("Money", dataType: EnumDataType.Numeric)]
+	public decimal Money { get; set; }
+
+	[PrimeNGAttribute("Has a house", dataType: EnumDataType.Boolean)]
+	public bool House { get; set; }
+}
+```
+
+Every DTO / Projection should contain the "RowID" property (must use this exact name), specially if you want to perform actions with the rows.
+
+As it can be seen from the "TestDto" class, each property must use the "PrimeNGAttribute" decorator. This decorator ensures that when using the function that builds all the column data that is needed in the front-end, it includes all the relevant information to work properly.
+
+"RowID" has the "sendColumnAttributes" set to false, since this will make sure that the RowID contents is not shown in the table, but is available in the front-end to retireve its data to perform actions.
+
+"Username" has only a string declared that matches the first argument of the "PrimeNGAttribute", which is the column name. This is the name that will be displayed in the column header. There is no need to declare what data type is, since by default the data type that will be used is "Text".
+
+"Money", apart from the column header title, needs to have its data type explicitly declared, since it will be different than "Text".
+
+"House", has its column header title and data type declared in the "PrimeNGAttribute" decorator.
+
+> [!IMPORTANT]  
+> There are four types of data types handled by the table that affect the filters that are shown to the user. The four data types are:
+> - **Text**: Used to handle strings.
+> - **Numeric**: For numbers like longs, decimals, ints...
+> - **Boolean**: For bool type values.
+> - **Date**: For datetime data types. This data type can have some additional customization which is explained in later chaptets.
+
+> [!NOTE]  
+> Including the property "RowID" is optional. It is only needed if you are going to perform actions with your rows or if you are going to use the row selection feature.
+
+> [!WARNING]  
+> Please, make sure that every element in the DTO / Projection has a PrimeNGAttribute, or the column fetching endpoint won't work properly!
+
+> [!CAUTION]
+> Manage your ID of each row in a property that must be exactly named "RowID". This is specially important if you are also going to use the row selection feature.
+
+> [!CAUTION]
+> Do not include a property in your DTO / Projection named "Selector", specially if you will be using the row selection feature in a table, as this can cause issues since this is the virtual column name that is used behind the scenes to manage this scenario.
+
+
+#### 4.1.2 Creating the column data endpoint
+This endpoint in your controller will be used to fetch all the columns information that is used by the table. To do so, you just need to create and endpoint that calls "GetColumnsInfo" from the "PrimeNGHelper" and provide the DTO / Projection that you creted in previous steps, and the function will do the rest for you. From the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project, and endpoint to fetch all the column data needed would look like this:
+```c#
+[HttpGet("[action]")]
+public IActionResult TestGetCols() {
+    try {
+        return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>()); // Get all the columns information to be returned
+    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+    }
+}
+```
+
+
+#### 4.1.3 Creating the table data endpoint
+Another endpoint that must be created in the API is the one responsible of building the query dynamically and then retrieving just the needed data from the database. An example on how to do this can be found in [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project under the endpoint "TestGetData". This is how it looks:
+```c#
+public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
+    try {
+        if(!PrimeNGHelper.ValidateItemsPerPageSizeAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+            return BadRequest("Invalid page size or no columns for selection have been specified.");
+        }
+        IQueryable<TestDto> baseQuery = _context.TestTables
+            .AsNoTracking()
+            .Include(t => t.EmploymentStatus)
+            .Select(
+                u => new TestDto {
+                    RowID = u.Id,
+                    CanBeDeleted = u.CanBeDeleted,
+                    Username = u.Username,
+                    Age = u.Age,
+                    EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
+                    Birthdate = u.Birthdate,
+                    PayedTaxes = u.PayedTaxes
+                }
+            );
+        List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
+        List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
+        return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
+    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+    }
+}
+```
+
+The strategy is to first check, by calling the function "ValidateItemsPerPageSizeAndCols", that we have been requested and allowed items per page number (the allowed values are defined in the variable "allowedItemsPerPage" under [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs)) and that at least a column to be retrieved has been requested.
+
+The second part is to build and IQueryable that uses the same type as the DTO / Projection that we used to provide the columns. It is strongly recomended that you keep your base IQueryable as plain as possible, try to avoid delegating joins or any other type of complex operations to Entity Framework. As you can see from the example, the base IQueryable is very plain being the only "complex" operation fetching the string of the "employmentStatusName" from the  "EmploymentStatusCategories" table. If your IQueryable can't be very plain, it might be a good strategy to consider generating a view in the database and map the entity to the view, instead of trying to delegate the relation builder to Entity Framework, since sometimes it could generate complex queries that can't be solved by the Linq query builder.
+
+Once you have your base IQueryable ready, the last part is to simply call the "PerformDynamicQuery" passing your base query. The "PerformDynamicQuery" accepts the following arguments:
+- **inputData:** This is the PrimeNGPostRequest object that should have arrrived from the frontend as part of the BODY when calling the endpoint. It contains multiple data related to the filter rules requested, the columns that should be shown...
+- **baseQuery:** The IQueryable that you have prepared before.
+- **stringDateFormatMethod:** The exposed database function "FormatDateWithCulture" that is used if a global filter has been specified and if the columns is of type "date". You should have this function already available for you if you followed the setup steps as "private static readonly MethodInfo stringDateFormatMethod".
+- **defaultSortColumnName:** If no sort order operations have been specified by the user, the specified columns will be used to perform the sort (if it has been specified). The columns must have the same name as it appears in the DTO / Projection (the property name, not the column header name). This is a list of strings.
+- **defaultSortOrder:** The sorting order to be done to the "defaultSortColumnName" if it needs to be applied. If value is 1 it will be ascending, if not it will be descending. This is a list of ints.
+
+> [!NOTE]  
+> The arguments in "PerformDynamicQuery" of "defaultSortColumnName" and "defaultSortOrder" should both have the same list length.
+
+The "PerformDynamicQuery" function will do all these steps in order:
+
+1. Perform the sorting. The sorting will apply all the sorting rules specified by the user that are located in the PrimeNGPostRequest object. If no sorting rules have been given, and if a "defaultSortColumnName" has been given, a default sorting will be applied. Otherwise, no sotring will be performed.
+2. Count the total elements that are available before applying the filtering rules by delegating a COUNT operation of all the records to the database engine.
+3. Apply the global filter, if any have been specified in the PrimeNGPostRequest object, to each column that can have the global filter applied. Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column. The more columns and data that you have, the slower the query will be. There is an option in the frontend to disable the global filter, which is recommendend when the dataset is very large or there is a large number of columns that could be affected by the global filter.
+4. Apply the filter rules per column. From the PrimeNGPostRequest it will get all the filter rules per column that must be applied (it included the pedifined filter rules). In this step the IQueryable will be added all the additional rules that need to be done to reflect all the filtering operations that the user has requested.
+5. Count the total elements that are available after applying the filtering rules by delegating a COUNT operation of all the records to the database engine with the current built query.
+6. Calculate the number of pages that are available (taking into account the items per page selected and the filtering rules) and determine if the user need to be moved from his current page. For example, if user was in page 100 and suddenly, due to the filters that are applied, only 7 pages are available, the returned current page will be changed to page 7. The frontend will handle this situation and move the user to said page accordingly.
+7. Perform the dynamic select and get the needed elements. In this step, the IQueryable will be added a SELECT statement to just get the columns that we are interested in, and the the IQueryable will be converted to a ToDynamicList, which will basically launch all the query that we have been building in the previous steps to the database. In this step, we would have delegated all operations to the database, and in the backend we will be given a dynamic list with the size of the number of items that must be shown in the current page and with only the selected columns that the user has requested (and the columns which have sendColumnAttributes set to false).
+8. The function will end by returning us a PrimeNGPostReturn, which must be returned to the frontend.
+
+The PrimeNGPostReturn object contains:
+- The current page the user should be at.
+- The number of total records that are available before performing the filtering rules.
+- The number of total records that are available after performing the filtering rules.
+- The data that will be sent to the frontend.
+
+When the PrimeNGPostReturn is retrieved by the table component in the frontend, it will do all the necesarry operations to update what is shown to the user in the table.
+
+> [!TIP]
+> It is strongly recommended that the IQueryable has the "AsNoTracking" declaration, since we don't want to track the entity for any modified data and this gives a slight performance boost. 
+
+
+#### 4.1.4 Implementing a new table in the frontend
+Once you have at least created an endpoint to fetch the columns and the data in you API (we are ye assuming an scenario where you don't need predifined filters), you can generate a new component on your frontend through Visual Studio Code terminal (using CMD, not the default powershell terminal that opens up) by first doing "cd" to you frontend root folder and then executing the command:
+```sh
+ng generate c OPTIONAL_PATH_FROM_ROOT_FOLDER_TO_GENERATE_COMPONENT YOUR_COMPONENT_NAME
+```
+
+This will generate you component inside a folder with four files. Assuming that to start, you only want to show some data the moment the component is loaded, in the file that has been generated with an ".html" extension you must add:
+```html
+<ecs-primeng-table #dt
+    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
+    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA/>
+```
+
+With only this, when starting the backend and the the frontend and navigating to the component, a table will be shown and it will automatically get the columns and data the moment the new component is entered. With this you would have completed a simple table that can be used to show data on the frontend with lots of personalization options to the user.
+
+In the above example, the "ecs-primeng-table" has been given the template reference variable "dt", which is optional to do. This is needed when you want to access from the component exposed functions of "ecs-primeng-table". From the demo project, you should be aware that the endpoints of your API shouldn't be the complete URL, but rather the combination of what is already given in the variable "APIbaseURL" in the file [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) and the endpoint part that you specify in the "ecs-primeng-table" component.
+
+
+> [!CAUTION]
+> WORK IN PROGRESS. All the information below this point could be outdated.
+
+---
+---
+---
+
+
+
+### 4.2 Date formating
 Something that a first glance might sound simple but I've seen lots of developers struggle with this. Its important to know how you should handle your date storage and how you should display it to the end user.
 
 My personal reccomendation, always store in your databases dates in UTC and (if using MSSQL) as a datetime2 type, even if you are not interested in saving the time part. Its a way to guarantee consistency when working with dates. This solution assumes that all your dates are stored in the database as datetime2 in UTC timezone.
@@ -414,86 +595,6 @@ public class TestDto {
 ```
 
 As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "SendColumnAttributes" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
-
-
-### 4.3 Fetching table columns endpoint
-When you wish to create a new table, one of your first steps should be to create the DTO and then create an endpoint in a controller that will be used to fetch all the columns information that is used by the table. To do so, you just need to create and endpoint that calls "GetColumnsInfo" and provide it the DTO (that uses the PrimeNGAttribute in every entry) and the function will do everything for you. From the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project, and endpoint to fetch all the column data needed would look like this:
-```c#
-[HttpGet("[action]")]
-public IActionResult TestGetCols() {
-    try {
-        return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>()); // Get all the columns information to be returned
-    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
-        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
-    }
-}
-```
-As you can see, you just need to call "GetColumnsInfo" and pass the DTO that you will be using for the table, in this example being "TestDto".
-
-**NOTE:** Please, make sure that every element in the DTO has a PrimeNGAttribute, or the column fetching endpoint won't work properly!
-
-
-### 4.4 Retrieving table data endpoint
-Another endpoint that must be created in the API is the one responsible of building the query dynamically and then retrieving just the needed data from the database. An example on how to do this can be found in [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project under the endpoint "TestGetData". This is how it looks:
-```c#
-public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
-    try {
-        if(!PrimeNGHelper.ValidateItemsPerPageSizeAndCols(inputData.pageSize, inputData.columns)) { // Validate the items per page size and columns
-            return BadRequest("Invalid page size or no columns for selection have been specified.");
-        }
-        IQueryable<TestDto> baseQuery = _context.TestTables
-            .Select(
-                u => new TestDto {
-                    id = u.Id,
-                    canBeDeleted = u.CanBeDeleted,
-                    username = u.Username,
-                    age = u.Age,
-                    employmentStatusName =
-                        u.EmploymentStatusId != null ?
-                            _context.EmploymentStatusCategories
-                                .Where(d => d.Id == u.EmploymentStatusId)
-                                .Select(d => d.StatusName).FirstOrDefault() 
-                            : null,
-                    birthdate = u.Birthdate,
-                    payedTaxes = u.PayedTaxes
-                }
-            ).AsNoTracking();
-        return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, "username", 1));
-    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
-        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
-    }
-}
-```
-
-The strategy is to first check by calling the function "ValidateItemsPerPageSizeAndCols" that we have been requested and allowed items per page number (the allowed values are defined in the variable "allowedItemsPerPage" under [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs)) and that at least a column to be retrieved has been requested.
-
-The second part is to build and IQueryable that uses the same type as the DTO that we used to provide the columns. It is very important that the IQueryable has the "AsNoTracking" declaration since we don't want to track the entity for any modified data and this gives a slight performance boost. Also, it is strongly recomended that you keep your base IQueryable as plain as possible, try to avoid delegating joins or any other type of complex operations to Entity Framework. As you can see from the example, the base IQueryable is very plain being the only "complex" operation fetching the string of the "employmentStatusName" from the  "EmploymentStatusCategories" table. If your IQueryable can't be very plain, it might be a good strategy to consider generating a view in the database and map the entity to the view instead of trying to delegate the relation builder to Entity Framework, since sometimes it can generate not very optimal queries if they are too complex.
-
-Once you have your base IQueryable ready, the last part is to simply call the "PerformDynamicQuery" passing your base query. The "PerformDynamicQuery" accepts the following arguments:
-- **inputData:** This is the PrimeNGPostRequest object that should have arrrived from the frontend as part of the BODY when calling the endpoint. It contains multiple data related to the filter rules requested, the columns that should be shown...
-- **baseQuery:** The IQueryable that you have prepared before.
-- **stringDateFormatMethod:** The exposed database function "FormatDateWithCulture" that is used if a global filter has been specified and if the columns is of type "date".
-- **defaultSortColumnName:** If no sort order operations have been specified by the user, the specified column will be used to perform the sort (if it has been specified). The column must have the same name as in the DTO.
-- **defaultSortOrder:** The sorting order to be done to the "defaultSortColumnName" if it needs to be applied. If value is 1 it will be ascending, if not it will be descending.
-
-The "PerformDynamicQuery" function will do all this operations in order:
-
-1. Perform the sorting. The sorting will apply all the sorting rules specified by the user that are located in the PrimeNGPostRequest object. If no sorting rules have been given, and if a "defaultSortColumnName" has been given, a default sorting will be applied. Otherwise, no sotring will be performed.
-2. Count the total elements that are available before applying the filtering rules by delegating a COUNT operation of all the records to the database engine.
-3. Apply the global filter, if any have been specified in the PrimeNGPostRequest object, to each column that can have the global filter applied. Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column. The more columns and data that you have, the slower the query will be. There is an option in the frontend to disable the global filter, which is recommendend when the dataset is very large or there is a large number of columns that could be affected by the global filter.
-4. Apply the filter rules per column. From the PrimeNGPostRequest it will get all the filter rules per column that must be applied (it included the pedifined filter rules). In this step the IQueryable will be added all the additional rules that need to be done to reflect all the filtering operations that the user has requested.
-5. Count the total elements that are available after applying the filtering rules by delegating a COUNT operation of all the records to the database engine with the current built query.
-6. Calculate the number of pages that are available (taking into account the items per page selected and the filtering rules) and determine if the user need to be moved from his current page. For example, if user was in page 100 and suddenly, due to the filters that are applied, only 7 pages are available, the returned current page will be changed to page 7. The frontend will handle this situation and move the user to said page accordingly.
-7. Perform the dynamic select and get the needed elements. In this step, the IQueryable will be added a SELECT statement to just get the columns that we are interested in, and the the IQueryable will be converted to a ToDynamicList, which will basically launch all the query that we have been building in the previous steps to the database. In this step, we would have delegated all operations to the database, and in the backend we will be given a dynamic list with the size of the number of items that must be shown in the current page and with only the selected columns that the user has requested (and the columns which have sendColumnAttributes set to false).
-8. The function will end by returning us a PrimeNGPostReturn, which must be returned to the frontend.
-
-The PrimeNGPostReturn object contains:
-- The current page the user should be at.
-- The number of total records that are available before performing the filtering rules.
-- The number of total records that are available after performing the filtering rules.
-- The data that will be sent to the frontend.
-
-When the PrimeNGPostReturn is retrieved by the table component in the frontend, it will do all the necesarry operations to update what is shown to the user in the table.
 
 
 ### 4.5 Implementing a new table in the frontend
