@@ -717,7 +717,9 @@ If a different column is clicked and the first one was in ascending order, the n
 The table allows a multi-sorting feature to the user were he can hold the "Ctrl" key and then click multiple column headers to perform multi-sorting.
 
 The table includes in the top left a button for clearing all sorting that has been done as shown in the following image:
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+</p>
 
 If for any reason, you want to hide this button, you can do so by in in your component HTML that is using the table, setting the variable "showClearSorts" to false.
 ```html
