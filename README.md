@@ -710,13 +710,13 @@ It will be shown in the frontend like this:
 
 
 ### 4.6 Column sorting
-By default, all columns that are shown in the frontend (with the exception of the actions and row selector column) can be sorted. When a column can be sorted, a user can perform in the header a first click to sort in ascending order, and a second click in the same column to sort in descensing order.
+By default, all columns that are shown in the front-end (with the exception of the actions and row selector column) can be sorted. When a column can be sorted, a user can perform in the header a first click to sort in ascending order, and a second click in the same column to sort in descensing order.
 
 If a different column is clicked and the first one was in ascending order, the new clicked column will be sorted in ascending order and the first one will have it sorting cleared.
 
 The table allows a multi-sorting feature to the user were he can hold the "Ctrl" key and then click multiple column headers to perform multi-sorting.
 
-The table includes in the top left a button for clearing all sorting that has been done as shown in the following image:
+The table includes in the top left a button for clearing all sorting that has been done to the table. This button will be only be enabled when at least one sorting made by the user is active. The following image shows were this button is located at:
 <p align="center">
   <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
 </p>
@@ -730,7 +730,13 @@ If for any reason, you want to hide this button, you can do so by in in your com
 </ecs-primeng-table>
 ```
 
-PENDING --> DISABLE SORTING PER ROW
+If you wish to disable the possibility of a user sorting an specific row, you can do so by modifying your DTO in the back-end. For the specific row that you wish to disable the sorting, in the "PrimeNGAttribute" you just have to give a value of false to "canBeSorted" as shown in the next example:
+```c#
+[PrimeNGAttribute("Example column", canBeSorted: false, ...)]
+public string? exampleColumn { get; set; }
+```
+
+By doing this, when the user clicks the header of the column "Example column", the column won't be sorted. Also, the sorting icon in the column header will no longer be shown.
 
 
 ### 4.7 Column filter
