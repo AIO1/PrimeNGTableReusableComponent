@@ -28,6 +28,13 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
     - [4.4.1 Enabling and configuring the row selector](#441-enabling-and-configuring-the-row-selector)
     - [4.4.2 Subscription to changes](#442-subscription-to-changes)
     - [4.4.3 Accesing the table component selected rows variable](#443-accesing-the-table-component-selected-rows-variable)
+  - [4.5 Column descriptions](#45-column-descriptions)
+  - [4.6 Column sorting](#46-column-sorting)
+  - [4.7 Column filter](#47-column-filter)
+  - [4.8 Column predfined filter](#48-column-predfined-filter)
+  - [4.9 Global filter](#49-global-filter)
+  - [4.10 Pagination](#410-pagination)
+  - [4.11 Column editor and setting up column initial properties](#411-column-editor-and-setting-up-column-initial-properties)
 
 
 ## Introduction
