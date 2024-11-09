@@ -618,6 +618,9 @@ If at least a row action button has been provided, an additional column will be 
 
 ### 4.4 Row selector
 The goal of this feature is to allow the user to select rows and allow him to filter by rows that have been selected or rows that are not selected. From different components in the front-end, we can access the list of multiple "rowID" that the user could have selected and we can also subscribe to changes when the user changes the selection stauts of a row. The following image shows an example of how this column looks:
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/2c1ba3b8-b939-4e17-840a-c7bb74fbf987" alt="Row selector example">
+</p>
 
 
 #### 4.4.1 Enabling and configuring the row selector
