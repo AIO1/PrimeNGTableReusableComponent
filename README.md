@@ -22,6 +22,12 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
     - [4.1.2 Creating the column data endpoint](#412-creating-the-column-data-endpoint)
     - [4.1.3 Creating the table data endpoint](#413-creating-the-table-data-endpoint)
     - [4.1.4 Implementing a new table in the frontend](#414-implementing-a-new-table-in-the-frontend)
+  - [4.2 Date formating](#42-date-formating)
+  - [4.3 Declaring header and row action buttons](#43-declaring-header-and-row-action-buttons)
+  - [4.4 Row selector](#44-row-selector)
+    - [4.4.1 Enabling and configuring the row selector](#441-enabling-and-configuring-the-row-selector)
+    - [4.4.2 Subscription to changes](#442-subscription-to-changes)
+    - [4.4.3 Accesing the table component selected rows variable](#443-accesing-the-table-component-selected-rows-variable)
 
 
 ## Introduction
@@ -75,7 +81,7 @@ Once you have created the database and its schema, you must download all the dat
 - <ins>**01 Populate EmploymentStatusCategories.sql**</ins>: Script that generates some intial records for the table "EmploymentStatusCategories".
 - <ins>**02 Create TestTable.sql**</ins>: Script that generates the table used for the test. Contains the general data that will be displayed in the frontend.
 - <ins>**03 Populate TestTable.sql**</ins>: A script that can be slightly altered and generates random data in the "TestTable".
-- <ins>**04 FormatDateWithCulture.sql**</ins>: A script that will generate a function in the database. This function is used by the backend for being able to perform the global search in columns of type date treating them as text, an passing the same mask, timezone and localte that they would have in the frontend.
+- <ins>**04 FormatDateWithCulture.sql**</ins>: Optional. A script that will generate a function in the database. This function is used by the backend for being able to use the global search feature in columns of type date treating them as text, an passing the same mask, timezone and locale that they would have in the front-end.
 - <ins>**05 SaveTableViews.sql**</ins>: An example table that is used to store the user views in the table.
 
 Once all scripts have been executed OK, you should end up with 2 tables that are populated with data, an additional empty table (TableViews) and a function named "FormatDateWithCulture" in your database. The following image shows the ER diagram of all the tables:
@@ -478,7 +484,7 @@ The "PerformDynamicQuery" function will do all these steps in order:
 4. Apply the filter rules per column. From the PrimeNGPostRequest it will get all the filter rules per column that must be applied (it included the pedifined filter rules). In this step the IQueryable will be added all the additional rules that need to be done to reflect all the filtering operations that the user has requested.
 5. Count the total elements that are available after applying the filtering rules by delegating a COUNT operation of all the records to the database engine with the current built query.
 6. Calculate the number of pages that are available (taking into account the items per page selected and the filtering rules) and determine if the user need to be moved from his current page. For example, if user was in page 100 and suddenly, due to the filters that are applied, only 7 pages are available, the returned current page will be changed to page 7. The frontend will handle this situation and move the user to said page accordingly.
-7. Perform the dynamic select and get the needed elements. In this step, the IQueryable will be added a SELECT statement to just get the columns that we are interested in, and the the IQueryable will be converted to a ToDynamicList, which will basically launch all the query that we have been building in the previous steps to the database. In this step, we would have delegated all operations to the database, and in the backend we will be given a dynamic list with the size of the number of items that must be shown in the current page and with only the selected columns that the user has requested (and the columns which have sendColumnAttributes set to false).
+7. Perform the dynamic select and get the needed elements. In this step, the IQueryable will be added a SELECT statement to just get the columns that we are interested in, and the the IQueryable will be converted to a ToDynamicList, which will basically launch all the query that we have been building in the previous steps to the database. In this step, we would have delegated all operations to the database, and in the backend we will be given a dynamic list with the size of the number of items that must be shown in the current page and with only the selected columns that the user has requested (and the columns which have "sendColumnAttributes" set to false).
 8. The function will end by returning us a PrimeNGPostReturn, which must be returned to the frontend.
 
 The PrimeNGPostReturn object contains:
@@ -503,12 +509,188 @@ This will generate you component inside a folder with four files. Assuming that 
 ```html
 <ecs-primeng-table #dt
     columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
-    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA/>
+    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA>
+</ecs-primeng-table>
 ```
 
 With only this, when starting the backend and the the frontend and navigating to the component, a table will be shown and it will automatically get the columns and data the moment the new component is entered. With this you would have completed a simple table that can be used to show data on the frontend with lots of personalization options to the user.
 
 In the above example, the "ecs-primeng-table" has been given the template reference variable "dt", which is optional to do. This is needed when you want to access from the component exposed functions of "ecs-primeng-table". From the demo project, you should be aware that the endpoints of your API shouldn't be the complete URL, but rather the combination of what is already given in the variable "APIbaseURL" in the file [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) and the endpoint part that you specify in the "ecs-primeng-table" component.
+
+
+### 4.2 Date formating
+Something that a first glance might sound simple but I've seen lots of developers struggle with this. Its important to know how you should handle your date storage and how you should display it to the end user.
+
+My personal reccomendation, always store in your databases dates in UTC and (if using MSSQL) as a datetime2 type, even if you are not interested in saving the time part. Its a way to guarantee consistency when working with dates. This solution assumes that all your dates are stored in the database as datetime2 in UTC timezone.
+
+If you need to show dates in a table, you don't need to do much more than just declaring in your DTO the appropiate row as date type and making sure that your date is stored in UTC. By default, in the front-end, it will be shown with the format "dd-MMM-yyyy HH:mm:ss zzzz", with the time zone "+00:00" and with the date culture "en-US".
+
+This can be easily customized per user if you are storing their date preferences in your database (or if they have a way to select it and send it before fetching the table columns). In the previous example we called "GetColumnsInfo" in the backend passing it our DTO for it to prepare all our columns data that will be sent to the front-end. "GetColumnsInfo" can be also given three optional arguments to customize how a date is shown to a user. If before calling this function, you have a way to fetch the preferences of the user calling this endpoint, you can pass this arguments as shown in the following example:
+```c#
+[HttpGet("[action]")]
+public IActionResult TestGetCols() {
+    try {
+        string dateFormat = "dd-MM-yyyy HH:mm zzzz"
+        string dateTimezone = "+02:00"
+        string dateCulture = "en-US"
+        return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>(dateFormat, dateTimezone, dateCulture)); // Get all the columns information to be returned
+    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+    }
+}
+```
+
+This is a hardcoded example, normally you would get the userID and retrieve this date customization from the database. From the example, the date will be represented with the format "dd-MM-yyyy HH:mm zzzz" and in the time zone "+02:00". You don't need to do anything else, since this will be automatically handled for you and the user will see the date properly converted. From this example, if the date is stored in the database as "12-oct-2024 13:37:25", the user will see it in the table as "12-10-2024 15:37 GMT+02:00".
+
+From the setup steps for implementing this reusable component, you might remember that there you had to created the database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt). This is actually not needed, since its only use is for being able to use the golbal filter functionality on columns that have the date type. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use. The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is used, this function can be called with no issues. If for any reasons you were unable to use this function, the global filtered can be disabled in the date type columns to avoid errors when filtering.
+
+
+### 4.3 Declaring header and row action buttons
+This component allows you to easily define buttons which can be placed on the top right header of the table or in each row of data. In your component, you should define all the buttons that you want to have as an array of IprimengActionButtons (you need different arrays for the header buttons and another one for the row buttons). The IprimengActionButtons values that can be passed are:
+- **icon:** If specified, it will show a PrimeNG icon. It has the capacity to show icons from PrimeNG or from other sources like Font Awesome. If you wish to show the "pi-address-book" from PrimeNG for example, you should put: "pi pi-address-book".
+- **label:** If specified, it will show a label inside the button.
+- **color:** The color property to be applied. The "color" references to the "severity" property of PrimeNG for the [button](https://primeng.org/button#severity).
+- **condition:** A condition that must be met in order to show the button. It can be passed a function and the expected return is a boolean. If no condition is specified, the button will always show. If the button is in a row, the data of the row can be accessed (like for example the "ID").
+> [!CAUTION]
+> Do NOT ever trust that if a user can press a button that should only be shown under some condition, the action should be done. Always perform an additional final validation in the backend, since the exposed data in the frontend can be easily tampered with.
+- **action:** The action that the button will perform when pressed. It can be passed a function and no return value is expected. If no action is specified, the button won't do anything when pressed.
+- **tooltip:** If given, it will show a tooltip when the user hovers the mouse over the button.
+
+> [!TIP]
+> Buttons that are added into the IprimengActionButtons array that are then passed to the table, will be always drawn from left to right, meaning that the first button provided in the array will be in the most left part, while the last button will be the last button in the right.
+
+> [!IMPORTANT]  
+> If the button is in a row, the data of the row can be accessed, like for example the "rowID" which is useful to perform actions or check specific conditions. There is an example on how to do it in this section later on. Remember NOT to rely on data from columns that can be hidden from the user, since if the column is hidden, you won't have the data available in the front-end (this does not apply to columns with the "sendColumnAttributes" to false, since these columns are always sent and are safe to rely on for these operations).
+
+From the example project here is an example on how you can specify buttons that are shown in the table. From the Typescript file [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see the following code fragment:
+```ts
+headerActionButtons: IprimengActionButtons[] = [
+    {
+        icon: 'pi pi-file',
+        color: 'p-button-success',
+        action: () => {
+            this.sharedService.clearToasts();
+            this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
+        },
+        label: "CREATE",
+        tooltip: "Create new record"
+    }
+];
+rowActionButtons: IprimengActionButtons[] = [
+    {
+        icon: 'pi pi-trash',
+        tooltip: 'Delete record',
+        color: 'p-button-danger',
+        action: (rowData) => {
+            this.sharedService.showToast("warn","Clicked on delete row",`The record ID is\n\n${rowData.rowID}\n\nThis button only appears if a condition is met. Remember that a backend validation should be done anyways because users can tamper with the exposed variables in the frontend.`);
+        },
+        condition: (rowData) => (rowData.canBeDeleted === true)
+    }, {
+        icon: 'pi pi-file-edit',
+        tooltip: 'Edit record',
+        color: 'p-button-primary',
+        action: (rowData) => {
+            this.sharedService.showToast("success","Clicked on edit row",`The record ID is\n\n${rowData.rowID}\n\nHere you could open a modal for the user to edit this record (you can retrieve data through the ID) and then call 'this.dt.updateDataExternal()' to refresh the table data.`);
+        }
+    }
+];
+```
+
+From the above code, it can be seen that two different arrays have been created, one being "headerActionButtons" and the other one "rowActionButtons". In the header buttons we have one button that is always shown and it will execute the action of showing a toast message. In the row action buttons we have two buttons, were both will show a toast message including the "rowData.rowID" value. The delete button will be only shown under a specific condition, being "rowData.canBeDeleted === true".
+
+Once the buttons have been defined in your component, you must pass them to the table in the HTML like so:
+```html
+<ecs-primeng-table #dt
+    ...
+    [headerActionButtons]="headerActionButtons"
+    [rowActionButtons]="rowActionButtons"
+    ...>
+</ecs-primeng-table>
+```
+
+If at least a row action button has been provided, an additional column will be added to your table to show the row action buttons. There are some properties of this column that can be altered from their defaults through the HTML of your component, which are the following:
+- **actionColumnName** (string): The title that will appear in the column header, by default is "Actions".
+- **actionsColumnWidth** (number): A fixed width for this columns in pixels. By default is 150.
+- **actionsColumnAligmentRight** (boolean): By default true. If true, this column will be placed at the right most part of your table. If false, it will be placed to the left of the table.
+- **actionsColumnFrozen** (boolean): By default true. If true, this column will be frozen and follow the horizontal scroll if the table has a width longer than the component were it is drawn. If false, the column won't be frozen and act as a normal column.
+- **actionsColumnResizable** (boolean): By default false. If false, the user can't resize the column. If true, the user will be able to resize this column.
+
+
+### 4.4 Row selector
+The goal of this feature is to allow the user to select rows and allow him to filter by rows that have been selected or rows that are not selected. From different components in the front-end, we can access the list of multiple "rowID" that the user could have selected and we can also subscribe to changes when the user changes the selection stauts of a row. The following image shows an example of how this column looks:
+
+
+#### 4.4.1 Enabling and configuring the row selector
+By default this feature is disabled and you need to activate it in each table that you wish to use it. To do so is as simple as in the HTML setting the variable "rowSelectorColumnActive" to true as shown in the next example:
+```html
+<ecs-primeng-table #dt
+    ...
+    [rowSelectorColumnActive]="true"
+    ...>
+</ecs-primeng-table>
+```
+
+Apart from activating the row selector, there are some additional properties of this column that can be modified through the HTML of your component, which are the following:
+- **rowSelectorColumName** (string): The title that will appear in the column header, by default is "Selected".
+- **rowSelectorColumnWidth** (number): A fixed width for this columns in pixels. By default is 150.
+- **rowSelectorColumnAligmentRight** (boolean): By default true. If true, this column will be placed at the right most part of your table (before the actions column if present and if both are the same frozen type). If false, it will be placed to the left of the table (after the actions column if present and if both are the same frozen type).
+- **rowSelectorColumnFrozen** (boolean): By default true. If true, this column will be frozen and follow the horizontal scroll if the table has a width longer than the component were it is drawn. If false, the column won't be frozen and act as a normal column.
+- **rowselectorColumnResizable** (boolean): By default false. If false, the user can't resize the column. If true, the user will be able to resize this column.
+
+An additional feature of this column, which is always active, is that it will show a filter button were the user will be able to filter by rows that are selected or unselected. By your side to have this feature working there is nothing that you need to do apart from making sure that in your back-end DTO you don't have a "Selector" property, since this could enter in conflict with this feature.
+
+
+#### 4.4.2 Subscription to changes
+The table component has an output which you can subscribe to for listening to changes when a user selects or unselects a row. To do so, in your component that is using the table, you first need to create a function in yor TypeScript that will be called when a user checks a row, for example:
+```ts
+rowSelect($event: any){
+    if($event.selected){ // If the row has been selected
+        this.sharedService.clearToasts();
+        this.sharedService.showToast("info","ROW SELECT", `The row with ID ${$event.rowID} has been selected.`);
+    } else { // If the row has been unselected
+        this.sharedService.clearToasts();
+        this.sharedService.showToast("info","ROW UNSELECT", `The row with ID ${$event.rowID} has been unselected.`);
+    }
+}
+```
+
+And now in the HTML of your component, you can call it like so:
+```html
+<ecs-primeng-table #dt
+    ...
+    (selectedRowsChange)="rowSelect($event)"
+    ...>
+</ecs-primeng-table>
+```
+
+With this subscription to "selectedRowsChange", each time a user changes the selection of a row, the even will be emitted and the "rowSelect" function will be triggered. The event variable contains the following:
+- **selected** (boolean): True if the user has selected this row or false if it has been unselected.
+- **rowID** (any): The ID of the affected row.
+
+
+#### 4.4.3 Accesing the table component selected rows variable
+Apart from subscribing to changes, something else that you can do is accesing a variable managed by the table component that contains all the row IDs of the currently selected rows. To achieve this, assuming that you have specified an alias for the table in your component's HTML as shown in previous example (it should be "dt"), you should go to the TypeScript of your component and do the following:
+```ts
+import { ViewChild, ... } from '@angular/core';
+import { PrimengTableComponent, ... } from '../primeng-table/primeng-table.component';
+
+export class YourClass {
+    ...
+    @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
+    ...
+}
+```
+
+By importing from "@angular/core" the "ViewChild", from "primeng-table.component" the "PrimengTableComponent" and calling the "ViewChild" as shown in the example, you should now be able to access the table exposed variables.
+
+The variable that we are interested in is "selectedRows". This variable is an array that contains all the row IDs of the rows that are currently selected by the user. You could combine this with the subscription to changes shown before to, for example, log to console all the selected row IDs:
+```ts
+rowSelect($event: any){
+    console.log(this.dt.selectedRows);
+}
+```
+
+With this change in the "rowSelect" function from the "Subscription to changes" example, you can now log to console each time a user changes the selection value of a row.
 
 
 > [!CAUTION]
@@ -520,19 +702,10 @@ In the above example, the "ecs-primeng-table" has been given the template refere
 
 
 
-### 4.2 Date formating
-Something that a first glance might sound simple but I've seen lots of developers struggle with this. Its important to know how you should handle your date storage and how you should display it to the end user.
-
-My personal reccomendation, always store in your databases dates in UTC and (if using MSSQL) as a datetime2 type, even if you are not interested in saving the time part. Its a way to guarantee consistency when working with dates. This solution assumes that all your dates are stored in the database as datetime2 in UTC timezone.
-
-The database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt) that must be created in your database is used when trying to search with the global filter. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use (you should obviously use the same in here and in the frontend). The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is done, this function can be called with no issues.
-
-If you would like to implement a customization to fetch an specific date format, timezone and culture that the user has for example in its own configuration, it could be easily implemented when fetching the column data that must be sent to the frontend by providing the additional optional arguments to the function "PrimeNGHelper.GetColumnsInfo". In the example project, in the [Main controller](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) on the "TestGetCols" function, you could implement a way to retrieve the data formating values for the user that made the request, and then pass the values to the "PrimeNGHelper.GetColumnsInfo".
-
-With this, everything related to date formating should be already be customized and working with no issues with the global filter.
 
 
-### 4.2 Preparing what is going to be shown in the frontend
+
+### Preparing what is going to be shown in the frontend
 For anything that needs to be sent to the frontend (including columns that will be not shown to the user like the ID columns) you must create a DTO. Each element of the DTO that is going to be used must have an attribute declared using "PrimeNGAttribute". The "PrimeNGAttribute" allows you to define certain aspects on how the data of any of the entreis of the DTO should be treated and shown in the frontend.
 
 From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGAttribute.cs), you will see that you can specify multiple things to each element of the DTO, the things that can be specified per columns are:
@@ -598,7 +771,7 @@ public class TestDto {
 As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "SendColumnAttributes" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
 
 
-### 4.5 Implementing a new table in the frontend
+### Implementing a new table in the frontend
 Once you have at least created an endpoint to fetch the columns and the data in you API (we are ye assuming an scenario where you don't need predifined filters), you can generate a new component on your frontend through Visual Studio Code terminal (using CMD, not the default powershell terminal that opens up) by first doing "cd" to you frontend root folder and then executing the command:
 ```sh
 ng generate c OPTIONAL_PATH_FROM_ROOT_FOLDER_TO_GENERATE_COMPONENT YOUR_COMPONENT_NAME
@@ -648,7 +821,7 @@ There is an output which you can access from other components:
 - **selectedRows:** (any): A list of all the "id" selected by the user in a row. By default is empty but the user can add elements through the front-end if rowSelectorColumnActive is true.
 
 
-### 4.6 Predifined filters
+### Predifined filters
 You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. To achieve this, we will start off in the backend with your DTO.
 
 From the example project, the "TestDto" has an entry named "employmentStatusName". In the "TestDTO" it was given in the PrimeNGAttribute of "filterPredifinedValuesName" the value "employmentStatusPredifinedFilter", which is important to remember because it will need to be exactly the same in the frontend.
@@ -759,74 +932,7 @@ The different options that are available through the IPrimengPredifinedFilter ob
   }
   ```
 
-
-### 4.7 Declaring header and row action buttons
-Included in this code, you have the option to easily define buttons which can be place on the top right header of the table or in each row. In your component you should define all the buttons that you want to have as an array of IprimengActionButtons (you need different arrays for the header buttons and another one for the row buttons). The IprimengActionButtons values that can be passed are:
-- **icon:** If specified, it will show a PrimeNG icon. The different icons avialable are [here](https://primeng.org/icons). If you wish to show the "pi-address-book" for example, you should put: "pi pi-address-book".
-- **label:** If specified, it will show a label inside the button.
-- **color:** The color property to be applied. The "color" references to the "severity" property of PrimeNG for the [button](https://primeng.org/button#severity).
-- **condition:** A condition that must be met in order to show the button. It can be passed a function and the expected return is a boolean. If no condition is specified, the button will always show. If the button is in a row, the data of the row can be accessed (like for example the "ID").
-- **action:** The action that the button will perform when pressed. It can be passed a function and no return value is expected. If no action is specified, the button won't do anything on pressed. If the button is in a row, the data of the row can be accessed (like for example the "ID").
-- **tooltip:** If given, it will show a tooltip when the user hovers the mouse over the button.
-
-IMPORTANT: Do NOT ever trust that if a user can press a button that should only be shown under some condition, the action should be done. Always perform the verification in the backend, since the exposed data in the frontend can be tampered with.
-
-Buttons that are added into the IprimengActionButtons array that are passed to the table, will be always drawn from left to right, meaning that the first button provided will be always in the most left part, while the last button will be the last button in the row from the right.
-
-From the example project here is an example on how you can specify buttons that are shown in the table. From the Typescript file [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see the following code fragment:
-```ts
-headerActionButtons: IprimengActionButtons[] = [
-  {
-    icon: 'pi pi-calculator',
-    action: () => {
-      this.sharedService.clearToasts();
-      this.sharedService.showToast("success","Clicked on the calculator","Cool! It wokrs :)");
-    }
-  },
-  {
-    icon: 'pi pi-file',
-    color: 'p-button-success',
-    action: () => {
-      this.sharedService.clearToasts();
-      this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
-    }
-  }
-];
-rowActionButtons: IprimengActionButtons[] = [
-  {
-    icon: 'pi pi-trash',
-    color: 'p-button-danger',
-    action: (rowData) => {
-      this.sharedService.showToast("warn","Clicked on delete row",`The record ID is\n\n${rowData.id}\n\nThis button only appears if a condition is met. Remember that a backend validation should be done anyways because users can tamper with the exposed variables in the frontend.`);
-    },
-    condition: (rowData) => (rowData.canBeDeleted === true)
-  }, {
-    icon: 'pi pi-file-edit',
-    color: 'p-button-primary',
-    action: (rowData) => {
-      this.sharedService.showToast("success","Clicked on edit row",`The record ID is\n\n${rowData.id}\n\nHere you could open a modal for the user to edit this record (you can retrieve data through the ID) and then call 'this.dt.updateDataExternal()' to refresh the table data.`);
-    }
-  }
-];
-```
-
-From the above code it can be seen that two different arrays have been created, one being headerActionButtons and the other one rowActionButtons. In the header buttons we have two buttons that are always shown and both of them will execute the action of showing a toast message. In the row action buttons we have two buttons, were both will show a toast message including the "rowData.id" value. The delete button will be only shown under a specific condition, being "rowData.canBeDeleted === true".
-
-Once the buttons have been defined in your component, you must pass them to the table like so:
-```html
-<ecs-primeng-table #dt
-    [canPerformActions]="false"
-    columnsSourceURL="Main/TestGetCols"
-    dataSoureURL="Main/TestGetData"
-    [predifinedFiltersCollection]="predifinedFiltersCollection"
-    [headerActionButtons]="headerActionButtons"
-    [rowActionButtons]="rowActionButtons"/>
-```
-
-With all this, your table should show the specified buttons and the table component will handle the rest for you.
-
-
-### 4.8 Showing a column description
+### Showing a column description
 To do this, it's very simple. In the backend you just have to give the attribute "columnDescription" a value, and this value will be shown in the frontend. Thats it :D
 
 This script will manage the rest for you. An example would be, in your DTO if you have this (declared "columnDescription"):
@@ -837,9 +943,3 @@ public string? employmentStatusName { get; set; }
 
 It will be shown in the frontend like this:
 ![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
-
-
-
-### 4.9 Saving table state (database solution)
-PENDING...
-

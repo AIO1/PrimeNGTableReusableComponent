@@ -74,4 +74,14 @@ export class HomeComponent implements OnInit{
       }
     });
   }
+
+  rowSelect($event: any){
+    if($event.selected){ // If the row has been selected
+      this.sharedService.clearToasts();
+      this.sharedService.showToast("info","ROW SELECT", `The row with ID ${$event.rowID} has been selected.`);
+    } else { // If the row has been unselected
+      this.sharedService.clearToasts();
+      this.sharedService.showToast("info","ROW UNSELECT", `The row with ID ${$event.rowID} has been unselected.`);
+    }
+  }
 }

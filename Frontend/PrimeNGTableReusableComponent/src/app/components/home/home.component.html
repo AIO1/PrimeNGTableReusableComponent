@@ -13,6 +13,7 @@
     [rowSelectorColumnActive]="true"
     [computeScrollHeight]="true"
     [tableViewSaveAs]="enumTableViewSaveMode.databaseStorage"
+    (selectedRowsChange)="rowSelect($event)"
     viewsGetSourceURL="Main/GetViews"
     viewsSaveSourceURL="Main/SaveViews"
     tableViewSaveKey="TEST">
