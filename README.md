@@ -696,6 +696,56 @@ rowSelect($event: any){
 With this change in the "rowSelect" function from the "Subscription to changes" example, you can now log to console each time a user changes the selection value of a row.
 
 
+### 4.5 Column descriptions
+This feature is configurable by column. In the back-end, in your DTO, to the column that you want to add a description to, in the "PrimeNGAttribute" you just have to give a value to "columnDescription", and this value will be shown in the frontend. Thats it :D
+
+The table will manage the rest for you. An example would be as follows:
+```c#
+[PrimeNGAttribute("Employment status", columnDescription: "A predifined filter that shows the employment status of the user", ...)]
+public string? employmentStatusName { get; set; }
+```
+
+It will be shown in the frontend like this:
+![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
+
+
+### 4.6 Column sorting
+By default, all columns that are shown in the frontend (with the exception of the actions and row selector column) can be sorted. When a column can be sorted, a user can perform in the header a first click to sort in ascending order, and a second click in the same column to sort in descensing order.
+
+If a different column is clicked and the first one was in ascending order, the new clicked column will be sorted in ascending order and the first one will have it sorting cleared.
+
+The table allows a multi-sorting feature to the user were he can hold the "Ctrl" key and then click multiple column headers to perform multi-sorting.
+
+The table includes in the top left a button for clearing all sorting that has been done as shown in the following image:
+
+
+If for any reason, you want to hide this button, you can do so by in in your component HTML that is using the table, setting the variable "showClearSorts" to false.
+```html
+<ecs-primeng-table #dt
+    ...
+    [showClearSorts]="false"
+    ...>
+</ecs-primeng-table>
+```
+
+PENDING --> DISABLE SORTING PER ROW
+
+
+### 4.7 Column filter
+
+
+### 4.8 Column predfined filter
+
+
+### 4.9 Global filter
+
+
+### 4.10 Pagination
+
+
+### 4.11 Column editor and setting up column initial properties
+
+
 > [!CAUTION]
 > WORK IN PROGRESS. All the information below this point could be outdated.
 
@@ -934,15 +984,3 @@ The different options that are available through the IPrimengPredifinedFilter ob
     background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
   }
   ```
-
-### Showing a column description
-To do this, it's very simple. In the backend you just have to give the attribute "columnDescription" a value, and this value will be shown in the frontend. Thats it :D
-
-This script will manage the rest for you. An example would be, in your DTO if you have this (declared "columnDescription"):
-```c#
-[PrimeNGAttribute("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
-public string? employmentStatusName { get; set; }
-```
-
-It will be shown in the frontend like this:
-![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
