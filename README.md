@@ -28,13 +28,14 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
     - [4.4.1 Enabling and configuring the row selector](#441-enabling-and-configuring-the-row-selector)
     - [4.4.2 Subscription to changes](#442-subscription-to-changes)
     - [4.4.3 Accesing the table component selected rows variable](#443-accesing-the-table-component-selected-rows-variable)
-  - [4.5 Column descriptions](#45-column-descriptions)
-  - [4.6 Column sorting](#46-column-sorting)
-  - [4.7 Column filter](#47-column-filter)
-  - [4.8 Column predfined filter](#48-column-predfined-filter)
-  - [4.9 Global filter](#49-global-filter)
-  - [4.10 Pagination](#410-pagination)
-  - [4.11 Column editor and setting up column initial properties](#411-column-editor-and-setting-up-column-initial-properties)
+  - [4.5 Delay the table init or change the data endpoint dinamically](#45-delay-the-table-init-or-change-the-data-endpoint-dinamically)
+  - [4.6 Column descriptions](#46-column-descriptions)
+  - [4.7 Column sorting](#47-column-sorting)
+  - [4.8 Column filter](#48-column-filter)
+  - [4.9 Column predfined filter](#49-column-predfined-filter)
+  - [4.10 Global filter](#410-global-filter)
+  - [4.11 Pagination](#411-pagination)
+  - [4.12 Column editor and setting up column initial properties](#412-column-editor-and-setting-up-column-initial-properties)
 
 
 ## Introduction
@@ -95,10 +96,10 @@ Once all scripts have been executed OK, you should end up with 2 tables that are
 ![primengtablereusablecomponent - dbo - ER diagram](https://github.com/user-attachments/assets/64edbb30-cc1d-4354-a79a-0ec7cf644c5c)
 
 
-
 ### 2.2 Backend (API in ASP.NET)
 > [!NOTE]  
 > You can use other .NET version with its corresponding packages and the solution should still work with no issues.
+
 
 #### 2.2.1 Open the project
 Using Visual Studio 2022, open the backend solution located in [this path](Backend/PrimeNGTableReusableComponent). Make sure that you have the ASP.NET component and the .NET 8 framework. If you don't have both, you will have to use Visual Studio Installer to include whatever is missing.
@@ -703,7 +704,60 @@ rowSelect($event: any){
 With this change in the "rowSelect" function from the "Subscription to changes" example, you can now log to console each time a user changes the selection value of a row.
 
 
-### 4.5 Column descriptions
+### 4.5 Delay the table init or change the data endpoint dinamically
+When you enter a component in your front-end that uses the table, by default, the table will fetch the columns from the configured endpoint and, if the column fetching was succesful, it will try and fetch the data afterwards. There might be scenarios were this behaviour is not ideal, since you might want to retrieve some data before the table loads. There is a way to disable the table from fetching the columns and afterwards the data upon entering a component and it can be changed in the HTML of your component that is using the table by setting the "canPerformActions" to "false" as shown below:
+```html
+<ecs-primeng-table #dt
+    ...
+    [canPerformActions]="false"
+    ...>
+</ecs-primeng-table>
+```
+
+With this value set to false, the table won't load anything until you explictly tell it to do so.
+
+This will be useful for example for the predifined filters (what are predifined filters is explained in further chapters) if you want to set them up with values from your database instead of hardcoded values, or if you want to change were the data is fetched from.
+
+In this section we will look at and example on how to change the data endpoint dinamically. To do so, we need to have a reference to the table element in the TypeScript part of your component (assuming its "dt"):
+```ts
+import { ViewChild, ... } from '@angular/core';
+import { PrimengTableComponent, ... } from '../primeng-table/primeng-table.component';
+
+export class YourClass {
+    ...
+    @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
+    ...
+}
+```
+
+Imagine that at any point you wish to change the endpoint, to do so, first we need to disable the table from performing actions (so it doesn't try and download the new data), we then need to update the endpoint variable and finally we can activate the table again (after waiting at least one step). An example function to do all this could be the following:
+```ts
+private _updateTableEndpoint(newEndpoint: string){
+    this.dt.canPerformActions = false;
+    this.dt.dataSoureURL = newEndpoint;
+    setTimeout(() => {
+        this.dt.canPerformActions = true;
+        this.dt.updateDataExternal();
+    }, 1);
+}
+```
+
+With this function, you will now be able to update the endpoint of the table. You could also clear all filters and sorting applied before bringing the new data making these changes to the function:
+```ts
+private _updateTableEndpoint(newEndpoint: string){
+    this.dt.canPerformActions = false;
+    this.dt.dataSoureURL = newEndpoint;
+    this.dt.clearFilters(this.dt, true); // Clear all active filters
+    this.dt.clearSorts(this.dt, true); // Clear all active sorts
+    setTimeout(() => {
+        this.dt.canPerformActions = true;
+        this.dt.updateDataExternal();
+    }, 1);
+}
+```
+
+
+### 4.6 Column descriptions
 This feature is configurable by column. In the back-end, in your DTO, to the column that you want to add a description to, in the "PrimeNGAttribute" you just have to give a value to "columnDescription", and this value will be shown in the frontend. Thats it :D
 
 The table will manage the rest for you. An example would be as follows:
@@ -716,7 +770,7 @@ It will be shown in the frontend like this:
 ![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
 
 
-### 4.6 Column sorting
+### 4.7 Column sorting
 By default, all columns that are shown in the front-end (with the exception of the actions and row selector column) can be sorted. When a column can be sorted, a user can perform in the header a first click to sort in ascending order, and a second click in the same column to sort in descensing order.
 
 If a different column is clicked and the first one was in ascending order, the new clicked column will be sorted in ascending order and the first one will have it sorting cleared.
@@ -746,7 +800,7 @@ public string? exampleColumn { get; set; }
 By doing this, when the user clicks the header of the column "Example column", the column won't be sorted. Also, the sorting icon in the column header will no longer be shown.
 
 
-### 4.7 Column filter
+### 4.8 Column filter
 By default all columns in the table can be filtered (except the row actions column). This feature allows the user to select in the column header the filter icon to open up a small modal were he can put what filters shall apply to the column as shown in the image below: 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/ef575f1b-3f0d-4bda-9825-b49c1d8ae90c" alt="Filter menu not boolean">
@@ -805,19 +859,163 @@ public string? exampleColumn { get; set; }
 By doing this, the column won't no longer have in the header the filter icon.
 
 
-### 4.8 Column predfined filter
+### 4.9 Column predfined filter
+You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. To achieve this, we will start off in the backend with your DTO.
+
+From the example project, the "TestDto" has an entry named "employmentStatusName". In the "TestDTO" it was given in the PrimeNGAttribute of "filterPredifinedValuesName" the value "employmentStatusPredifinedFilter", which is important to remember because it will need to be exactly the same in the frontend.
+
+The next step is to create an endpoint that will return you all the data that you want from each of the columns that will use the predifined filter. In the example project, the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) has an endpoint named "GetEmploymentStatus" that is the one that will be called in the frontend to retrieve all the possible values for the employment status. Since the idea is to use a PrimeNG tag to render the status with a color, this endpoint sends the employment status and the RGB color that we want to use in the tag.
+
+If we now go to the frontend, in the component that calls the table we will need to apply some modifications to the Typescript code. First of all we have to define a number of IPrimengPredifinedFilter that matches the amount of different predifined columns that we could have in total. From the example project, in the [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see that we should start off with this code if we wanted to store the data from the "employmentStatusPredifinedFilter".
+```ts
+import { Component } from '@angular/core';
+import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html'
+})
+export class HomeComponent {
+  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
+  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
+    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
+  };
+...
+```
+
+An important thing to note is that all predifined filters must be stored in a key + IPrimengPredifinedFilter[] structure, in this case being "predifinedFiltersCollection". The "key" is the value that must match the value declared in "filterPredifinedValuesName" in the DTO in the backend for the table component to be able to map it to the column properly. All your predifined filters that are stored in "predifinedFiltersCollection" (variable name can be different) must be passed to table. To do so, your ".html" of the component will have an additional line:
+```html
+<ecs-primeng-table #dt
+    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
+    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
+    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
+```
+
+But we are not done yet, since the only thing we've done is map the "predifinedFiltersCollection" to the table component, so that the table component has access to it, but we should now populate the data. To do so, the strategy is to first force the table to not fetch columns and data on start, since we will need first to fecth all the different predifined filters. For making the table not tyring to load the columns and data when entering the component, we need to add the following line to the ".html":
+```html
+<ecs-primeng-table #dt
+    [canPerformActions]="false"
+    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
+    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
+    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
+```
+
+The "canPerformActions" variable will tell the table not to fetch the data upon loading the component, and we will have to later on explictly tell it to do so. Here is the part of Typescript that OnInit of the component, it will fetch the predifined filter information and then tell the table to load the data:
+```ts
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { PrimengTableComponent } from '../primeng-table/primeng-table.component';
+import { SharedService } from '../../services/shared/shared.service';
+import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
+import { IEmploymentStatus } from '../../interfaces/iemployment-status';
+import { Constants } from '../../../constants';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html'
+})
+export class HomeComponent implements OnInit{
+  constructor(private sharedService: SharedService){}
+  @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
+
+  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
+  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
+    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
+  };
+
+  ngOnInit(): void {
+    this.getEmploymentStatus(); // Retrieve the possible employment status
+  }
+  private getEmploymentStatus(){
+    setTimeout(() => {
+      Constants.waitingHTTP = true; // To indicate that we are waiting an HTTP call. Perform it after one frame so we don't get the warning of ExpressionChangedAfterItHasBeenCheckedError
+    }, 1);
+    this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
+      next: (responseData: IEmploymentStatus[]) => {
+        responseData.forEach((data) => {
+          this.employmentStatusPredifinedFilter.push({
+            value: data.statusName,
+            name: data.statusName,
+            displayTag: true,
+            tagStyle: {
+              background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
+            }
+          })
+        });
+        this.dt.updateDataExternal(); // Get data for the table (columns + data)
+      },
+      error: err => {
+        this.sharedService.dataFecthError("ERROR IN GET EMPLOYMENT STATUS", err);
+      }
+    });
+  }
+}
+```
+
+As you can see fromthe above example, a variable that views the table "dt" was setup so that later on we could access the public function of the table. OnInit of the component, the "getEmploymentStatus" is called which from a previously created endpoint in the backend, it will fetch all possible employment status. Once the data is obtained, it will push each entry retrieved to the previously empty "employmentStatusPredifinedFilter" array. Finally, once all the data has been pushed, "this.dt.updateDataExternal();" is called to force the table to start the process of fetching the columns and the data of the table.
+
+In this example the predifined filter has been used to display a tag with a color and the name of the employment status, but there are more possibilities. The renderization is both done to the filter list, and to each row for the column that this predifined filter belongs to.
+
+The different options that are available through the IPrimengPredifinedFilter object are:
+- **icon:** If specified, it will show a PrimeNG icon. The different icons avialable are [here](https://primeng.org/icons). If you wish to show the "pi-address-book" for example, you should put: "pi pi-address-book".
+- **iconURL:** If specified, it will show an image that will be loaded from the provided URL.
+- **iconBlob:** If specified, it will render an icon based on the passed data blob.
+- **name:** If specified and if "displayName" is undefined or true, it will show the provided string.
+- **displayName:** Can be set to false so that the "name" is not displayed. If "displayName" is undefined or true, the "name" will be displayed.
+- **value:** The underlying value of the option. The value can be of any type and represents the data managed behind the scenes. It could be an ID or for example the same value as the name (so that the global filter works OK).
+- **displayTag:** If set to true, a tag will be displayed with the "name" inside.
+- **tagStyle:** Can be passed a set of styles that will be applied to the tag, for example:
+```ts
+tagStyle: {
+  background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
+}
+```
 
 
-### 4.9 Global filter
+### 4.10 Global filter
+The global filter is enabled by default in all columns of your table, except for bool data types and the actions column were this filter will be never applied. The global filter is located on the top right of your table headers as shown in the image below:
 <p align="center">
   <img src="https://github.com/user-attachments/assets/117d4917-45fc-4330-97fd-739322a5ebf4" alt="Global filter">
 </p>
 
+When the user wrties a value in the global filter text box, after a brief delay of the user not changing the value, a filter rule will be launched to the table were basically, the global filter will try to filter each individual column perfoming a LIKE '%VALUE_INTRODUCED_BY_USER%', which basically means that any match of that value introduced by the user (doesn't matter in which position of the cell) will be returned. When a value is written to the global filter, at the left of the text box an "X" icon will appear, that when pressed by the user, it will clear the global filter.
 
-### 4.10 Pagination
+Additionally, as seen in the previous image, the global filter will underline with yellow each part of the cell were the value that is introduced by the user matches.
+
+As in the column filter feature, the user has also the option to clear all filters by pressing the clear filters button when it is enabled (it is enabled if at least a column filter, a predifined filter or a global filter is active).
+
+If for any reason, you want to hide the global filter search bar, you can do so by in in your component HTML that is using the table, setting the variable "globalSearchEnabled" to false.
+```html
+<ecs-primeng-table #dt
+    ...
+    [globalSearchEnabled]="false"
+    ...>
+</ecs-primeng-table>
+```
+
+The properties that you can modify in the HTML related to the global filter are the following:
+- **globalSearchEnabled** (boolean): By default true. If true, the global search text box will be shown in the top right of your table. If false, it won't be shown.
+- **globalSearchMaxLength** (number): By default 50. The maximun number of characters that the user can introduce in the global search text box.
+- **globalSearchPlaceholder** (string): by default "Search keyword". This is a placeholder text shown when the user hasn't introduced any value to the global filter yet.
+
+If you wish for a column to ignore the global filter, you can do so by modifying your DTO in the back-end. For the specific column that you wish to ignore the global filter, in the "PrimeNGAttribute" you just have to give a value of false to "canBeGlobalFiltered" as shown in the next example:
+```c#
+[PrimeNGAttribute("Example column", canBeGlobalFiltered: false, ...)]
+public string? exampleColumn { get; set; }
+```
+
+By doing this, the column won't take into account any global filters that should be applied to it. For the bool data type or columns that are hidden (or that have the "sendColumnAttributes" to false), this property is always false and they will never be affected by the global filter.
+
+> [!IMPORTANT]  
+> The global filter is very useful for users, but if has a downside. Since it performs a LIKE query per column (with the % at the start and at the end) which is one of the heaviest filters to perform in SQL, the more columns that there are shown at a given time (and that can be global filtered), the more time it will require to update the data shown when the global filter is updated.
+
+> [!CAUTION]
+> For date data types to work properly using the global filter, you need to have properly setup the database function **04 FormatDateWithCulture.sql** explained in previous sections and you also need to have permission of function execution in your database for the user that is going to execute the query. This is needed because said function, transforms the date to a string that can be filtered by. If for any reason you don't want dates to be global filtered, for each individual column that is of type date, you must set in the DTO the "canBeGlobalFiltered" to "false".
 
 
-### 4.11 Column editor and setting up column initial properties
+### 4.11 Pagination
+
+
+### 4.12 Column editor and setting up column initial properties
 
 
 > [!CAUTION]
@@ -946,115 +1144,3 @@ This project offers some additional things that you can do with the tables and a
 There is an output which you can access from other components:
 
 - **selectedRows:** (any): A list of all the "id" selected by the user in a row. By default is empty but the user can add elements through the front-end if rowSelectorColumnActive is true.
-
-
-### Predifined filters
-You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. To achieve this, we will start off in the backend with your DTO.
-
-From the example project, the "TestDto" has an entry named "employmentStatusName". In the "TestDTO" it was given in the PrimeNGAttribute of "filterPredifinedValuesName" the value "employmentStatusPredifinedFilter", which is important to remember because it will need to be exactly the same in the frontend.
-
-The next step is to create an endpoint that will return you all the data that you want from each of the columns that will use the predifined filter. In the example project, the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) has an endpoint named "GetEmploymentStatus" that is the one that will be called in the frontend to retrieve all the possible values for the employment status. Since the idea is to use a PrimeNG tag to render the status with a color, this endpoint sends the employment status and the RGB color that we want to use in the tag.
-
-If we now go to the frontend, in the component that calls the table we will need to apply some modifications to the Typescript code. First of all we have to define a number of IPrimengPredifinedFilter that matches the amount of different predifined columns that we could have in total. From the example project, in the [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see that we should start off with this code if we wanted to store the data from the "employmentStatusPredifinedFilter".
-```ts
-import { Component } from '@angular/core';
-import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
-
-@Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html'
-})
-export class HomeComponent {
-  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
-  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
-    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
-  };
-...
-```
-
-An important thing to note is that all predifined filters must be stored in a key + IPrimengPredifinedFilter[] structure, in this case being "predifinedFiltersCollection". The "key" is the value that must match the value declared in "filterPredifinedValuesName" in the DTO in the backend for the table component to be able to map it to the column properly. All your predifined filters that are stored in "predifinedFiltersCollection" (variable name can be different) must be passed to table. To do so, your ".html" of the component will have an additional line:
-```html
-<ecs-primeng-table #dt
-    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
-    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
-    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
-```
-
-But we are not done yet, since the only thing we've done is map the "predifinedFiltersCollection" to the table component, so that the table component has access to it, but we should now populate the data. To do so, the strategy is to first force the table to not fetch columns and data on start, since we will need first to fecth all the different predifined filters. For making the table not tyring to load the columns and data when entering the component, we need to add the following line to the ".html":
-```html
-<ecs-primeng-table #dt
-    [canPerformActions]="false"
-    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
-    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
-    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
-```
-
-The "canPerformActions" variable will tell the table not to fetch the data upon loading the component, and we will have to later on explictly tell it to do so. Here is the part of Typescript that OnInit of the component, it will fetch the predifined filter information and then tell the table to load the data:
-```ts
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { PrimengTableComponent } from '../primeng-table/primeng-table.component';
-import { SharedService } from '../../services/shared/shared.service';
-import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
-import { IEmploymentStatus } from '../../interfaces/iemployment-status';
-import { Constants } from '../../../constants';
-
-@Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html'
-})
-export class HomeComponent implements OnInit{
-  constructor(private sharedService: SharedService){}
-  @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
-
-  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
-  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
-    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
-  };
-
-  ngOnInit(): void {
-    this.getEmploymentStatus(); // Retrieve the possible employment status
-  }
-  private getEmploymentStatus(){
-    setTimeout(() => {
-      Constants.waitingHTTP = true; // To indicate that we are waiting an HTTP call. Perform it after one frame so we don't get the warning of ExpressionChangedAfterItHasBeenCheckedError
-    }, 1);
-    this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
-      next: (responseData: IEmploymentStatus[]) => {
-        responseData.forEach((data) => {
-          this.employmentStatusPredifinedFilter.push({
-            value: data.statusName,
-            name: data.statusName,
-            displayTag: true,
-            tagStyle: {
-              background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
-            }
-          })
-        });
-        this.dt.updateDataExternal(); // Get data for the table (columns + data)
-      },
-      error: err => {
-        this.sharedService.dataFecthError("ERROR IN GET EMPLOYMENT STATUS", err);
-      }
-    });
-  }
-}
-```
-
-As you can see fromthe above example, a variable that views the table "dt" was setup so that later on we could access the public function of the table. OnInit of the component, the "getEmploymentStatus" is called which from a previously created endpoint in the backend, it will fetch all possible employment status. Once the data is obtained, it will push each entry retrieved to the previously empty "employmentStatusPredifinedFilter" array. Finally, once all the data has been pushed, "this.dt.updateDataExternal();" is called to force the table to start the process of fetching the columns and the data of the table.
-
-In this example the predifined filter has been used to display a tag with a color and the name of the employment status, but there are more possibilities. The renderization is both done to the filter list, and to each row for the column that this predifined filter belongs to.
-
-The different options that are available through the IPrimengPredifinedFilter object are:
-- **icon:** If specified, it will show a PrimeNG icon. The different icons avialable are [here](https://primeng.org/icons). If you wish to show the "pi-address-book" for example, you should put: "pi pi-address-book".
-- **iconURL:** If specified, it will show an image that will be loaded from the provided URL.
-- **iconBlob:** If specified, it will render an icon based on the passed data blob.
-- **name:** If specified and if "displayName" is undefined or true, it will show the provided string.
-- **displayName:** Can be set to false so that the "name" is not displayed. If "displayName" is undefined or true, the "name" will be displayed.
-- **value:** The underlying value of the option. The value can be of any type and represents the data managed behind the scenes. It could be an ID or for example the same value as the name (so that the global filter works OK).
-- **displayTag:** If set to true, a tag will be displayed with the "name" inside.
-- **tagStyle:** Can be passed a set of styles that will be applied to the tag, for example:
-  ```ts
-  tagStyle: {
-    background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
-  }
-  ```
