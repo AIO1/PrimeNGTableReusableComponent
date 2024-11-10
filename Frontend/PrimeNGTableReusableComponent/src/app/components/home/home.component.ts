@@ -17,7 +17,7 @@ export class HomeComponent implements OnInit{
   enumTableViewSaveMode = enumTableViewSaveMode;
   employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
   predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
-    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
+    'employmentStatusPredifinedFilter': this.employmentStatusPredifinedFilter
   };
 
   headerActionButtons: IprimengActionButtons[] = [

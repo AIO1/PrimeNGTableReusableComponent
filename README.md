@@ -29,13 +29,25 @@ Currently it uses in the backend .NET 8, and in the frontend Angular 18 with Pri
     - [4.4.2 Subscription to changes](#442-subscription-to-changes)
     - [4.4.3 Accesing the table component selected rows variable](#443-accesing-the-table-component-selected-rows-variable)
   - [4.5 Delay the table init or change the data endpoint dinamically](#45-delay-the-table-init-or-change-the-data-endpoint-dinamically)
-  - [4.6 Column descriptions](#46-column-descriptions)
-  - [4.7 Column sorting](#47-column-sorting)
-  - [4.8 Column filter](#48-column-filter)
-  - [4.9 Column predfined filter](#49-column-predfined-filter)
-  - [4.10 Global filter](#410-global-filter)
-  - [4.11 Pagination](#411-pagination)
-  - [4.12 Column editor and setting up column initial properties](#412-column-editor-and-setting-up-column-initial-properties)
+  - [4.6 Column sorting](#46-column-sorting)
+  - [4.7 Column filter](#47-column-filter)
+  - [4.8 Column predfined filter](#48-column-predfined-filter)
+    - [4.8.1 Column predfined filter - Simple text](#481-column-predfined-filter--simple-text)
+    - [4.8.2 Column predfined filter - Tags](#482-column-predfined-filter--tags)
+    - [4.8.3 Column predfined filter - Icons](#483-column-predfined-filter--icons)
+    - [4.8.4 Column predfined filter - Images](#484-column-predfined-filter--images)
+  - [4.9 Global filter](#49-global-filter)
+  - [4.10 Pagination and number of results](#410-pagination-and-number-of-results)
+  - [4.11 Column editor and setting up column initial properties](#411-column-editor-and-setting-up-column-initial-properties)
+  - [4.12 Column resize](#412-column-resize)
+  - [4.13 Column reorder](#413-column-reorder)
+  - [4.14 Frozen columns](#414-frozen-columns)
+  - [4.15 Column widths](#415-column-widths)
+  - [4.16 Column descriptions](#416-column-descriptions)
+  - [4.17 Cell tooltip](#417-cell-tooltip)
+  - [4.18 Copy cell content](#417-copy-cell-content)
+  - [4.19 Compute table scroll height](#419-compute-table-scroll-height)
+  - [4.20 Table views](#420-table-views)
 
 
 ## Introduction
@@ -412,6 +424,9 @@ As it can be seen from the "TestDto" class, each property must use the "PrimeNGA
 > - **Boolean**: For bool type values.
 > - **Date**: For datetime data types. This data type can have some additional customization which is explained in later chaptets.
 
+> [!IMPORTANT]  
+> The order in which you include your columns in the DTO is important, since they will be place in order from left to right in the table the first time the table loads. This order could be overriden by frozen columns (explained in further sections of this guide).
+
 > [!NOTE]  
 > Including the property "RowID" is optional. It is only needed if you are going to perform actions with your rows or if you are going to use the row selection feature.
 
@@ -757,20 +772,7 @@ private _updateTableEndpoint(newEndpoint: string){
 ```
 
 
-### 4.6 Column descriptions
-This feature is configurable by column. In the back-end, in your DTO, to the column that you want to add a description to, in the "PrimeNGAttribute" you just have to give a value to "columnDescription", and this value will be shown in the frontend. Thats it :D
-
-The table will manage the rest for you. An example would be as follows:
-```c#
-[PrimeNGAttribute("Employment status", columnDescription: "A predifined filter that shows the employment status of the user", ...)]
-public string? employmentStatusName { get; set; }
-```
-
-It will be shown in the frontend like this:
-![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
-
-
-### 4.7 Column sorting
+### 4.6 Column sorting
 By default, all columns that are shown in the front-end (with the exception of the actions and row selector column) can be sorted. When a column can be sorted, a user can perform in the header a first click to sort in ascending order, and a second click in the same column to sort in descensing order.
 
 If a different column is clicked and the first one was in ascending order, the new clicked column will be sorted in ascending order and the first one will have it sorting cleared.
@@ -794,13 +796,13 @@ If for any reason, you want to hide this button, you can do so by in in your com
 If you wish to disable the possibility of a user sorting an specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable the sorting, in the "PrimeNGAttribute" you just have to give a value of false to "canBeSorted" as shown in the next example:
 ```c#
 [PrimeNGAttribute("Example column", canBeSorted: false, ...)]
-public string? exampleColumn { get; set; }
+public string? ExampleColumn { get; set; }
 ```
 
 By doing this, when the user clicks the header of the column "Example column", the column won't be sorted. Also, the sorting icon in the column header will no longer be shown.
 
 
-### 4.8 Column filter
+### 4.7 Column filter
 By default all columns in the table can be filtered (except the row actions column). This feature allows the user to select in the column header the filter icon to open up a small modal were he can put what filters shall apply to the column as shown in the image below: 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/ef575f1b-3f0d-4bda-9825-b49c1d8ae90c" alt="Filter menu not boolean">
@@ -853,125 +855,76 @@ If for any reason, you want to hide this button, you can do so by in in your com
 If you wish to disable the possibility of a user filtering an specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable the filtering feature, in the "PrimeNGAttribute" you just have to give a value of false to "canBeFiltered" as shown in the next example:
 ```c#
 [PrimeNGAttribute("Example column", canBeFiltered: false, ...)]
-public string? exampleColumn { get; set; }
+public string? ExampleColumn { get; set; }
 ```
 
 By doing this, the column won't no longer have in the header the filter icon.
 
 
-### 4.9 Column predfined filter
-You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. To achieve this, we will start off in the backend with your DTO.
+### 4.8 Column predfined filter
+You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. 
 
-From the example project, the "TestDto" has an entry named "employmentStatusName". In the "TestDTO" it was given in the PrimeNGAttribute of "filterPredifinedValuesName" the value "employmentStatusPredifinedFilter", which is important to remember because it will need to be exactly the same in the frontend.
+> [!CAUTION]
+> Do not use this feature on columns were there could be lots of different values, since this could lead to performance issues. This feature is designed for columns with a small variety of values.
 
-The next step is to create an endpoint that will return you all the data that you want from each of the columns that will use the predifined filter. In the example project, the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) has an endpoint named "GetEmploymentStatus" that is the one that will be called in the frontend to retrieve all the possible values for the employment status. Since the idea is to use a PrimeNG tag to render the status with a color, this endpoint sends the employment status and the RGB color that we want to use in the tag.
+There are two strategies when defining the predifined filter which are:
+- Hardcoding the list of possible values in the front-end. An example of this could be if you have a small list of know values like for example "Open" and "Closed".
+- Fetching the list of possible values in the front-end from an endpoint of the back-end before loading the table.
 
-If we now go to the frontend, in the component that calls the table we will need to apply some modifications to the Typescript code. First of all we have to define a number of IPrimengPredifinedFilter that matches the amount of different predifined columns that we could have in total. From the example project, in the [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see that we should start off with this code if we wanted to store the data from the "employmentStatusPredifinedFilter".
+No matter what of the two strategies you follow, first of all, if you want to define the predifined filters in the TypeScript of your component you must create a dictionary and provide the N amount of predifined lists that you are going to use. An example of this could be done to manage two predifined filter list in the same table is as follows:
 ```ts
-import { Component } from '@angular/core';
 import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
 
-@Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html'
-})
-export class HomeComponent {
-  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
-  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
-    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
-  };
-...
-```
-
-An important thing to note is that all predifined filters must be stored in a key + IPrimengPredifinedFilter[] structure, in this case being "predifinedFiltersCollection". The "key" is the value that must match the value declared in "filterPredifinedValuesName" in the DTO in the backend for the table component to be able to map it to the column properly. All your predifined filters that are stored in "predifinedFiltersCollection" (variable name can be different) must be passed to table. To do so, your ".html" of the component will have an additional line:
-```html
-<ecs-primeng-table #dt
-    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
-    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
-    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
-```
-
-But we are not done yet, since the only thing we've done is map the "predifinedFiltersCollection" to the table component, so that the table component has access to it, but we should now populate the data. To do so, the strategy is to first force the table to not fetch columns and data on start, since we will need first to fecth all the different predifined filters. For making the table not tyring to load the columns and data when entering the component, we need to add the following line to the ".html":
-```html
-<ecs-primeng-table #dt
-    [canPerformActions]="false"
-    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
-    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA
-    [predifinedFiltersCollection]="predifinedFiltersCollection"/>
-```
-
-The "canPerformActions" variable will tell the table not to fetch the data upon loading the component, and we will have to later on explictly tell it to do so. Here is the part of Typescript that OnInit of the component, it will fetch the predifined filter information and then tell the table to load the data:
-```ts
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { PrimengTableComponent } from '../primeng-table/primeng-table.component';
-import { SharedService } from '../../services/shared/shared.service';
-import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
-import { IEmploymentStatus } from '../../interfaces/iemployment-status';
-import { Constants } from '../../../constants';
-
-@Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html'
-})
-export class HomeComponent implements OnInit{
-  constructor(private sharedService: SharedService){}
-  @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
-
-  employmentStatusPredifinedFilter: IPrimengPredifinedFilter[] = []; // Contains the data for the possible employment statuses
-  predifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
-    employmentStatusPredifinedFilter: this.employmentStatusPredifinedFilter
-  };
-
-  ngOnInit(): void {
-    this.getEmploymentStatus(); // Retrieve the possible employment status
-  }
-  private getEmploymentStatus(){
-    setTimeout(() => {
-      Constants.waitingHTTP = true; // To indicate that we are waiting an HTTP call. Perform it after one frame so we don't get the warning of ExpressionChangedAfterItHasBeenCheckedError
-    }, 1);
-    this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
-      next: (responseData: IEmploymentStatus[]) => {
-        responseData.forEach((data) => {
-          this.employmentStatusPredifinedFilter.push({
-            value: data.statusName,
-            name: data.statusName,
-            displayTag: true,
-            tagStyle: {
-              background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
-            }
-          })
-        });
-        this.dt.updateDataExternal(); // Get data for the table (columns + data)
-      },
-      error: err => {
-        this.sharedService.dataFecthError("ERROR IN GET EMPLOYMENT STATUS", err);
-      }
-    });
-  }
+export class YourClass {
+    ...
+    listOfPredifinedValues1: IPrimengPredifinedFilter[] = [];
+	listOfPredifinedValues2: IPrimengPredifinedFilter[] = [];
+    myPredifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
+        'nameOfList1': this.listOfPredifinedValues1,
+		'nameOfList2': this.listOfPredifinedValues2
+    };
+    ...
 }
 ```
 
-As you can see fromthe above example, a variable that views the table "dt" was setup so that later on we could access the public function of the table. OnInit of the component, the "getEmploymentStatus" is called which from a previously created endpoint in the backend, it will fetch all possible employment status. Once the data is obtained, it will push each entry retrieved to the previously empty "employmentStatusPredifinedFilter" array. Finally, once all the data has been pushed, "this.dt.updateDataExternal();" is called to force the table to start the process of fetching the columns and the data of the table.
-
-In this example the predifined filter has been used to display a tag with a color and the name of the employment status, but there are more possibilities. The renderization is both done to the filter list, and to each row for the column that this predifined filter belongs to.
-
-The different options that are available through the IPrimengPredifinedFilter object are:
-- **icon:** If specified, it will show a PrimeNG icon. The different icons avialable are [here](https://primeng.org/icons). If you wish to show the "pi-address-book" for example, you should put: "pi pi-address-book".
-- **iconURL:** If specified, it will show an image that will be loaded from the provided URL.
-- **iconBlob:** If specified, it will render an icon based on the passed data blob.
-- **name:** If specified and if "displayName" is undefined or true, it will show the provided string.
-- **displayName:** Can be set to false so that the "name" is not displayed. If "displayName" is undefined or true, the "name" will be displayed.
-- **value:** The underlying value of the option. The value can be of any type and represents the data managed behind the scenes. It could be an ID or for example the same value as the name (so that the global filter works OK).
-- **displayTag:** If set to true, a tag will be displayed with the "name" inside.
-- **tagStyle:** Can be passed a set of styles that will be applied to the tag, for example:
-```ts
-tagStyle: {
-  background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
-}
+And in the HTML of your component:
+```html
+<ecs-primeng-table #dt
+    ...
+    [predifinedFiltersCollection]="myPredifinedFiltersCollection"
+    ...>
+</ecs-primeng-table>
 ```
 
+Now the table has available tow list of predifined filters that we can use which are "nameOfList1" and "nameOfList2" (although they actually don't hold any data). To map the columns to the different predfined lists that we have just setup, we need to do it in the DTO in the back-end as shown in the following code fragment:
+```c#
+[PrimeNGAttribute("Example column 1", filterPredifinedValuesName: "nameOfList1", ...)]
+public string? Column1 { get; set; }
 
-### 4.10 Global filter
+[PrimeNGAttribute("Example column 2", filterPredifinedValuesName: "nameOfList2", ...)]
+public string? Column2 { get; set; }
+```
+
+As you can see, the "filterPredifinedValuesName" must match the name entry of the dictionary that has been created in the front-end of our component that will be using the table. With all this, technically our predfined filters should already work, but there is not much that we can do with them right now since they are both empty. You should now populate them with the corresponding value of what you want to use. The next subsections describe how you can populate a "IPrimengPredifinedFilter" array to represent your data in different ways when drawn in the table.
+
+
+### 4.8.1 Column predfined filter - Simple text
+WIP
+
+
+### 4.8.2 Column predfined filter - Tags
+WIP
+
+
+### 4.8.3 Column predfined filter - Icons
+WIP
+
+
+### 4.8.4 Column predfined filter - Images
+WIP
+
+
+### 4.9 Global filter
 The global filter is enabled by default in all columns of your table, except for bool data types and the actions column were this filter will be never applied. The global filter is located on the top right of your table headers as shown in the image below:
 <p align="center">
   <img src="https://github.com/user-attachments/assets/117d4917-45fc-4330-97fd-739322a5ebf4" alt="Global filter">
@@ -1000,7 +953,7 @@ The properties that you can modify in the HTML related to the global filter are 
 If you wish for a column to ignore the global filter, you can do so by modifying your DTO in the back-end. For the specific column that you wish to ignore the global filter, in the "PrimeNGAttribute" you just have to give a value of false to "canBeGlobalFiltered" as shown in the next example:
 ```c#
 [PrimeNGAttribute("Example column", canBeGlobalFiltered: false, ...)]
-public string? exampleColumn { get; set; }
+public string? ExampleColumn { get; set; }
 ```
 
 By doing this, the column won't take into account any global filters that should be applied to it. For the bool data type or columns that are hidden (or that have the "sendColumnAttributes" to false), this property is always false and they will never be affected by the global filter.
@@ -1012,10 +965,118 @@ By doing this, the column won't take into account any global filters that should
 > For date data types to work properly using the global filter, you need to have properly setup the database function **04 FormatDateWithCulture.sql** explained in previous sections and you also need to have permission of function execution in your database for the user that is going to execute the query. This is needed because said function, transforms the date to a string that can be filtered by. If for any reason you don't want dates to be global filtered, for each individual column that is of type date, you must set in the DTO the "canBeGlobalFiltered" to "false".
 
 
-### 4.11 Pagination
+### 4.10 Pagination and number of results
+At the footer of the table it is included a summary of the total results, results that are currently available (taking into account the filters) and the pagination.
+
+In the pagination, the user can change the number of rows to display per page. The list of possible values is hardcoded in the table source code in the back-end in the **PrimeNGHelper.cs**. At the start of the file there is an array of integers named "allowedItemsPerPage" that contains the different values that are shown to the user in the front-end. This values could be updated if you need to, but because of how the code of this reusable component has been created, this change will affect all your tables.
+
+in the paginator, the user can click the arrows or select a page number to navigate between pages.
+
+This reusable table will automatically handle all the pagination and number of results aspects for you. This includes the following scenarios:
+- When loading the table, the total number of pages will be computed based on the number of records that can be shown per page. Also, the total records will be computed and shown to the user in the table footer.
+- If the user applies a filter, the total number of pages could be updated. The number of total records and how many records are available taking into account the filters will be also updated. This reusable component will also take into account that if the user was for example in a page 12, and now taking into account filters there are only 5 pages available, he will be moved to page 5.
+- If the user changes a page, data displayed in the table is updated.
 
 
-### 4.12 Column editor and setting up column initial properties
+### 4.11 Column editor and setting up column initial properties
+
+
+### 4.12 Column resize
+By default, all columns can be resized. The user can put the mouse at the edge of the header of a column and the resize icon will appear. If the user holds the right clic when this icon appears, he can then move the mouse left or right to change the horizontal size of a column.
+
+If you wish to disable this feature from a specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable this feature from, in the "PrimeNGAttribute" you just have to give a value of false to "canBeResized" as shown in the next example:
+```c#
+[PrimeNGAttribute("Example column", canBeResized: false, ...)]
+public string? ExampleColumn { get; set; }
+```
+
+
+### 4.13 Column reorder
+By default, all columns can be reorder. The user can put the mouse inside the header of a column and the and the move icon will appear. If the user holds the right clic when this icon appears, he can then move the column to be before or after some specific columns. The frozen columns (explained further in this guide) will be before or after (depending if they are frozen left or right) from the unfrozen columns.
+
+If you wish to disable this feature from a specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable this feature from, in the "PrimeNGAttribute" you just have to give a value of false to "canBeReordered" as shown in the next example:
+```c#
+[PrimeNGAttribute("Example column", canBeReordered: false, ...)]
+public string? ExampleColumn { get; set; }
+```
+
+
+### 4.14 Frozen columns
+By default, columns are not frozen. You can change this behaviour for any column, except the row actions or row select columns which is done through the front-end in your component. To enable apart, from these two columns, to have addtinal frozen columns, in your DTO you have to add in the "PrimeNGAttribute" a value different from noone to "frozenColumnAlign", for example:
+```c#
+[PrimeNGAttribute("Example column", frozenColumnAlign: EnumFrozenColumnAlign.Left, ...)]
+public string? ExampleColumn { get; set; }
+```
+
+This will make the "exampleColumn" to be frozen to the left of your table. To freeze the row actions column or the row selector, refer to the previous sections in this guide.
+
+
+### 4.15 Column widths
+By default all columns that are defined in the backend will have a width of 0px. This will be treated in the front-end to delegate the width to be automatically determined by the PrimeNG table component. However, this behaviour can be overriden if you wish to specify a fixed width of pixels to a column to start width. To define an initial width to a column, in your DTO you have to add in the "PrimeNGAttribute" a value different from 0 to "initialWidth", for example:
+```c#
+[PrimeNGAttribute("Example column", initialWidth: 150, ...)]
+public string? ExampleColumn { get; set; }
+```
+
+This will make the "exampleColumn" to start with a width of 150 pixels.
+
+
+### 4.16 Column descriptions
+This feature is configurable by column. In the back-end, in your DTO, to the column that you want to add a description to, in the "PrimeNGAttribute" you just have to give a value to "columnDescription", and this value will be shown in the frontend. Thats it :D
+
+The table will manage the rest for you. An example would be as follows:
+```c#
+[PrimeNGAttribute("Employment status", columnDescription: "A predifined filter that shows the employment status of the user", ...)]
+public string? EmploymentStatusName { get; set; }
+```
+
+It will be shown in the frontend like this:
+![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
+
+
+### 4.17 Cell tooltip
+By default all cells (except the bool data type) will show a tolltip with their value when the user hover the mouse over the cell for at least 0.7 seconds. If you wish to disable this feature, in the "PrimeNGAttribute" you just have to give a value of "false" to "dataTooltipShow" as shown in the next example:
+```c#
+[PrimeNGAttribute("Example column", dataTooltipShow: false, ...)]
+public string? ExampleColumn { get; set; }
+```
+
+You can also customize the tooltip value that will be shown, so it matches the value of another clumn. This is usefull if you are sending a column with "sendColumnAttributes" to "false" and you wish to just display their value in the tooltip of another column. To do so, in the "PrimeNGAttribute" you need to give the name of the column (matching your DTO entry starting with a lowercase) to "dataTooltipCustomColumnSource" as shown in the next example:
+```c#
+[PrimeNGAttribute(sendColumnAttributes: false, ...)]
+public string? TooltipSource { get; set; }
+
+[PrimeNGAttribute("Example column", dataTooltipCustomColumnSource: "tooltipSource", ...)]
+public string? ExampleColumn { get; set; }
+```
+
+In this example, when the user hovers over the cells of "ExampleColumn", the tooltip will show the data of the column "TooltipSource".
+
+> [!CAUTION]
+> The "dataTooltipCustomColumnSource" that is referenced must match the name of a column defined in the DTO starting with lowercase, since this is how it is then treated in the front-end.
+
+
+### 4.18 Copy cell content
+This is a feature that is enabled by default in the table. If a user has the mouse above a cell and holds the right click, after a brief delay, an informational toast message will be displayed in the top right of the screen indicating that the contents of the cell has been copied to the clipboard.
+
+You can modify the amount of delay (which is given in seconds) or disbale this feature completely. To do so, in the HTML of your component, in the part were you are calling the table you should add the following:
+```html
+<ecs-primeng-table #dt
+    ...
+    [copyCellDataToClipboardTimeSecs]="1.5"
+    ...>
+</ecs-primeng-table>
+```
+
+This will modify the default value that the user need to hold down the mouse for the value of a cell to be cpied to the clipboard from 0.5 seconds to 1.5 seconds. If you put a value equal or less than 0, this feature will be disabled.
+
+
+### 4.19 Compute table scroll height
+WIP
+
+
+### 4.20 Table views
+WIP
 
 
 > [!CAUTION]
