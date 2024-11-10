@@ -737,7 +737,7 @@ If for any reason, you want to hide this button, you can do so by in in your com
 </ecs-primeng-table>
 ```
 
-If you wish to disable the possibility of a user sorting an specific row, you can do so by modifying your DTO in the back-end. For the specific row that you wish to disable the sorting, in the "PrimeNGAttribute" you just have to give a value of false to "canBeSorted" as shown in the next example:
+If you wish to disable the possibility of a user sorting an specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable the sorting, in the "PrimeNGAttribute" you just have to give a value of false to "canBeSorted" as shown in the next example:
 ```c#
 [PrimeNGAttribute("Example column", canBeSorted: false, ...)]
 public string? exampleColumn { get; set; }
@@ -747,6 +747,59 @@ By doing this, when the user clicks the header of the column "Example column", t
 
 
 ### 4.7 Column filter
+By default all columns in the table can be filtered (except the row actions column). This feature allows the user to select in the column header the filter icon to open up a small modal were he can put what filters shall apply to the column as shown in the image below: 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+</p>
+
+Depending on the data type that you have configured in the backend for each column in the DTO, the filter menu will show different options.
+
+All the filter menus, except for bool data type, show in the upper part the options "Match all" or "Match any", being the default selected "Match all". "Match all" means that only the records that match all rules specified in the column shall be reurned (the equivalent to an AND operator in SQL), where as "Match any" will lookup for any records that match any of the defined filtering rules in that column (the equivalent to an OR operator in SQL).
+
+The user can define up to two different rules per column, except for the bool data type were he can only filter by "true", "false" or "both". Inside those rules, the user can select a different ruleset to lookup by, being the different options depending on the column data type as follows:
+- **EnumDataType.Text**:
+    - Starts with
+    - Contains
+    - Not contains
+    - Ends with
+    - Equals
+    - Not equals
+- **EnumDataType.Numeric**:
+    - Equals
+    - Not equals
+    - Less than
+    - Less than or equal to
+    - Greater than
+    - Greater than or equal to
+- **EnumDataType.Date**:
+    - Date is
+    - Date is not
+    - Date is before
+    - Date is after
+	
+The date filters don't take into account the time, just the date. So for example, if the user selects to filter by "Date is" with the value "23-Sep-2024", it will return all records that have in that column a date between "23-Sep-2024 00:00:00" and "23-Sep-2024 23:59:59". The timezone conversion is already managed by the table so you don't have to worry about it, so for example, if a user is viewing the date in the timezone GMT+02:00, in UTC it will filter by "23-Sep-2024 02:00:00" and "24-Sep-2024 01:59:59".
+
+The table includes in the top left a button for clearing all filters that has been done to the table (including the predifined filters and global filters that are explained later on). This button will be only be enabled when at least one column filter, predifined filter or global filter made by the user is active. The following image shows were this button is located at:
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+</p>
+
+If for any reason, you want to hide this button, you can do so by in in your component HTML that is using the table, setting the variable "showClearFilters" to false.
+```html
+<ecs-primeng-table #dt
+    ...
+    [showClearFilters]="false"
+    ...>
+</ecs-primeng-table>
+```
+
+If you wish to disable the possibility of a user filtering an specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable the filtering feature, in the "PrimeNGAttribute" you just have to give a value of false to "canBeFiltered" as shown in the next example:
+```c#
+[PrimeNGAttribute("Example column", canBeFiltered: false, ...)]
+public string? exampleColumn { get; set; }
+```
+
+By doing this, the column won't no longer have in the header the filter icon.
 
 
 ### 4.8 Column predfined filter
