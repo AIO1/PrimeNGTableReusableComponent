@@ -749,7 +749,10 @@ By doing this, when the user clicks the header of the column "Example column", t
 ### 4.7 Column filter
 By default all columns in the table can be filtered (except the row actions column). This feature allows the user to select in the column header the filter icon to open up a small modal were he can put what filters shall apply to the column as shown in the image below: 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+  <img src="https://github.com/user-attachments/assets/ef575f1b-3f0d-4bda-9825-b49c1d8ae90c" alt="Filter menu not boolean">
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/99aa70bb-1988-49d8-a547-efc0334daa49" alt="Filter menu boolean">
 </p>
 
 Depending on the data type that you have configured in the backend for each column in the DTO, the filter menu will show different options.
@@ -781,7 +784,7 @@ The date filters don't take into account the time, just the date. So for example
 
 The table includes in the top left a button for clearing all filters that has been done to the table (including the predifined filters and global filters that are explained later on). This button will be only be enabled when at least one column filter, predifined filter or global filter made by the user is active. The following image shows were this button is located at:
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+  <img src="https://github.com/user-attachments/assets/b6a3b33c-c03c-4ccf-8ca6-d475c74676d4" alt="Clear filters button">
 </p>
 
 If for any reason, you want to hide this button, you can do so by in in your component HTML that is using the table, setting the variable "showClearFilters" to false.
@@ -806,6 +809,9 @@ By doing this, the column won't no longer have in the header the filter icon.
 
 
 ### 4.9 Global filter
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/117d4917-45fc-4330-97fd-739322a5ebf4" alt="Global filter">
+</p>
 
 
 ### 4.10 Pagination
