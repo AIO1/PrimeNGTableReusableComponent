@@ -943,8 +943,9 @@ examplePredfinedFilter: IPrimengPredifinedFilter[] = [
 > It is recommended that from the "IPrimengPredifinedFilter" array, the property of "value" and "name" match, so that the user can use the global filter, since what is displayed in the front-end is the "name", and what is used by the global filter is "value".
 
 If from the demo project we modify the script that retrieves the values of the different employment status to be displayed as a simple text, how the table will shown them to the user is as follows:
-
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/dfaf6c9b-c860-44d7-a135-e3293986bdb1" alt="Predifined filter - simple text">
+</p>
 
 
 ### 4.8.2 Column predfined filter - Tags
@@ -984,6 +985,9 @@ examplePredfinedFilter: IPrimengPredifinedFilter[] = [
 > It is recommended that from the "IPrimengPredifinedFilter" array, the property of "value" and "name" match, so that the user can use the global filter, since what is displayed in the front-end is the "name", and what is used by the global filter is "value".
 
 If we launch the demo project, it already shows the column of "Employment status" as tas with different colors. Here is an example of how it looks:
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/49d197e0-1081-455e-bb78-1172cc65e3ab" alt="Predifined filter - tags">
+</p>
 
 
 ### 4.8.3 Column predfined filter - Icons
