@@ -1025,8 +1025,10 @@ export class PrimengTableComponent {
       const cellContent = (event.target as HTMLElement).innerText;
       this.copyCellDataTimer = setTimeout(() => {
         navigator.clipboard.writeText(cellContent).then(() => {
+          this.sharedService.clearToasts();
           this.sharedService.showToast("info", "CELL CONTENT COPIED", "The cell content has been copied to your clipboard.");
         }).catch(err => {
+          this.sharedService.clearToasts();
           this.sharedService.showToast("error", "CELL CONTENT COPIED", `The cell content failed to copy to your clipboard with error: ${err}`);
         });
       }, this.copyCellDataToClipboardTimeSecs*1000 );

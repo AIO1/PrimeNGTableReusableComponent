@@ -1035,7 +1035,7 @@ It will be shown in the frontend like this:
 
 
 ### 4.17 Cell tooltip
-By default all cells (except the bool data type) will show a tolltip with their value when the user hover the mouse over the cell for at least 0.7 seconds. If you wish to disable this feature, in the "PrimeNGAttribute" you just have to give a value of "false" to "dataTooltipShow" as shown in the next example:
+By default all cells (except the bool data type) will show a tolltip with their value when the user hovers the mouse over the cell for at least 0.7 seconds. If you wish to disable this feature, in the "PrimeNGAttribute" you just have to give a value of "false" to "dataTooltipShow" as shown in the next example:
 ```c#
 [PrimeNGAttribute("Example column", dataTooltipShow: false, ...)]
 public string? ExampleColumn { get; set; }
