@@ -896,7 +896,7 @@ And in the HTML of your component:
 </ecs-primeng-table>
 ```
 
-Now the table has available tow list of predifined filters that we can use which are "nameOfList1" and "nameOfList2" (although they actually don't hold any data). To map the columns to the different predfined lists that we have just setup, we need to do it in the DTO in the back-end as shown in the following code fragment:
+Now the table has available two lists of predifined filters that we can use which are "nameOfList1" and "nameOfList2" (although they actually don't hold any data). To map the columns to the different predfined lists that we have just setup, we need to do it in the DTO in the back-end as shown in the following code fragment:
 ```c#
 [PrimeNGAttribute("Example column 1", filterPredifinedValuesName: "nameOfList1", ...)]
 public string? Column1 { get; set; }
@@ -905,23 +905,97 @@ public string? Column1 { get; set; }
 public string? Column2 { get; set; }
 ```
 
-As you can see, the "filterPredifinedValuesName" must match the name entry of the dictionary that has been created in the front-end of our component that will be using the table. With all this, technically our predfined filters should already work, but there is not much that we can do with them right now since they are both empty. You should now populate them with the corresponding value of what you want to use. The next subsections describe how you can populate a "IPrimengPredifinedFilter" array to represent your data in different ways when drawn in the table.
+As you can see, the "filterPredifinedValuesName" must match the name entry of the dictionary that has been created in the front-end of our component that will be using the table. With all this, technically our predfined filters should already work, but there is not much that we can do with them right now since they are both empty. You should now populate them with the corresponding value of what you want to use. The next subsections describe how you can populate a "IPrimengPredifinedFilter" array to represent your data in different ways when drawn in the table. Take into account that you can modify different ways of representing your data, for example, you can combine images with text.
+
+For the table component being able to match the options with the cell data, the value sent by the backend for a cell, must match the "value" property of one of the items of the "IPrimengPredifinedFilter" array.
+
+In the front-end, when the user presses the filter button in a column with predifined values, a small modal will be shown with the option to select one or more values to filter by. Additionally, the modal will include a search bar.
+
+> [!NOTE]
+> If a list of values in a column could be null, this possibility does not need to be added to the "IPrimengPredifinedFilter" array. The table won't draw any value in null values.
 
 
 ### 4.8.1 Column predfined filter - Simple text
-WIP
+Imagine that you have the following possible values in a column:
+- Ok
+- Warning
+- Critical
+
+If you wish to just represent them as text, your "IPrimengPredifinedFilter" list should be populated similar to the following example in your TypeScript code:
+```ts
+examplePredfinedFilter: IPrimengPredifinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        name: "OK",
+        displayName: true
+    }, {
+        value: "backendValueForWarning",
+        name: "Warning",
+        displayName: true
+    }, {
+        value: "backendValueForCritical",
+        name: "Critical",
+        displayName: true
+    }
+];
+```
+> [!IMPORTANT]  
+> It is recommended that from the "IPrimengPredifinedFilter" array, the property of "value" and "name" match, so that the user can use the global filter, since what is displayed in the front-end is the "name", and what is used by the global filter is "value".
+
+If from the demo project we modify the script that retrieves the values of the different employment status to be displayed as a simple text, how the table will shown them to the user is as follows:
+
+
 
 
 ### 4.8.2 Column predfined filter - Tags
-WIP
+Imagine that you have the following possible values in a column, that you wish to represent in a tag with the following colors:
+- Ok (With a green tag)
+- Warning (With an orange tag)
+- Critical (With an red tag)
+
+To achieve this your "IPrimengPredifinedFilter" list should be populated similar to the following example in your TypeScript code:
+```ts
+examplePredfinedFilter: IPrimengPredifinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        name: "OK",
+        displayTag: true,
+        tagStyle: {
+            background: 'rgb(0, 255, 0)'
+        }
+    }, {
+        value: "backendValueForWarning",
+        name: "Warning",
+        displayTag: true,
+        tagStyle: {
+            background: 'rgb(255, 130, 30)'
+        }
+    }, {
+        value: "backendValueForCritical",
+        name: "Critical",
+        displayTag: true,
+        tagStyle: {
+            background: 'rgb(255 , 0, 0)'
+        }
+    }
+];
+```
+> [!IMPORTANT]  
+> It is recommended that from the "IPrimengPredifinedFilter" array, the property of "value" and "name" match, so that the user can use the global filter, since what is displayed in the front-end is the "name", and what is used by the global filter is "value".
+
+If we launch the demo project, it already shows the column of "Employment status" as tas with different colors. Here is an example of how it looks:
 
 
 ### 4.8.3 Column predfined filter - Icons
 WIP
+> [!IMPORTANT]  
+> If you are just going to show icons in a predifined filter, it is strongly recommended that in the DTO in the backend you set in the column "PrimeNGAttribute" the "canBeGlobalFiltered" to "false", so that the global filter doesn't try to filter by this column that is not showing any text.
 
 
 ### 4.8.4 Column predfined filter - Images
 WIP
+> [!IMPORTANT]  
+> If you are just going to show images in a predifined filter, it is strongly recommended that in the DTO in the backend you set in the column "PrimeNGAttribute" the "canBeGlobalFiltered" to "false", so that the global filter doesn't try to filter by this column that is not showing any text.
 
 
 ### 4.9 Global filter
@@ -930,7 +1004,7 @@ The global filter is enabled by default in all columns of your table, except for
   <img src="https://github.com/user-attachments/assets/117d4917-45fc-4330-97fd-739322a5ebf4" alt="Global filter">
 </p>
 
-When the user wrties a value in the global filter text box, after a brief delay of the user not changing the value, a filter rule will be launched to the table were basically, the global filter will try to filter each individual column perfoming a LIKE '%VALUE_INTRODUCED_BY_USER%', which basically means that any match of that value introduced by the user (doesn't matter in which position of the cell) will be returned. When a value is written to the global filter, at the left of the text box an "X" icon will appear, that when pressed by the user, it will clear the global filter.
+When the user writes a value in the global filter text box, after a brief delay of the user not changing the value, a filter rule will be launched to the table were basically, the global filter will try to filter each individual column perfoming a LIKE '%VALUE_INTRODUCED_BY_USER%', which basically means that any match of that value introduced by the user (doesn't matter in which position of the cell) will be returned. When a value is written to the global filter, at the left of the text box an "X" icon will appear, that when pressed by the user, it will clear the global filter.
 
 Additionally, as seen in the previous image, the global filter will underline with yellow each part of the cell were the value that is introduced by the user matches.
 
@@ -958,6 +1032,9 @@ public string? ExampleColumn { get; set; }
 
 By doing this, the column won't take into account any global filters that should be applied to it. For the bool data type or columns that are hidden (or that have the "sendColumnAttributes" to false), this property is always false and they will never be affected by the global filter.
 
+> [!NOTE]  
+> The global filter search is case insensitive.
+
 > [!IMPORTANT]  
 > The global filter is very useful for users, but if has a downside. Since it performs a LIKE query per column (with the % at the start and at the end) which is one of the heaviest filters to perform in SQL, the more columns that there are shown at a given time (and that can be global filtered), the more time it will require to update the data shown when the global filter is updated.
 
@@ -979,6 +1056,7 @@ This reusable table will automatically handle all the pagination and number of r
 
 
 ### 4.11 Column editor and setting up column initial properties
+WIP
 
 
 ### 4.12 Column resize
