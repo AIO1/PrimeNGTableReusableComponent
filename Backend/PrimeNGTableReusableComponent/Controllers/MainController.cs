@@ -198,5 +198,31 @@ namespace PrimeNGTableReusableComponent.Controllers {
             return Ok(timeZones);
         }
         #endregion
+        [HttpPost("[action]")]
+        [Consumes("application/json")]
+        [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+        public IActionResult GenerateExcel([FromBody] PrimeNGPostRequestWithExport inputData) {
+            IQueryable<TestDto> baseQuery = _context.TestTables
+                   .AsNoTracking()
+                   .Include(t => t.EmploymentStatus)
+                   .Select(
+                       u => new TestDto {
+                           RowID = u.Id,
+                           CanBeDeleted = u.CanBeDeleted,
+                           Username = u.Username,
+                           Age = u.Age,
+                           EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
+                           Birthdate = u.Birthdate,
+                           PayedTaxes = u.PayedTaxes
+                       }
+                   );
+            List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
+            List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
+            (bool success, byte[]? file, string errorMsg) = PrimeNGHelper.GenerateExcelReport<TestDto>(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+            if(!success) {
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
+            }
+            return File(file!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", inputData.Filename);
+        }
     }
 }

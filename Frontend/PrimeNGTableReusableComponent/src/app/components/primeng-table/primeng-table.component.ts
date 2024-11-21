@@ -8,7 +8,7 @@ import { PrimengTableService } from '../../services/primeng-table/primengTable.s
 
 // Import interfaces
 import { enumCellOverflowBehaviour, enumDataAlignHorizontal, enumDataAlignVertical, enumDataType, enumFrozenColumnAlign, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
-import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
+import { IprimengTableDataPost, IprimengTableDataPostWithExport } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
 import { IprimengActionButtons } from '../../interfaces/primeng/iprimeng-action-buttons';
@@ -79,6 +79,10 @@ export class PrimengTableComponent {
   @Input() showClearSorts: boolean = true; // If the clear sorts button must be shown
   @Input() showClearFilters: boolean = true; // If the clear filters buttons must be shown
   @Input() showRefreshData: boolean = true; // If the refresh data button must be shown or not
+  @Input() reportSourceURL: string | undefined; // The endpoint of the Excel report
+  @Input() reportTitleDefault: string | undefined; // A default title for the Excel report
+  @Input() reportIncludeTime: boolean = true; // If the current time should be added to the end of the report name
+  @Input() reportTitleAllowUserEdit: boolean = false; // If the user is allowed to modify the title of the report
 
   @Output() selectedRowsChange = new EventEmitter<{
     rowID: any,
@@ -127,6 +131,34 @@ export class PrimengTableComponent {
     {icon: 'pi pi-align-justify', val: enumDataAlignVertical.Middle},
     {icon: 'pi pi-angle-down', val: enumDataAlignVertical.Bottom}
   ];
+
+  exportToExcelOptions_allColumns: any[] = [
+    { name: 'Only visible', key: 'AllColsFalse', value: false },
+    { name: 'All columns', key: 'AllColsTrue', value: true }
+  ];
+  exportToExcelOptions_applyFilters: any[] = [
+    { name: 'Apply current filters', key: 'CurrentFiltersTrue', value: true },
+    { name: 'No filters', key: 'CurrentFiltersFalse', value: false }
+  ];
+  exportToExcelOptions_applySorting: any[] = [
+    { name: 'Apply current sorts', key: 'CurrentSortingTrue', value: true },
+    { name: 'No sorts', key: 'CurrentSortingFalse', value: false }
+  ];
+  exportToExcelOptions_selectedRows: any[] = [
+    { name: 'All rows', key: 'SelectedRowsAll', value: 0 },
+    { name: 'Only selected', key: 'SelectedRowsOnlySelected', value: 1 },
+    { name: 'Only NOT selected', key: 'SelectedRowsOnlyNotSelected', value: 2 }
+  ];
+  exportToExcelOptions = {
+    allColumns: false,
+    applyFilters: true,
+    applySorting: true,
+    selectedRows: 0 // 0 - All, 1 - Only selected, 2 - Only NOT selected
+  };
+
+  reportTitle: string = ""; // The title of the Excel report
+  reportTitleTime: string = ""; // The time of export of the report
+  reportFinalTitle: string = "";
   
   @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
   @ViewChild('paginatorContainer', { static: false }) paginatorContainer!: ElementRef;
@@ -222,6 +254,7 @@ export class PrimengTableComponent {
   columnsToShow: IprimengColumnsMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
   columnModalShow: boolean = false; // If the column modal window must be shown
   viewsModalShow: boolean = false; // If the views modal must be shown
+  excelExportModalShow: boolean = false; // If the excel export modal must be shown
 
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
 
@@ -694,7 +727,7 @@ export class PrimengTableComponent {
     return hasToClear;
   }
 
-  private modifyFiltersWithoutGlobalAndSelectedRows(filters: any): any {
+  private modifyFiltersWithoutGlobalAndSelectedRows(filters: any, overrideOption: number = -1): any {
     if (this.globalSearchText === "") { // If the global search text is an empty string
       this.globalSearchText = null; // Set it to null
     }
@@ -702,8 +735,29 @@ export class PrimengTableComponent {
     if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('global')) { // If there is an entry with the global filter
       delete filtersWithoutGlobalAndSelectedRows['global']; // Remove the global filter
     }
+    this.selectorRowFilterBuilder(filtersWithoutGlobalAndSelectedRows, overrideOption);
+    return filtersWithoutGlobalAndSelectedRows; // Return the filters without global array
+  }
+
+  private selectorRowFilterBuilder(filtersWithoutGlobalAndSelectedRows: any, overrideOption: number = -1){
     if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('selector')) {
       const selectorFilter = filtersWithoutGlobalAndSelectedRows['selector'][0];
+      let filterType: boolean | null = null;
+      if(overrideOption<0 || overrideOption>2){
+        filterType = selectorFilter.value;
+      } else {
+        switch (overrideOption){
+          case 0: // All
+            filterType = null;
+            break;
+          case 1: // Only selected rows
+            filterType = true;
+            break;
+          case 2: // Only NOT selected
+            filterType = false;
+            break;
+        }
+      }
       if (!filtersWithoutGlobalAndSelectedRows.hasOwnProperty('rowID')) {
           filtersWithoutGlobalAndSelectedRows['rowID'] = [
               {
@@ -714,19 +768,18 @@ export class PrimengTableComponent {
           ];
       }
       const idFilter = filtersWithoutGlobalAndSelectedRows['rowID'][0];
-      if (selectorFilter.value === true) {
+      if (filterType === true) {
           idFilter.matchMode = "in";
           idFilter.value = this.selectedRows;
-      } else if (selectorFilter.value === false) {
+      } else if (filterType === false) {
           idFilter.operator = "and"
           idFilter.matchMode = "notIn";
           idFilter.value = this.selectedRows;
-      } else if (selectorFilter.value === null) {
+      } else if (filterType === null) {
           idFilter.value = null;
           idFilter.matchMode = "in";
       }
     }
-    return filtersWithoutGlobalAndSelectedRows; // Return the filters without global array
   }
 
   revertDateTimeZoneFilters(inputFilter: any){
@@ -901,7 +954,6 @@ export class PrimengTableComponent {
     });
   }
 
-  //this.columnModalData
   allColumnsCheckboxActive(): boolean{
     return this.columnModalData.every(column => column.selected);
   }
@@ -1056,5 +1108,81 @@ export class PrimengTableComponent {
         styles['width'] = col.initialWidth + 'px';
     }
     return styles;
+  }
+
+  openExcelReport(){
+    this.reportTitle = 
+      (!this.reportTitleDefault || this.reportTitleDefault.trim().length === 0) && !this.reportTitleAllowUserEdit 
+        ? 'Report' 
+        : this.reportTitleDefault!;
+    
+    this.excelExportModalShow = true;
+  }
+  
+  getExcelReport(){
+    this.reportTitle=this.reportTitle?.trim();
+    if (!this.reportTitle || this.reportTitle.length <= 0) {
+      this.sharedService.clearToasts();
+      this.sharedService.showToast("error", "REPORT NAME NOT VALID", "The report name is not valid");
+      return; 
+    }
+    const allowedPattern = /^[A-Za-z0-9 _-]*$/;
+    if (!allowedPattern.test(this.reportTitle)) {
+      this.sharedService.clearToasts();
+      this.sharedService.showToast("error", "INVALID CHARACTERS IN REPORT NAME", "The report name contains invalid characters.");
+      return;
+    }
+    if(this.reportIncludeTime){
+      this.reportFinalTitle = this.reportTitle + this.excelReportGetCurrentTime() + ".xlsx";
+    }
+    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters, this.exportToExcelOptions.selectedRows); // Create filters excluding the global filter
+    filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
+    const requestData: IprimengTableDataPostWithExport = {
+      page: this.currentPage, // Set the current page number
+      pageSize: this.currentRowsPerPage, // Set the number of rows per page
+      sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
+      filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
+      globalFilter: this.globalSearchText, // Set the global filter text
+      columns: this.columnsToShow.map(col => col.field), // Set the columns to show
+      dateFormat: this.dateFormat,
+      dateTimezone: this.dateTimezone,
+      dateCulture: this.dateCulture,
+      allColumns: this.exportToExcelOptions.allColumns,
+      applyFilters: this.exportToExcelOptions.applyFilters,
+      applySorts: this.exportToExcelOptions.applySorting,
+      filename: this.reportFinalTitle
+    };
+    this.sharedService.handleHttpResponse(this.primengTableService.getExcelReport(this.reportSourceURL!, requestData), 200, false).subscribe({
+      next: (response: any) => {
+        this.downloadFile(response, this.reportFinalTitle, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        this.excelExportModalShow = false;
+      },
+      error: (error) => { // Handle error response
+        this.sharedService.clearToasts();
+        this.sharedService.showToast("error", "ERROR GENERATING EXCEL REPORT", `There was an error generating the Excel report ${error}`)
+      }
+    });
+  }
+
+  private downloadFile(data: Blob, fileName: string, contentType: string) {
+    const blob = new Blob([data], { type: contentType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  private excelReportGetCurrentTime(): string {
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(now.getUTCDate()).padStart(2, '0');
+    const hours = String(now.getUTCHours()).padStart(2, '0');
+    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+
+    return `_${year}${month}${day}_${hours}${minutes}${seconds}_UTC`;
   }
 }

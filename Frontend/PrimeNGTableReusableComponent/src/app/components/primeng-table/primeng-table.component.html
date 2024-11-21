@@ -144,6 +144,13 @@
                         <i *ngIf="globalSearchText" class="pi pi-times" style="cursor: pointer;" (click)="clearFilters(dt, true, true); $event.stopPropagation()"></i>
                     </span>
 
+                    <!--EXPORT DATA-->
+                    <button *ngIf="reportSourceURL && reportSourceURL.trim().length > 0" 
+                        pButton pRipple icon="pi pi-file-excel" (click)="openExcelReport(); $event.stopPropagation();"
+                        pTooltip="Export table to Excel"
+                        [showDelay]="700"
+                        tooltipPosition="top"></button>
+
                     <!--REFRESH DATA-->
                     <button *ngIf="showRefreshData" pButton pRipple icon="pi pi-refresh" (click)="updateData(this.tableLazyLoadEventInformation)"
                         pTooltip="Refresh data"
@@ -527,4 +534,92 @@
             </ng-template>
         </p-table>
     </div>
+</p-dialog>
+
+<!--EXCEL EXPORT MODAL DIALOG-->
+<p-dialog [(visible)]="excelExportModalShow" [modal]="true" [draggable]="false" [resizable]="false"
+    [closable]="false" [closeOnEscape]="false" [maximizable]="false" [style]="{'min-width': '70vw', 'max-width': '70vw'}">
+    <ng-template pTemplate="header">
+        <div>
+            <span class="p-dialog-title">Export table to Excel</span>
+        </div>
+    </ng-template>
+    <p>How would you like to export the table information to Excel?</p>
+    <p><b><label for="reportTitle">Report title</label></b></p>
+    <p><input pInputText id="reportTitle" [(ngModel)]="reportTitle" [disabled]="!reportTitleAllowUserEdit" maxlength="100" pattern="^[A-Za-z0-9_-][A-Za-z0-9 _-]*$"/></p>
+    <div class="p-4 pt-0">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+
+            <!-- Columns Group -->
+            <p-card header="Columns" class="p-shadow-2 mb-4">
+                <div class="flex flex-column">
+                    <div *ngFor="let export_optCols of exportToExcelOptions_allColumns" class="field-checkbox" [ngStyle]="{'margin-bottom': '10px'}">
+                        <p-radioButton 
+                            [inputId]="export_optCols.key" 
+                            name="columns" 
+                            [value]="export_optCols.value" 
+                            [(ngModel)]="exportToExcelOptions.allColumns" />
+                        <label [for]="export_optCols.key" class="ml-2">
+                            {{ export_optCols.name }}
+                        </label>
+                    </div>
+                </div>
+            </p-card>
+
+            <!-- Filters Group -->
+            <p-card header="Filters" class="p-shadow-2 mb-4">
+                <div class="flex flex-column">
+                    <div *ngFor="let export_optFilters of exportToExcelOptions_applyFilters" class="field-checkbox" [ngStyle]="{'margin-bottom': '10px'}">
+                        <p-radioButton 
+                            [inputId]="export_optFilters.key" 
+                            name="filters" 
+                            [value]="export_optFilters.value" 
+                            [(ngModel)]="exportToExcelOptions.applyFilters" />
+                        <label [for]="export_optFilters.key" class="ml-2">
+                            {{ export_optFilters.name }}
+                        </label>
+                    </div>
+                </div>
+            </p-card>
+
+            <!-- Sorting Group -->
+            <p-card header="Sorting" class="p-shadow-2 mb-4">
+                <div class="flex flex-column">
+                    <div *ngFor="let export_optSorts of exportToExcelOptions_applySorting" class="field-checkbox" [ngStyle]="{'margin-bottom': '10px'}">
+                        <p-radioButton 
+                            [inputId]="export_optSorts.key" 
+                            name="sorting" 
+                            [value]="export_optSorts.value" 
+                            [(ngModel)]="exportToExcelOptions.applySorting" />
+                        <label [for]="export_optSorts.key" class="ml-2">
+                            {{ export_optSorts.name }}
+                        </label>
+                    </div>
+                </div>
+            </p-card>
+
+            <!-- Selected rows Group -->
+            <p-card *ngIf="rowSelectorColumnActive" header="Selected rows" class="p-shadow-2 mb-4">
+                <p>If you have no rows selected, this filter won't be taken into account.</p>
+                <div class="flex flex-column">
+                    <div *ngFor="let export_optSelectedRows of exportToExcelOptions_selectedRows" class="field-checkbox" [ngStyle]="{'margin-bottom': '10px'}">
+                        <p-radioButton 
+                            [inputId]="export_optSelectedRows.key" 
+                            name="selectedRows" 
+                            [value]="export_optSelectedRows.value" 
+                            [(ngModel)]="exportToExcelOptions.selectedRows" />
+                        <label [for]="export_optSelectedRows.key" class="ml-2">
+                            {{ export_optSelectedRows.name }}
+                        </label>
+                    </div>
+                </div>
+            </p-card>
+
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="excelExportModalShow = false" label="Cancel" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="getExcelReport()" label="Export" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+    </ng-template>
 </p-dialog>

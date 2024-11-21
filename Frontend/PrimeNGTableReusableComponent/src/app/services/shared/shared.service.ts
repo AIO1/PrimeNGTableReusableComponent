@@ -65,14 +65,14 @@ export class SharedService {
       }
       return httpOptions;
     }
-    handleHttpGetRequest<T>(servicePoint: string, httpOptions: HttpHeaders | null = null, showSpinner: boolean = true, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
-      return this.http.get<T>(`${Constants.APIbaseURL}${servicePoint}`, { ...this.getHttpOptions(showSpinner, httpOptions), observe: 'response'}).pipe(
+    handleHttpGetRequest<T>(servicePoint: string, httpOptions: HttpHeaders | null = null, showSpinner: boolean = true, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false, responseType: 'json' | 'blob' = 'json'): Observable<HttpResponse<T>> {
+      return this.http.get<T>(`${Constants.APIbaseURL}${servicePoint}`, { ...this.getHttpOptions(showSpinner, httpOptions), observe: 'response', responseType: responseType as any}).pipe(
         timeout(Constants.timeoutTime) as OperatorFunction<HttpResponse<T>, HttpResponse<T>>,
         catchError(error => this.handleHttpError(error, customErrorHandler, showAPIError))
       );
     }
-    handleHttpPostRequest<T>(servicePoint: string, data: any, httpOptions: HttpHeaders | null = null, showSpinner: boolean = true, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false): Observable<HttpResponse<T>> {
-      return this.http.post<T>(`${Constants.APIbaseURL}${servicePoint}`, data, { ...this.getHttpOptions(showSpinner, httpOptions), observe: 'response'}).pipe(
+    handleHttpPostRequest<T>(servicePoint: string, data: any, httpOptions: HttpHeaders | null = null, showSpinner: boolean = true, customErrorHandler: ((error: any) => Observable<any>) | null = null, showAPIError: boolean = false, responseType: 'json' | 'blob' = 'json'): Observable<HttpResponse<T>> {
+      return this.http.post<T>(`${Constants.APIbaseURL}${servicePoint}`, data, { ...this.getHttpOptions(showSpinner, httpOptions), observe: 'response', responseType: responseType as any}).pipe(
         timeout(Constants.timeoutTime) as OperatorFunction<HttpResponse<T>, HttpResponse<T>>,
         catchError(error => this.handleHttpError(error, customErrorHandler, showAPIError))
       );
@@ -85,7 +85,7 @@ export class SharedService {
           return customErrorHandler(error);
         }
         if (showAPIError) {
-          return throwError(() => new Error(error.error));
+          return throwError(() => new Error(error.error.message));
         }
         return throwError(() => new Error('Unexpected error'));
       }

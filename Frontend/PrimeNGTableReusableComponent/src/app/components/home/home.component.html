@@ -11,9 +11,10 @@
     [headerActionButtons]="headerActionButtons"
     [rowActionButtons]="rowActionButtons"
     [rowSelectorColumnActive]="true"
-    [computeScrollHeight]="true"
-    [tableViewSaveAs]="enumTableViewSaveMode.databaseStorage"
     (selectedRowsChange)="rowSelect($event)"
+    [computeScrollHeight]="true"
+    reportSourceURL="Main/GenerateExcel"
+    [tableViewSaveAs]="enumTableViewSaveMode.databaseStorage"
     viewsGetSourceURL="Main/GetViews"
     viewsSaveSourceURL="Main/SaveViews"
     tableViewSaveKey="TEST">

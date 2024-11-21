@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpResponse } from '@angular/common/http';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SharedService } from '../shared/shared.service';
-import { IprimengTableDataPost } from '../../interfaces/primeng/iprimeng-table-data-post';
+import { IprimengTableDataPost, IprimengTableDataPostWithExport } from '../../interfaces/primeng/iprimeng-table-data-post';
 import { IprimengTableDataReturn } from '../../interfaces/primeng/iprimeng-table-data-return';
 import { IprimengColumnsAndAllowedPagination } from '../../interfaces/primeng/iprimeng-columns-and-allowed-pagination';
 import { enumDataType, IprimengColumnsMetadata } from '../../interfaces/primeng/iprimeng-columns-metadata';
@@ -22,6 +22,13 @@ export class PrimengTableService {
       return this.sharedService.handleHttpGetRequest<Blob>(url,null,false);
     }
 
+    getExcelReport(url: string, postData: IprimengTableDataPostWithExport): Observable<HttpResponse<Blob>> {
+      let httpOptions = new HttpHeaders({
+        'accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Type': 'application/json'
+      });
+      return this.sharedService.handleHttpPostRequest<Blob>(url, postData, httpOptions, true, null, true, 'blob');
+    }
 
     /**
    * Generates SafeHtml with highlighted text based on global search criteria.

@@ -42,6 +42,13 @@ namespace PrimeNG.DTOs {
         public string DateCulture { get; set; } = null!;
     }
 
+    public class PrimeNGPostRequestWithExport: PrimeNGPostRequest {
+        public bool AllColumns { get; set; }
+        public bool ApplyFilters { get; set; }
+        public bool ApplySorts { get; set; }
+        public string Filename { get; set; } = null!;
+    }
+
     /// <summary>
     /// Represents the structure of the response returned by a PrimeNG table POST request.
     /// </summary>

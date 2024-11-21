@@ -26,3 +26,10 @@ export interface IprimengTableDataPost {
 
     dateCulture: string;
 }
+
+export interface IprimengTableDataPostWithExport extends IprimengTableDataPost {
+    filename: string;
+    allColumns: boolean;
+    applyFilters: boolean;
+    applySorts: boolean;
+}
