@@ -1,32 +1,52 @@
 {
-  "name": "primengtablereusablecomponent",
+  "name": "prime-ngtable-reusable-component",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "serve:ssr:PrimeNGTableReusableComponent": "node dist/PrimeNGTableReusableComponent/server/server.mjs"
+  },
+  "prettier": {
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^18.2.9",
-    "@angular/common": "^18.2.9",
-    "@angular/compiler": "^18.2.9",
-    "@angular/core": "^18.2.9",
-    "@angular/forms": "^18.2.9",
-    "@angular/platform-browser": "^18.2.9",
-    "@angular/platform-browser-dynamic": "^18.2.9",
-    "@angular/router": "^18.2.9",
-    "primeicons": "^7.0.0",
-    "primeng": "^17.18.11",
-    "rxjs": "~7.8.1",
-    "tslib": "^2.7.0"
+    "@angular/common": "^20.1.0",
+    "@angular/compiler": "^20.1.0",
+    "@angular/core": "^20.1.0",
+    "@angular/forms": "^20.1.0",
+    "@angular/platform-browser": "^20.1.0",
+    "@angular/platform-server": "^20.1.0",
+    "@angular/router": "^20.1.0",
+    "@angular/ssr": "^20.1.4",
+    "express": "^5.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^18.2.10",
-    "@angular/cli": "^18.2.10",
-    "@angular/compiler-cli": "^18.2.9",
-    "typescript": "^5.5.4"
+    "@angular/build": "^20.1.4",
+    "@angular/cli": "^20.1.4",
+    "@angular/compiler-cli": "^20.1.0",
+    "@types/express": "^5.0.1",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^20.17.19",
+    "jasmine-core": "~5.8.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "typescript": "~5.8.2"
   }
 }
