@@ -1,0 +1,9 @@
+<router-outlet></router-outlet>
+
+<!--LOADING INDICATOR-->
+<p-dialog [baseZIndex]="1499" header="Please, wait..." [(visible)]="isSpinnerVisible" [closeOnEscape]="false" [closable]="false" [modal]="true" [draggable]="false" [resizable]="false" [showHeader]="true">
+  <div style="text-align: center;">
+    <p-progressSpinner strokeWidth="8" animationDuration="1.5s"></p-progressSpinner>
+  </div>
+</p-dialog>
+<p-toast [baseZIndex]="1500"></p-toast>
