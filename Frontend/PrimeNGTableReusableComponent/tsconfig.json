@@ -11,6 +11,14 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
+    "paths": {
+      "ecs-primeng-table": [
+        "./dist/ecs-primeng-table"
+      ],
+      "primeng-table": [
+        "./dist/primeng-table"
+      ]
+    },
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve"
@@ -29,6 +37,18 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/primeng-table/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/primeng-table/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ecs-primeng-table/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ecs-primeng-table/tsconfig.spec.json"
     }
   ]
 }

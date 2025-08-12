@@ -1,0 +1,23 @@
+<p-table #dt
+    size="small" showGridlines stripedRows 
+    sortMode="multiple"
+    [resizableColumns]="true" columnResizeMode="expand"
+    [reorderableColumns]="true"
+    [scrollable]="true" [scrollHeight]="computeScrollHeight ? scrollHeight : ''"
+    [columns]="columnsToShow" [value]="data" dataKey="rowID" 
+    [lazy]="true" (onLazyLoad)="updateData($event)">
+</p-table>
+
+
+<!--
+<p-table #dt
+    size="small" showGridlines stripedRows 
+    sortMode="multiple"
+    [resizableColumns]="true" columnResizeMode="expand"
+    [reorderableColumns]="true"
+    [scrollable]="true" [scrollHeight]="computeScrollHeight ? scrollHeight : ''"
+    [columns]="columnsToShow" [value]="data" dataKey="rowID" 
+    [lazy]="true" (onLazyLoad)="updateData($event)">
+</p-table>
+
+-->

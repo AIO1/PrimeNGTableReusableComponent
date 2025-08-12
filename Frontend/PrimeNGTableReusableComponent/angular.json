@@ -12,7 +12,7 @@
       },
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "ecs",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -94,6 +94,66 @@
             ],
             "styles": [
               "src/styles.scss"
+            ]
+          }
+        }
+      }
+    },
+    "primeng-table": {
+      "projectType": "library",
+      "root": "projects/primeng-table",
+      "sourceRoot": "projects/primeng-table/src",
+      "prefix": "ecs",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/primeng-table/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/primeng-table/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/primeng-table/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    },
+    "ecs-primeng-table": {
+      "projectType": "library",
+      "root": "projects/ecs-primeng-table",
+      "sourceRoot": "projects/ecs-primeng-table/src",
+      "prefix": "ecs",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ecs-primeng-table/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ecs-primeng-table/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/ecs-primeng-table/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
             ]
           }
         }
