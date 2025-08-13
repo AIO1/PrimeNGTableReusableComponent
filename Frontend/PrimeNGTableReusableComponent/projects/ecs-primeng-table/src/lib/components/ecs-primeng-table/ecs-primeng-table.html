@@ -12,29 +12,40 @@
         <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--CHOOSE COLUMNS TO SHOW-->
-                <!--
-                <div *ngIf="columnEditorShow">
-                    <button pButton pRipple icon="pi pi-info" (click)="showColumnModal()"
+                @if (columnEditorEnabled) {
+                    <p-button
+                        icon="pi pi-info"
+                        (onClick)="showColumnModal()"
                         pTooltip="Modify columns"
                         [showDelay]="700"
-                        tooltipPosition="top">
-                    </button>
-                </div>
-                -->
+                        tooltipPosition="top"
+                        styleClass="p-button-icon-only"
+                    />
+                }
 
                 <!--CLEAR SORTS AND FILTERS-->
-                <!--
-                <button *ngIf="showClearSorts" pButton pRipple icon="pi pi-sort-alt-slash" (click)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
-                    pTooltip="Clear sorts"
-                    [showDelay]="700"
-                    tooltipPosition="top">
-                </button>
-                <button *ngIf="showClearFilters" pButton pRipple icon="pi pi-filter-slash" (click)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
-                    pTooltip="Clear filters"
-                    [showDelay]="700"
-                    tooltipPosition="top">
-                </button>
-                -->
+                @if (columnEditorEnabled) {
+                    <p-button
+                        icon="pi pi-sort-alt-slash"
+                        (onClick)="clearSorts(dt)"
+                        [disabled]="!hasToClearSorts(dt)"
+                        pTooltip="Clear sorts"
+                        [showDelay]="700"
+                        tooltipPosition="top"
+                        styleClass="p-button-icon-only"
+                    />
+                }
+                @if (columnEditorEnabled) {
+                    <p-button
+                        icon="pi pi-filter-slash"
+                        (onClick)="clearFilters(dt)"
+                        [disabled]="!hasToClearFilters(dt, globalSearchText)"
+                        pTooltip="Clear filters"
+                        [showDelay]="700"
+                        tooltipPosition="top"
+                        styleClass="p-button-icon-only"
+                    />
+                }
             </div>
 
             <!--TABLE VIEWS-->
@@ -69,22 +80,63 @@
                 </div>
             </div>
             -->
+
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--GLOBAL FILTER-->
-                <!--<span *ngIf="globalSearchEnabled" class="p-input-icon-left p-ml-auto" [ngClass]="{'p-input-icon-right': globalSearchText}" >
-                    <i class="pi pi-search" style="pointer-events: none;"></i>
-                    <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" [maxlength]="globalSearchMaxLength" [placeholder]="globalSearchPlaceholder" [(ngModel)]="globalSearchText" [style]="{width: '220px'}"/>
-                    <i *ngIf="globalSearchText" class="pi pi-times" style="cursor: pointer;" (click)="clearFilters(dt, true, true); $event.stopPropagation()"></i>
-                </span>-->
+                @if (globalSearchEnabled) {
+                    <p-iconField iconPosition="left" class="ml-auto" [ngClass]="{'p-input-icon-right': globalSearchText}">
+                        <!-- Icono izquierda -->
+                        <p-inputIcon>
+                            <i class="pi pi-search"></i>
+                        </p-inputIcon>
+                        <!-- Campo de texto -->
+                        <input 
+                            pInputText 
+                            type="text" 
+                            (input)="dt.filterGlobal($any($event.target).value, 'contains')" 
+                            autocomplete="off" 
+                            [maxlength]="globalSearchMaxLength"
+                            [placeholder]="globalSearchPlaceholder"
+                            [(ngModel)]="globalSearchText"
+                            style="width: 220px;"
+                        />
+                        <!-- Icono derecha solo si hay texto -->
+                        @if (globalSearchText) {
+                            <p-inputIcon position="right">
+                                <i 
+                                    class="pi pi-times" 
+                                    style="cursor: pointer;" 
+                                    (click)="clearFilters(dt, true, true); $event.stopPropagation()">
+                                </i>
+                            </p-inputIcon>
+                        }
+                    </p-iconField>
 
+                    <!--<span 
+                        class="p-input-icon-left p-ml-auto" 
+                        [ngClass]="{'p-input-icon-right': globalSearchText}">
+                        <i class="pi pi-search" style="pointer-events: none;"></i>
+                        <input type="text" pInputText (input)="dt.filterGlobal($any($event.target).value, 'contains')" autocomplete="off" [maxlength]="globalSearchMaxLength" [placeholder]="globalSearchPlaceholder" [(ngModel)]="globalSearchText" [style]="{width: '220px'}"/>
+                        @if (globalSearchText) {
+                            <i 
+                                class="pi pi-times" 
+                                style="cursor: pointer;" 
+                                (click)="clearFilters(dt, true, true); $event.stopPropagation()">
+                            </i>
+                        }
+                    </span>-->
+                }
                 <!--EXPORT DATA-->
-                <!--
-                <button *ngIf="reportSourceURL && reportSourceURL.trim().length > 0" 
-                    pButton pRipple icon="pi pi-file-excel" (click)="openExcelReport(); $event.stopPropagation();"
-                    pTooltip="Export table to Excel"
-                    [showDelay]="700"
-                    tooltipPosition="top"></button>
-                -->
+                @if (reportSourceURL && reportSourceURL.trim().length > 0) {
+                    <p-button
+                        icon="pi pi-file-excel"
+                        (onClick)="openExcelReport()"
+                        pTooltip="Export to Excel"
+                        [showDelay]="700"
+                        tooltipPosition="top"
+                        styleClass="p-button-icon-only"
+                    />
+                }
 
                 <!--REFRESH DATA-->
                 @if (showRefreshData) {
@@ -154,17 +206,3 @@
     <ng-template #summary>
     </ng-template>
 </p-table>
-
-
-<!--
-<p-table #dt
-    size="small" showGridlines stripedRows 
-    sortMode="multiple"
-    [resizableColumns]="true" columnResizeMode="expand"
-    [reorderableColumns]="true"
-    [scrollable]="true" [scrollHeight]="computeScrollHeight ? scrollHeight : ''"
-    [columns]="columnsToShow" [value]="data" dataKey="rowID" 
-    [lazy]="true" (onLazyLoad)="updateData($event)">
-</p-table>
-
--->

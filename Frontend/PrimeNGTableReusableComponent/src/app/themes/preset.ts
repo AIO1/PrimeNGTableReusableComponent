@@ -1,20 +1,19 @@
-// src/app/themes/my-preset.ts
 import { definePreset } from '@primeng/themes';
 import Lara from '@primeng/themes/lara';
 
 export const Preset = definePreset(Lara, {
   semantic: {
     primary: {
-      50: '#f3e5f5',
-      100: '#e1bee7',
-      200: '#ce93d8',
-      300: '#ba68c8',
-      400: '#ab47bc',
-      500: '#6a1b9a', // color principal morado
-      600: '#8e24aa',
-      700: '#7b1fa2',
-      800: '#6a1b9a',
-      900: '#4a148c'
+      50:  '#e3f2fd',
+      100: '#bbdefb',
+      200: '#90caf9',
+      300: '#64b5f6',
+      400: '#42a5f5',
+      500: '#1976d2', // main color
+      600: '#1565c0',
+      700: '#0d47a1',
+      800: '#0b3d91',
+      900: '#082b73'
     }
   }
 });
