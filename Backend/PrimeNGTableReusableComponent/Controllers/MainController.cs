@@ -8,6 +8,8 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Models.PrimengTableReusableComponent;
 using System.Globalization;
+using ECS.PrimengTable.Services;
+using ECS.PrimengTable.Models;
 
 namespace PrimeNGTableReusableComponent.Controllers {
     [ApiController]
@@ -24,11 +26,11 @@ namespace PrimeNGTableReusableComponent.Controllers {
             "Retrieves all information needed to init the table for Test.",
             "This API function will get all the table columns data for Test needed, and some additional information like the date format and allowed items per page."
             )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(PrimeNGTableColsAndAllowedPagination))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(TableConfigurationModel))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public IActionResult TestGetCols() {
             try {
-                return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>()); // Get all the columns information to be returned
+                return Ok(TableConfigurationService.GetTableConfiguration<TestDto>()); // Get all the columns information to be returned
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }

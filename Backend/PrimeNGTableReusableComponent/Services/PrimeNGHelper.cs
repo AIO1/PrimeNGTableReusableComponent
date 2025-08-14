@@ -1,13 +1,15 @@
-﻿using System.Linq.Expressions;
-using System.Linq.Dynamic.Core;
-using System.Reflection;
+﻿using ClosedXML.Excel;
+using ECS.PrimengTable.Enums;
+using ECS.PrimengTable.Models;
+using ECS.PrimengTable.Services;
 using LinqKit;
-using Microsoft.EntityFrameworkCore;
-using PrimeNG.DTOs;
 using PrimeNG.Attributes;
-using System.Text.Json;
-using ClosedXML.Excel;
+using PrimeNG.DTOs;
 using System.Globalization;
+using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text.Json;
 namespace PrimeNG.HelperFunctions {
     public static class PrimeNGHelper {
         public static readonly int[] allowedItemsPerPage = new int[] { 10, 20, 30 }; // The number of items per page allowed
@@ -56,81 +58,6 @@ namespace PrimeNG.HelperFunctions {
                 baseQuery = ApplyColumnFilters(baseQuery, inputData.Filter, inputData.Columns!, stringDateFormatMethod); // Apply the column filters
             }
             totalRecords = baseQuery.Count(); // Count all the available records (after applying filters)
-        }
-
-        /// <summary>
-        /// Retrieves metadata for each property of the provided class <typeparamref name="T"/>
-        /// based on the presence of the <see cref="PrimeNGAttributes"/> attribute.
-        /// </summary>
-        /// <typeparam name="T">The type of the class for which to retrieve column metadata.</typeparam>
-        /// <returns>
-        /// A list of <see cref="PrimeNGTableReturnColumnMetadata"/> objects representing
-        /// the metadata for each property in the class.
-        /// </returns>
-        /// <exception cref="ArgumentException">
-        /// Thrown when the <see cref="PrimeNGAttributes"/> attribute is missing for a property.
-        /// The exception message includes the name of the property that is missing attributes.
-        /// </exception>
-        public static PrimeNGTableColsAndAllowedPagination GetColumnsInfo<T>(string dateFormat = "dd-MMM-yyyy HH:mm:ss zzzz", string dateTimezone = "+00:00", string dateCulture = "en-US", bool convertFieldToLower = true) {
-            List<PrimeNGTableReturnColumnMetadata> columnsInfo = new List<PrimeNGTableReturnColumnMetadata>(); // Prepare the list to be returned
-            PropertyInfo[] properties = typeof(T).GetProperties(); // Get the properties of the provided class
-            foreach(var property in properties) { // Loop through each property of the class
-                PrimeNGAttribute? primeNGAttributes = property.GetCustomAttribute<PrimeNGAttribute>() ?? throw new ArgumentException("The following column is missing its PrimeNG attributes ", property.Name); // Try to get the PrimeNG attributes for the current property, and if its null throw an error
-                if(primeNGAttributes.SendColumnAttributes) { // If we have to send the column
-                    string propertyName = convertFieldToLower
-                        ? char.ToLower(property.Name[0]) + property.Name.Substring(1)
-                        : property.Name; // Get the property name with the first letter to lower
-                    columnsInfo.Add(new PrimeNGTableReturnColumnMetadata {
-                        Field = propertyName,
-                        Header = primeNGAttributes.Header,
-                        DataType = primeNGAttributes.DataType,
-                        DataAlignHorizontal = primeNGAttributes.DataAlignHorizontal,
-                        DataAlignHorizontalAllowUserEdit = primeNGAttributes.DataAlignHorizontalAllowUserEdit,
-                        DataAlignVertical = primeNGAttributes.DataAlignVertical,
-                        DataAlignVerticalAllowUserEdit = primeNGAttributes.DataAlignVerticalAllowUserEdit,
-                        CanBeHidden = primeNGAttributes.CanBeHidden,
-                        StartHidden = primeNGAttributes.StartHidden,
-                        CanBeResized = primeNGAttributes.CanBeResized,
-                        CanBeReordered = primeNGAttributes.CanBeReordered,
-                        CanBeSorted = primeNGAttributes.CanBeSorted,
-                        CanBeFiltered = primeNGAttributes.CanBeFiltered,
-                        FilterPredifinedValuesName = primeNGAttributes.FilterPredifinedValuesName,
-                        CanBeGlobalFiltered = primeNGAttributes.CanBeGlobalFiltered,
-                        ColumnDescription = primeNGAttributes.ColumnDescription,
-                        DataTooltipShow = primeNGAttributes.DataTooltipShow,
-                        DataTooltipCustomColumnSource = primeNGAttributes.DataTooltipCustomColumnSource,
-                        FrozenColumnAlign = primeNGAttributes.FrozenColumnAlign,
-                        CellOverflowBehaviour = primeNGAttributes.CellOverflowBehaviour,
-                        CellOverflowBehaviourAllowUserEdit = primeNGAttributes.CellOverflowBehaviourAllowUserEdit,
-                        InitialWidth = primeNGAttributes.InitialWidth
-                    });
-                }
-            }
-            return new PrimeNGTableColsAndAllowedPagination {
-                ColumnsInfo = columnsInfo,
-                AllowedItemsPerPage = allowedItemsPerPage,
-                DateFormat = dateFormat,
-                DateTimezone = dateTimezone,
-                DateCulture = dateCulture
-            };
-        }
-
-        /// <summary>
-        /// Validates the items per page size and the presence of columns for filtering.
-        /// </summary>
-        /// <param name="itemsPerPage">The number of items to display per page.</param>
-        /// <param name="columns">A list of column names to be included in the filtering.</param>
-        /// <returns>
-        ///   <c>true</c> if the items per page is within the allowed values and columns are provided; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool ValidateItemsPerPageSizeAndCols(byte itemsPerPage, List<string>? columns) {
-            if(!allowedItemsPerPage.Contains(itemsPerPage)) { // If the items per page is not within the allowed items per page array values
-                return false;
-            }
-            if(columns == null || columns.Count == 0) { // If no columns have been returned for filtering
-                return false;
-            }
-            return true;
         }
 
         /// <summary>
@@ -546,7 +473,7 @@ namespace PrimeNG.HelperFunctions {
                 };
                 DateTime reportDate = DateTime.UtcNow;
                 string reportDateFormatted = reportDate.ToString("dd-MMM-yyyy hh:mm:ss", CultureInfo.GetCultureInfo("en-US"));
-                PrimeNGTableColsAndAllowedPagination columnsInfo = GetColumnsInfo<T>(convertFieldToLower: false); // Get columns information for the table
+                TableConfigurationModel columnsInfo = TableConfigurationService.GetTableConfiguration<T>(convertFieldToLower: false); // Get columns information for the table
                 
                 if(inputDataAll.AllColumns) { // If we have to export all the columns
                     inputData.Columns = columnsInfo.ColumnsInfo
@@ -585,18 +512,18 @@ namespace PrimeNG.HelperFunctions {
                             for(int col = 0; col < numberOfColumns; col++) { // Loop through each column
                                 fieldName = inputData.Columns[col];
                                 dynamic? valor = propertyAccessors[fieldName](dataResult[row]);
-                                EnumDataType dataType = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).DataType;
-                                if(row == 0 && dataType == EnumDataType.Date) {
+                                DataType dataType = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).DataType;
+                                if(row == 0 && dataType == DataType.Date) {
                                     worksheet.Column(col+1).Style.NumberFormat.Format = "dd-mmm-yyyy hh:mm:ss";
                                 }
                                 if(valor == null) {
                                     worksheet.Cell(currentRow, col + 1).Value = "";
                                 } else {
                                     worksheet.Cell(currentRow, col + 1).Value = dataType switch {
-                                        EnumDataType.Text => valor.ToString(),
-                                        EnumDataType.Numeric => Convert.ToDouble(valor),
-                                        EnumDataType.Date when valor is DateTime => valor,
-                                        EnumDataType.Boolean => Convert.ToBoolean(valor),
+                                        DataType.Text => valor.ToString(),
+                                        DataType.Numeric => Convert.ToDouble(valor),
+                                        DataType.Date when valor is DateTime => valor,
+                                        DataType.Boolean => Convert.ToBoolean(valor),
                                         _ => valor
                                     };
                                 }
