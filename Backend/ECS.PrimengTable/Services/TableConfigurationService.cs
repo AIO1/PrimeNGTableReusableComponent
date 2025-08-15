@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace ECS.PrimengTable.Services;
 
-public static class TableConfigurationService {
+internal static class TableConfigurationService {
     /// <summary>
     /// Retrieves metadata for each property of the provided class <typeparamref name="T"/>
     /// based on the presence of the <see cref="PrimeNGAttributes"/> attribute.
@@ -18,7 +18,7 @@ public static class TableConfigurationService {
     /// Thrown when the <see cref="PrimeNGAttributes"/> attribute is missing for a property.
     /// The exception message includes the name of the property that is missing attributes.
     /// </exception>
-    public static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, bool convertFieldToLower = true) {
+    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, bool convertFieldToLower = true) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         dateFormat ??= TableConfigurationDefaults.DateFormat;
         dateTimezone ??= TableConfigurationDefaults.DateTimezone;
@@ -79,7 +79,7 @@ public static class TableConfigurationService {
     /// <returns>
     ///   <c>true</c> if the items per page is within the allowed values and columns are provided; otherwise, <c>false</c>.
     /// </returns>
-    public static bool ValidateItemsPerPageAndCols(byte itemsPerPage, List<string>? columns, int[]? allowedItemsPerPage = null) {
+    internal static bool ValidateItemsPerPageAndCols(byte itemsPerPage, List<string>? columns, int[]? allowedItemsPerPage = null) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         if(!allowedItemsPerPage.Contains(itemsPerPage)) { // If the items per page is not within the allowed items per page array values
             return false;

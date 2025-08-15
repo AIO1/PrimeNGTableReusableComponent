@@ -54,11 +54,19 @@ export class ECSPrimengTable implements OnInit {
     this.fetchTableColumns();
   }
   
+  fetchTableConfiguration(): void {
+
+  }
+
   fetchTableColumns(): void {
     this.tableService.fetchTableColumns(this.urlColumnsSource).subscribe({
       next: (response) => this.handleTableColumnsResponse(response.body),
       error: (err) => this.tableService.handleTableError(err, 'Columns Error')
     });
+  }
+
+  fetchTableData(): void {
+    
   }
 
   private handleTableColumnsResponse(body: any): void {

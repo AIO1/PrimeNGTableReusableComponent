@@ -1,7 +1,5 @@
 using Data.PrimengTableReusableComponent;
 using Microsoft.AspNetCore.Mvc;
-using PrimeNG.DTOs;
-using PrimeNG.HelperFunctions;
 using PrimeNGTableReusableComponent.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
@@ -17,8 +15,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
     public class MainController(primengTableReusableComponentContext context) : ControllerBase {
         private readonly primengTableReusableComponentContext _context = context; // Injection of the context
 
-        private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), new[] { typeof(DateTime), typeof(string), typeof(string), typeof(string) })!; // Needed import for being able to perform global search on dates
-
+        private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), [typeof(DateTime), typeof(string), typeof(string), typeof(string)])!; // Needed import for being able to perform global search on dates
         #region HttpGet - TestGetCols
         [HttpGet("[action]")]
         [Produces("application/json")]
@@ -30,7 +27,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public IActionResult TestGetCols() {
             try {
-                return Ok(TableConfigurationService.GetTableConfiguration<TestDto>()); // Get all the columns information to be returned
+                return Ok(EcsPrimengTableService.GetTableConfiguration<TestDto>()); // Get all the columns information to be returned
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
@@ -44,12 +41,12 @@ namespace PrimeNGTableReusableComponent.Controllers {
             "Retrieves all information to be show in the table for Test.",
             "This API function will get all the data that needs to be shown in Test applying all requested rules."
             )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(PrimeNGPostReturn))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(TablePagedResponseModel))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Returned if the items per page is not allowed or no columns have been specified.", typeof(string))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
-        public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
+        public IActionResult TestGetData([FromBody] TableQueryRequestModel inputData) {
             try {
-                if(!PrimeNGHelper.ValidateItemsPerPageSizeAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+                if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
                     return BadRequest("Invalid page size or no columns for selection have been specified.");
                 }
                 IQueryable<TestDto> baseQuery = _context.TestTables
@@ -66,9 +63,9 @@ namespace PrimeNGTableReusableComponent.Controllers {
                             PayedTaxes = u.PayedTaxes
                         }
                     );
-                List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
-                List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
-                return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
+                List<string> columnsToOrderByDefault = ["Age", "EmploymentStatusName"];
+                List<int> columnsToOrderByOrderDefault = [0, 0];
+                return Ok(EcsPrimengTableService.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
@@ -109,24 +106,15 @@ namespace PrimeNGTableReusableComponent.Controllers {
             "Get views of a table for a specific user.",
             "This API function will retrieve all views for a specific table an user. User is retrieved through JWT (in this example is not configured and it has been hardcoded)."
             )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(PrimeNgGetViewsRequest))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(List<ViewDataModel>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
-        public async Task<IActionResult> GetViews([FromBody] PrimeNgGetViewsRequest request) {
+        public async Task<IActionResult> GetViews([FromBody] ViewLoadRequestModel request) {
             try {
                 string username = "User test"; // This username should be retrieved from a token. This is just for example purposes and it has been hardcoded
-                List<TableView>? stateData = await _context.TableViews
-                    .AsNoTracking()
-                    .Where(s => s.Username == username && s.TableKey == request.TableViewSaveKey)
-                    .OrderBy(s => s.ViewAlias)
-                    .ToListAsync(); // Retrieve the views of the user for this table
-                    if(stateData.Count != 0) { // If there is at least one view
-                        List<PrimeNgViewData> result = stateData.Select(s => new PrimeNgViewData {
-                            ViewAlias = s.ViewAlias,
-                            ViewData = s.ViewData
-                        }).ToList();
-                        return Ok(result);
-                    }
-                return Ok(new List<PrimeNgViewData>()); // Return an empty list
+                List<ViewDataModel>? views = await EcsPrimengTableService.GetViewsAsync<TableView>(
+                     _context, username, request.TableViewSaveKey
+                 );
+                return Ok(views);
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
@@ -140,39 +128,16 @@ namespace PrimeNGTableReusableComponent.Controllers {
             "Saves changes to the tables views of a user.",
             "This API function will save all changes made to a view. User is retrieved through JWT (in this example is not configured and it has been hardcoded)."
             )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(string))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
-        public async Task<IActionResult> SaveViews([FromBody] PrimeNgSaveViewsRequest request) {
-            using var transaction = await _context.Database.BeginTransactionAsync(); // Begin a transaction to revert any changes in case of error
+        public async Task<IActionResult> SaveViews([FromBody] ViewSaveRequestModel request) {
             try {
                 string username = "User test"; // This username should be retrieved from a token. This is just for example purposes and it has been hardcoded
-                List<TableView>? existingViews = await _context.TableViews
-                    .Where(t => t.Username == username && t.TableKey == request.TableViewSaveKey)
-                    .ToListAsync(); // Get a list of the current existing views for this user (need to be tracked for changes)
-                List<string>? receivedViewNames = request.Views.Select(s => s.ViewAlias).ToList(); // Get the list of all received view names
-                foreach(PrimeNgViewData view in request.Views) { // Loop trhough all views received
-                    TableView? existingView = existingViews.Find(s => s.ViewAlias == view.ViewAlias); // Try to get if this view already existed
-                    if(existingView != null) { // If the view already existed
-                        existingView.ViewData = view.ViewData; // Update the view data
-                    } else { // If this a new view
-                        TableView newView = new TableView {
-                            Username = username,
-                            TableKey = request.TableViewSaveKey,
-                            ViewAlias = view.ViewAlias,
-                            ViewData = view.ViewData
-                        }; // Create a new view
-                        await _context.TableViews.AddAsync(newView); // Add the new view
-                    }
-                }
-                List<TableView>? viewsToDelete = existingViews.Where(e => !receivedViewNames.Contains(e.ViewAlias)).ToList(); // Get a list of views that no longer exist and need to be deleted
-                if(viewsToDelete.Count != 0) { // If there are views to delete
-                    _context.TableViews.RemoveRange(viewsToDelete); // Remove all views that need to be deleted
-                }
-                await _context.SaveChangesAsync(); // Save changes
-                await transaction.CommitAsync(); // Commit changes
-                return Ok();
+                await EcsPrimengTableService.SaveViewsAsync<TableView>(
+                    _context, username, request.TableViewSaveKey, request.Views
+                );
+                return Ok("Views saved OK");
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
-                await transaction.RollbackAsync(); // Perform a rollback of any pending changes
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
         }
@@ -203,7 +168,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
         [HttpPost("[action]")]
         [Consumes("application/json")]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public IActionResult GenerateExcel([FromBody] PrimeNGPostRequestWithExport inputData) {
+        public IActionResult GenerateExcel([FromBody] ExcelExportRequestModel inputData) {
             IQueryable<TestDto> baseQuery = _context.TestTables
                    .AsNoTracking()
                    .Include(t => t.EmploymentStatus)
@@ -220,7 +185,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
                    );
             List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
             List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
-            (bool success, byte[]? file, string errorMsg) = PrimeNGHelper.GenerateExcelReport<TestDto>(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+            (bool success, byte[]? file, string errorMsg) = EcsPrimengTableService.GenerateExcelReport<TestDto>(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
             if(!success) {
                 return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
             }

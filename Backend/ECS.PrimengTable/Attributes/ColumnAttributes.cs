@@ -2,7 +2,7 @@
 
 namespace ECS.PrimengTable.Attributes {
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    sealed class ColumnAttributes : Attribute {
+    public sealed class ColumnAttributes : Attribute {
         public string Header { get; }
         public DataType DataType { get; }
         public DataAlignHorizontal DataAlignHorizontal { get; }
@@ -48,7 +48,6 @@ namespace ECS.PrimengTable.Attributes {
         /// <param name="dataTooltipShow">If <c>true</c>, data in a row when mouse hovers can be shown as tooltip. Useful for long data in a row</param>
         /// <param name="dataTooltipCustomColumnSource">A string that ig given a value, the tooltip will fetch the value from a column name that matches the provided value</param>
         /// <param name="frozenColumnAlign">An enum that indicates if the column is frozen and were it is aligned</param>
-
         /// <exception cref="ArgumentException">
         /// Thrown if an invalid dataAlign or dataType value is provided.
         /// </exception>
@@ -75,7 +74,6 @@ namespace ECS.PrimengTable.Attributes {
             CellOverflowBehaviour cellOverflowBehaviour = CellOverflowBehaviour.Hidden,
             bool cellOverflowBehaviourAllowUserEdit = true,
             double initialWidth = 0
-
         ) {
             Header = header;
             DataType = dataType;
