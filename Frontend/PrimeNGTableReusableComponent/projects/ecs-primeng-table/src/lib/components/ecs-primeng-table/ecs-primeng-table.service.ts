@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { ECSPrimengTableHttpService } from '../../services/http.service';
 import { Observable } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
-import { ECSPrimengTablePrimengColumnsAndAllowedPagination } from '../../interfaces/columns-and-allowed-pagination.interface';
-import { ECSPrimengTableNotificationService } from '../../services/notification.service';
+import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
+import { ColumnMetadata, TableConfiguration } from '../../interfaces';
+import { FrozenColumnAlign } from '../../enums';
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +14,8 @@ export class ECSPrimengTableService {
     private notification: ECSPrimengTableNotificationService
   ) {}
   
-  fetchTableColumns(url: string): Observable<HttpResponse<ECSPrimengTablePrimengColumnsAndAllowedPagination>>{
-      return this.http.handleHttpGetRequest<ECSPrimengTablePrimengColumnsAndAllowedPagination>(url);
+  fetchTableConfiguration(url: string): Observable<HttpResponse<TableConfiguration>>{
+      return this.http.handleHttpGetRequest<TableConfiguration>(url);
   }
   
   handleTableError(
@@ -24,5 +24,12 @@ export class ECSPrimengTableService {
   ): void {
     const message = error.message || 'Unknown error occurred';
     this.notification.showToast('error', customTitle, message);
+  }
+
+  orderColumnsWithFrozens(colsToOrder: ColumnMetadata[]): ColumnMetadata[]{
+    const frozenLeftColumns = colsToOrder.filter(col => col.frozenColumnAlign === FrozenColumnAlign.Left);
+    const frozenRightColumns = colsToOrder.filter(col => col.frozenColumnAlign === FrozenColumnAlign.Right);
+    const nonFrozenColumns = colsToOrder.filter(col => col.frozenColumnAlign === FrozenColumnAlign.Noone);
+    return [...frozenLeftColumns, ...nonFrozenColumns, ...frozenRightColumns];
   }
 }

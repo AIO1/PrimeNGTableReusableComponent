@@ -6,12 +6,10 @@ export * from './lib/components/ecs-primeng-table/ecs-primeng-table';
 export * from './lib/components/ecs-primeng-table/ecs-primeng-table.service';
 
 // ENUMS (GLOBAL)
-export * from './lib/enums/table-view-save-mode.enum';
+export * from './lib/enums';
 
 // INTERFACES (GLOBAL)
-export * from './lib/interfaces/columns-metadata.interface';
-export * from './lib/interfaces/columns-and-allowed-pagination.interface';
+export * from './lib/interfaces';
 
 // SERVICES (GLOBAL)
-export * from './lib/services/http.service';
-export * from './lib/services/notification.service';
+export * from './lib/services';

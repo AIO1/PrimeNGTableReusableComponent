@@ -111,21 +111,8 @@
                             </p-inputIcon>
                         }
                     </p-iconField>
-
-                    <!--<span 
-                        class="p-input-icon-left p-ml-auto" 
-                        [ngClass]="{'p-input-icon-right': globalSearchText}">
-                        <i class="pi pi-search" style="pointer-events: none;"></i>
-                        <input type="text" pInputText (input)="dt.filterGlobal($any($event.target).value, 'contains')" autocomplete="off" [maxlength]="globalSearchMaxLength" [placeholder]="globalSearchPlaceholder" [(ngModel)]="globalSearchText" [style]="{width: '220px'}"/>
-                        @if (globalSearchText) {
-                            <i 
-                                class="pi pi-times" 
-                                style="cursor: pointer;" 
-                                (click)="clearFilters(dt, true, true); $event.stopPropagation()">
-                            </i>
-                        }
-                    </span>-->
                 }
+
                 <!--EXPORT DATA-->
                 @if (reportSourceURL && reportSourceURL.trim().length > 0) {
                     <p-button
@@ -177,8 +164,24 @@
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.header) {
-                <th>
-                    {{ col.header }}
+                <th [ngStyle]="getColumnStyle(col, true)"
+                    pResizableColumn [pResizableColumnDisabled]="!col.canBeResized ? true : false"
+                    pReorderableColumn [pReorderableColumnDisabled]="!col.canBeReordered ? true : false"
+                    pFrozenColumn [frozen]="col.frozenColumnAlign === FrozenColumnAlign.Left || col.frozenColumnAlign === FrozenColumnAlign.Right" [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)"
+                    [pSortableColumn]="col.field" [pSortableColumnDisabled]="!col.canBeSorted ? true : false"
+                    style="text-align: center;"
+                    [id]="col.field + '-header'" [attr.scope]="'col'">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span>{{ col.header }}</span>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            @if (col.canBeSorted) {
+                                <p-sortIcon [field]="col.field"></p-sortIcon>
+                            }
+                            @if (col.columnDescription && col.columnDescription.length > 0) {
+                                <i [pTooltip]="col.columnDescription" tooltipPosition="top" class="pi pi-info-circle"></i>
+                            }
+                        </div>
+                    </div>
                 </th>
             }
         </tr>

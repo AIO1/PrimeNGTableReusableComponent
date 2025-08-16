@@ -1,4 +1,4 @@
-export enum ECSPrimengTableViewSaveMode {
+export enum TableViewSaveMode {
   noone,
   sessionStorage,
   localStorage,

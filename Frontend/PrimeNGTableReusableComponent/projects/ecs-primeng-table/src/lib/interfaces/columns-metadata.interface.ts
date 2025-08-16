@@ -1,36 +1,11 @@
-export enum ECSPrimengTableDataType {
-    Text,
-    Numeric,
-    Boolean,
-    Date
-}
-export enum ECSPrimengTableDataAlignHorizontal {
-    Left,
-    Center,
-    Right
-}
-export enum ECSPrimengTableDataAlignVertical {
-    Top,
-    Middle,
-    Bottom
-}
-export enum ECSPrimengTableFrozenColumnAlign {
-    Noone,
-    Left,
-    Right
-}
-export enum ECSPrimengTableCellOverflowBehaviour {
-    Hidden,
-    Wrap/*,
-    Ellipsis*/
-}
-export interface ECSPrimengTableColumnMetadata {
+import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
+export interface ColumnMetadata {
     field: string;
     header: string;
-    dataType: ECSPrimengTableDataType;
-    dataAlignHorizontal: ECSPrimengTableDataAlignHorizontal;
+    dataType: DataType;
+    dataAlignHorizontal: DataAlignHorizontal;
     dataAlignHorizontalAllowUserEdit: boolean;
-    dataAlignVertical: ECSPrimengTableDataAlignVertical;
+    dataAlignVertical: DataAlignVertical;
     dataAlignVerticalAllowUserEdit: boolean;
     canBeHidden: boolean;
     startHidden: boolean;
@@ -43,8 +18,8 @@ export interface ECSPrimengTableColumnMetadata {
     columnDescription: string;
     dataTooltipShow: boolean;
     dataTooltipCustomColumnSource: string;
-    frozenColumnAlign: ECSPrimengTableFrozenColumnAlign;
-    cellOverflowBehaviour: ECSPrimengTableCellOverflowBehaviour;
+    frozenColumnAlign: FrozenColumnAlign;
+    cellOverflowBehaviour: CellOverflowBehaviour;
     cellOverflowBehaviourAllowUserEdit: boolean;
     initialWidth: number;
 }
