@@ -7,6 +7,29 @@
     [columns]="columnsToShow" [value]="data" dataKey="rowID" 
     [lazy]="true" (onLazyLoad)="updateData($event)">
 
+    <!-- TEMPLATE FOR THE PREDIFINED FILTERS -->
+    <ng-template #predifinedFilterTemplate let-option="option" let-col="col" let-rowData="rowData">
+        @if (option.icon) {
+            <i [class]="option.icon" [style]="'vertical-align: middle; margin-right: 0.5rem; color: '+(option.iconColor || '') +';' +(option.iconStyle || '')"></i>
+        }
+        @if (!option.iconBlob && option.iconBlobSourceEndpoint) {
+            <p-skeleton size="28px" style="vertical-align: middle; margin-right: 0.5rem;"/>
+        }
+        @if (option.iconBlob) {
+            <img alt="iconBlob" [src]="getBlobIconAsUrl(option.iconBlob)" height="28" style="vertical-align: middle; margin-right: 0.5rem;"/>
+        }
+        @if (option.iconURL) {
+            <img alt="iconFromURL" [src]="option.iconURL" height="28" style="vertical-align: middle; margin-right: 0.5rem;"/>
+        }
+        @if (option.displayTag === true) {
+            <p-tag [style]="option.tagStyle" style="vertical-align: middle; margin-right: 0.5rem;">{{ option.name }}</p-tag>
+        }
+        @if (option.displayName === true) {
+            <span style="margin-left: 0.25rem; margin-top: 0.25rem;">{{ option.name }}</span>
+        }
+    </ng-template>
+
+
     <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
     <ng-template #caption>
         <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
@@ -137,25 +160,23 @@
                     />
                 }
                 
-                <!--HEADER ACTION BUTTONS-->
-                <!--
-                <td *ngIf="headerActionButtons.length > 0" style="display: flex; justify-content: center; align-items: center;">
-                    <ng-container *ngFor="let button of headerActionButtons">
-                        <button [disabled]="button.condition ? !button.condition(null) : false"
-                                [pTooltip]="button.tooltip || ''" 
-                                [tooltipDisabled]="!button.tooltip || button.tooltip.length === 0"
-                                [showDelay]="700"
-                                tooltipPosition="top"
-                                pButton pRipple
-                                [ngClass]="button.color"
-                                [icon]="button.icon ? button.icon : ''" 
-                                [label]="button.label ? button.label : ''" 
-                                (click)="button.action && handleButtonsClick(button.action, null)"
-                                style="margin-right: 10px;">
-                        </button>
-                    </ng-container>
-                </td>
-                -->
+                <!-- HEADER ACTION BUTTONS -->
+                @if (headerActionButtons.length > 0) {
+                    <td style="display: flex; justify-content: center; align-items: center;">
+                        @for (button of headerActionButtons; track $index) {
+                        <p-button
+                            [disabled]="button.condition ? !button.condition(null) : false"
+                            [pTooltip]="button.tooltip || ''"
+                            [tooltipDisabled]="!button.tooltip || button.tooltip.length === 0"
+                            [showDelay]="700"
+                            tooltipPosition="top"
+                            [styleClass]="button.color"
+                            [icon]="button.icon || ''"
+                            [label]="button.label || ''"
+                            (onClick)="button.action && handleButtonsClick(button.action, null)"/>
+                        }
+                    </td>
+                }
             </div>
         </div>
     </ng-template>
@@ -176,6 +197,36 @@
                         <div style="display: flex; align-items: center; gap: 4px;">
                             @if (col.canBeSorted) {
                                 <p-sortIcon [field]="col.field"></p-sortIcon>
+                            }
+                            @if (col.filterPredifinedValuesName?.length > 0) {
+                            <p-columnFilter
+                                type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu"
+                                [showButtons]="false" matchMode="in" operator="or" [showMatchModes]="false"
+                                [showOperator]="false" [showAddButton]="false" [showClearButton]="false" [showApplyButton]="false">
+                                <ng-template #filter>
+                                    <p-multiSelect
+                                        [style]="{ minWidth: '400px' }" [(ngModel)]="predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName]"
+                                        [options]="getPredifinedFilterValues(col.filterPredifinedValuesName)" [placeholder]="predifinedFiltersNoSelectionPlaceholder"
+                                        (onChange)="onPredifinedFilterChange(col.field, $event.value)" optionLabel="name">
+                                            <ng-template #selectedItems>
+                                            @if (predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName].length > 0) {
+                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                    <div>
+                                                        {{predifinedFiltersSelectedValuesText(col.filterPredifinedValuesName)}}
+                                                    </div>
+                                                </div>
+                                            } @else {
+                                                <div>{{ predifinedFiltersNoSelectionPlaceholder }}</div>
+                                            }
+                                            </ng-template>
+                                            <ng-template let-option pTemplate="item">
+                                                <div style="display: inline-block; vertical-align: middle;">
+                                                    <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option, col: col, rowData: '' }"></ng-container>
+                                                </div>
+                                            </ng-template>
+                                    </p-multiSelect>
+                                </ng-template>
+                            </p-columnFilter>
                             }
                             @if (col.columnDescription && col.columnDescription.length > 0) {
                                 <i [pTooltip]="col.columnDescription" tooltipPosition="top" class="pi pi-info-circle"></i>

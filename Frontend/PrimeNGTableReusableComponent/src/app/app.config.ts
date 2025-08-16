@@ -11,7 +11,8 @@ import { SharedService } from './core/services/shared.service';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from 'ecs-primeng-table';
 import { NotificationService } from './core/services/notification.service';
 import { HttpService } from './core/services/http.service';
-import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
+import { SpinnerInterceptor } from './core/interceptors/spinner.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,6 +34,11 @@ export const appConfig: ApplicationConfig = {
       withInterceptorsFromDi(),
       withFetch()
     ),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: SpinnerInterceptor,
+      multi: true,
+    },
     MessageService,
     SharedService,
     { provide: ECSPrimengTableNotificationService, useClass: NotificationService },
