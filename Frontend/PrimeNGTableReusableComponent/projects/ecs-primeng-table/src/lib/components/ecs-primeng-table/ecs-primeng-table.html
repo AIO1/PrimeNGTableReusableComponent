@@ -29,6 +29,84 @@
         }
     </ng-template>
 
+    <!-- TEMPLATE FOR THE ACTIONS HEADER COLUMN -->
+    <ng-template #actionColumnHeaderTemplate>
+        @if (rowActionButtons.length > 0) {
+            <th 
+            [ngStyle]="{
+                'max-width': actionsColumnWidth + 'px',
+                'min-width': actionsColumnWidth + 'px',
+                'width': actionsColumnWidth + 'px'
+            }"
+            pResizableColumn  [pResizableColumnDisabled]="!actionsColumnResizable" pFrozenColumn [frozen]="actionsColumnFrozen"
+            [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)"
+            id="actions-header"  [attr.scope]="'col'" style="text-align: center;">
+                {{ actionColumnName }}
+            </th>
+        }
+    </ng-template>
+
+    <!-- TEMPLATE FOR THE ACTIONS ROW COLUMN -->
+    <ng-template #actionColumnTemplate let-rowData="rowData">
+        @if (rowActionButtons.length > 0) {
+            <td [ngStyle]="{
+            'max-width': actionsColumnWidth + 'px', 
+            'min-width': actionsColumnWidth + 'px', 
+            'width': actionsColumnWidth + 'px'
+            }"
+            style="text-align: center; vertical-align: middle;" pFrozenColumn  [frozen]="actionsColumnFrozen" 
+            [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+            @for (button of rowActionButtons; track button) {
+                <p-button 
+                    [disabled]="button.condition ? !button.condition(rowData) : false"
+                    [ngClass]="button.color || 'p-button-outlined'"
+                    [icon]="button.icon || ''" 
+                    [label]="button.label || ''" 
+                    (onClick)="button.action && handleButtonsClick(button.action, rowData)" 
+                    [pTooltip]="button.tooltip || ''" 
+                    [showDelay]="700"
+                    tooltipPosition="top"/>
+            }
+            </td>
+        }
+    </ng-template>
+
+    <!-- TEMPLATE FOR THE ROW SELECTOR HEADER COLUMN -->
+    <ng-template #rowSelectorColumnHeaderTemplate>
+        <th 
+            [ngStyle]="{
+            'max-width': rowSelectorColumnWidth + 'px',
+            'min-width': rowSelectorColumnWidth + 'px',
+            'width': rowSelectorColumnWidth + 'px'
+            }"
+            id="rowSelector-header"  [attr.scope]="'col'" pResizableColumn [pResizableColumnDisabled]="!rowselectorColumnResizable" pFrozenColumn 
+            [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)"
+            style="text-align: center;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    {{ rowSelectorColumName }}
+                    <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"></p-columnFilter>
+                </div>
+        </th>
+    </ng-template>
+
+    
+    <!--TEMPLATE FOR THE ROW SELECTOR ROW COLUMN-->
+    <ng-template #rowSelectorColumnTemplate let-rowData="rowData">
+        <td 
+        [ngStyle]="{
+            'max-width': rowSelectorColumnWidth + 'px', 
+            'min-width': rowSelectorColumnWidth + 'px', 
+            'width': rowSelectorColumnWidth + 'px'
+        }"
+        style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="rowSelectorColumnFrozen" 
+        [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+        <p-checkbox 
+            [binary]="true"
+            [ngModel]="isRowSelected(rowData.rowID)"
+            (onChange)="onRowSelectChange($event, rowData.rowID)"/>
+        </td>
+    </ng-template>
+
 
     <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
     <ng-template #caption>
@@ -184,6 +262,12 @@
     <!-- LOGIC FOR DRAWING TABLE HEADERS -->
     <ng-template #header let-columns>
         <tr>
+            @if (!actionsColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="actionColumnHeaderTemplate"></ng-container>
+            }
+            @if (rowSelectorColumnActive && !rowSelectorColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
+            }
             @for (col of columns; track col.header) {
                 <th [ngStyle]="getColumnStyle(col, true)"
                     pResizableColumn [pResizableColumnDisabled]="!col.canBeResized ? true : false"
@@ -198,35 +282,39 @@
                             @if (col.canBeSorted) {
                                 <p-sortIcon [field]="col.field"></p-sortIcon>
                             }
-                            @if (col.filterPredifinedValuesName?.length > 0) {
-                            <p-columnFilter
-                                type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu"
-                                [showButtons]="false" matchMode="in" operator="or" [showMatchModes]="false"
-                                [showOperator]="false" [showAddButton]="false" [showClearButton]="false" [showApplyButton]="false">
-                                <ng-template #filter>
-                                    <p-multiSelect
-                                        [style]="{ minWidth: '400px' }" [(ngModel)]="predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName]"
-                                        [options]="getPredifinedFilterValues(col.filterPredifinedValuesName)" [placeholder]="predifinedFiltersNoSelectionPlaceholder"
-                                        (onChange)="onPredifinedFilterChange(col.field, $event.value)" optionLabel="name">
-                                            <ng-template #selectedItems>
-                                            @if (predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName].length > 0) {
-                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                    <div>
-                                                        {{predifinedFiltersSelectedValuesText(col.filterPredifinedValuesName)}}
-                                                    </div>
-                                                </div>
-                                            } @else {
-                                                <div>{{ predifinedFiltersNoSelectionPlaceholder }}</div>
-                                            }
-                                            </ng-template>
-                                            <ng-template let-option pTemplate="item">
-                                                <div style="display: inline-block; vertical-align: middle;">
-                                                    <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option, col: col, rowData: '' }"></ng-container>
-                                                </div>
-                                            </ng-template>
-                                    </p-multiSelect>
-                                </ng-template>
-                            </p-columnFilter>
+                            @if(col.canBeFiltered){
+                                @if (!col.filterPredifinedValuesName || col.filterPredifinedValuesName.length === 0) {
+                                    <p-columnFilter [type]="getDataTypeAsText(col.dataType)" [field]="col.field" display="menu" [showButtons]="false"/>
+                                } @else {
+                                    <p-columnFilter
+                                        type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu"
+                                        [showButtons]="false" matchMode="in" operator="or" [showMatchModes]="false"
+                                        [showOperator]="false" [showAddButton]="false" [showClearButton]="false" [showApplyButton]="false">
+                                        <ng-template #filter>
+                                            <p-multiSelect
+                                                [style]="{ minWidth: '400px' }" [(ngModel)]="predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName]"
+                                                [options]="getPredifinedFilterValues(col.filterPredifinedValuesName)" [placeholder]="predifinedFiltersNoSelectionPlaceholder"
+                                                (onChange)="onPredifinedFilterChange(col.field, $event.value)" optionLabel="name">
+                                                    <ng-template #selectedItems>
+                                                    @if (predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName].length > 0) {
+                                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                            <div>
+                                                                {{predifinedFiltersSelectedValuesText(col.filterPredifinedValuesName)}}
+                                                            </div>
+                                                        </div>
+                                                    } @else {
+                                                        <div>{{ predifinedFiltersNoSelectionPlaceholder }}</div>
+                                                    }
+                                                    </ng-template>
+                                                    <ng-template let-option pTemplate="item">
+                                                        <div style="display: inline-block; vertical-align: middle;">
+                                                            <ng-container *ngTemplateOutlet="predifinedFilterTemplate; context: { option: option, col: col, rowData: '' }"></ng-container>
+                                                        </div>
+                                                    </ng-template>
+                                            </p-multiSelect>
+                                        </ng-template>
+                                    </p-columnFilter>
+                                }
                             }
                             @if (col.columnDescription && col.columnDescription.length > 0) {
                                 <i [pTooltip]="col.columnDescription" tooltipPosition="top" class="pi pi-info-circle"></i>
@@ -235,16 +323,100 @@
                     </div>
                 </th>
             }
+            @if (rowSelectorColumnActive && rowSelectorColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
+            }
+            @if (actionsColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="actionColumnHeaderTemplate"></ng-container>
+            }
         </tr>
     </ng-template>
 
     <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
     <ng-template #body let-rowData let-columns="columns"> 
         <tr>
-            @for (col of columns; track col.header) {
-                <td>
-                    {{ rowData[col.field] }}
+            @if (!actionsColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="actionColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
+            }
+            @if (rowSelectorColumnActive && !rowSelectorColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
+            }
+            @for (col of columns; track col.field) {
+                <td (mousedown)="col.dataType !== DataType.Boolean && copyToClipboardStart($event)" (mouseup)="copyToClipboardCancel()"
+                    [ngStyle]="getColumnStyle(col)" pFrozenColumn [frozen]="col.frozenColumnAlign === FrozenColumnAlign.Left || col.frozenColumnAlign === FrozenColumnAlign.Right" 
+                    [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)" [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)">
+                    @if (rowData[col.field] !== null) {
+                        @if (col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0) {
+                            <div
+                                [ngStyle]="{
+                                    'display': 'flex',
+                                    'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
+                                    'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
+                                }">
+                                @if (getPredfinedFilterMatch(col, rowData[col.field]); as option) {
+                                    <div 
+                                        [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                            ? rowData[col.dataTooltipCustomColumnSource] 
+                                            : rowData[col.field]"
+                                        [tooltipDisabled]="!col.dataTooltipShow"
+                                        [showDelay]="700"
+                                        tooltipPosition="top">
+                                        <ng-container [ngTemplateOutlet]="predifinedFilterTemplate" [ngTemplateOutletContext]="{ option: option, col: col, rowData: rowData }"></ng-container>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        @else {
+                            @switch (col.dataType) {
+                                @case (DataType.Boolean) {
+                                    <i class="pi"
+                                        [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                            ? rowData[col.dataTooltipCustomColumnSource] 
+                                            : rowData[col.field]"  
+                                        [tooltipDisabled]="!col.dataTooltipShow || !col.dataTooltipCustomColumnSource || col.dataTooltipCustomColumnSource.length === 0"
+                                        [showDelay]="700"
+                                        tooltipPosition="top"
+                                        [style.color]="rowData[col.field] ? 'green' : 'red'"
+                                        [ngClass]="{ 'pi-check-circle': rowData[col.field], 'pi-times-circle': !rowData[col.field] }"
+                                    ></i>
+                                }
+                                @case (DataType.Date) {
+                                    <div [innerHtml]="highlightText(formatDate(rowData[col.field]), col, globalSearchText)"
+                                        [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                            ? rowData[col.dataTooltipCustomColumnSource] 
+                                            : formatDate(rowData[col.field])" 
+                                        [tooltipDisabled]="!col.dataTooltipShow" [showDelay]="700" tooltipPosition="top">
+                                        {{ formatDate(rowData[col.field]) }}
+                                    </div>
+                                }
+                                @default {
+                                    <div 
+                                        [innerHtml]="highlightText(rowData[col.field], col, globalSearchText)"
+                                        [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                                            ? rowData[col.dataTooltipCustomColumnSource] 
+                                            : rowData[col.field]"
+                                        [tooltipDisabled]="!col.dataTooltipShow"
+                                        [showDelay]="700"
+                                        tooltipPosition="top"
+                                    >
+                                        {{ rowData[col.field] }}
+                                    </div>
+                                }
+                            }
+                        }
+                    }
+                    @else {
+                        <ng-template #nullContent>
+                            <!-- Content for null cases, by default, don't draw anything -->
+                        </ng-template>
+                    }
                 </td>
+            }
+            @if (rowSelectorColumnActive && rowSelectorColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
+            }
+            @if (actionsColumnAligmentRight) {
+                <ng-container [ngTemplateOutlet]="actionColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
             }
         </tr>
     </ng-template>

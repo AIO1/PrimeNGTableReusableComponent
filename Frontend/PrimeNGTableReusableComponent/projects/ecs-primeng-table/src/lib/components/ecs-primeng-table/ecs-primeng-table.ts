@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 
 // PrimeNG imports
 import { Table, TableModule } from 'primeng/table';
@@ -11,6 +11,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { CheckboxModule } from 'primeng/checkbox';
 
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
 
@@ -20,7 +21,8 @@ import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { FormsModule } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
 import { FilterMetadata } from 'primeng/api';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { ECSPrimengTableNotificationService } from '../../services';
 
 
 @Component({
@@ -36,7 +38,8 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
     InputIconModule,
     MultiSelectModule,
     SkeletonModule,
-    TagModule
+    TagModule,
+    CheckboxModule
   ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
@@ -45,7 +48,9 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 export class ECSPrimengTable implements OnInit {
   constructor(
     private tableService: ECSPrimengTableService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private notification: ECSPrimengTableNotificationService,
+    private datePipe: DatePipe,
   ) {}
   @Input() data: any[] = []; // The array of data to be displayed
   @Input() columnsToShow: ColumnMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
@@ -61,7 +66,24 @@ export class ECSPrimengTable implements OnInit {
   @Input() predifinedFiltersCollectionSelectedValuesText: string = "items selected"; // A text to display in the predifined filters dropdown footer indicating the number of items that have been selected
   @Input() rowActionButtons: ActionButton[] = []; // A list that contains all buttons that will appear in the actions column
   @Input() headerActionButtons: ActionButton[] = []; // A list that contains all buttons that will appear in the right side of the header of the table
-
+  @Input() copyCellDataToClipboardTimeSecs: number = 0.5; // The amount of time since mouse down in a cell for its content to be copied to the clipboard. If you want to disable this functionality, put it to a value less than or equal to 0.
+  @Input() actionsColumnAligmentRight: boolean = true; // If actions column is put at the right end of the table (or false if its at the left)
+  @Input() actionsColumnWidth: number = 150; // The amount in pixels for the size of the actions column
+  @Input() actionsColumnFrozen: boolean = true; // If the actions column should be frozen
+  @Input() rowSelectorColumnActive: boolean = false; // By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
+  @Input() rowSelectorColumName: string = "Selected"; // The title of the row selection column. By default is "Selected"
+  @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
+  @Input() rowSelectorColumnWidth: number = 150; // The amount in pixels for the size of the selector column
+  @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
+  @Input() actionsColumnResizable: boolean = false; // If the action column can be resized by the user
+  @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
+  @Input() rowselectorColumnResizable: boolean = false;
+  @Output() selectedRowsChange = new EventEmitter<{
+    rowID: any,
+    selected: boolean
+  }>(); // Emitter that returns the column selected and if it was selected or unselected
+  
+  selectedRows: any[] = []; // An array to keep all the selected rows
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   showRefreshData=true;
   scrollHeight: string = "0px"; // Used to get the table height
@@ -88,7 +110,7 @@ export class ECSPrimengTable implements OnInit {
   columnsCantBeHidden: ColumnMetadata[] = [];
   columnsSelected: ColumnMetadata[] = [];
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
-  
+  private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
   
   ngOnInit(): void {
     this.fetchTableConfiguration();
@@ -271,5 +293,111 @@ export class ECSPrimengTable implements OnInit {
     if (action) { // If the button has an assigned action
       action(rowData); // Perform the action
     }
+  }
+
+  /**
+   * Checks if the provided column metadata matches a specific style of the predefined filters 
+   * that need to be applied to an item on a row.
+   *
+   * @param {IprimengColumnsMetadata} colMetadata - The metadata of the column being checked.
+   * @param {any} value - The value to be matched against the predefined filter values.
+   * @returns {any} The matching predefined filter value if found, otherwise null.
+   */
+  getPredfinedFilterMatch(colMetadata: ColumnMetadata, value: any): any {
+    if (colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0) { // Check if the column uses predefined filter values
+        const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName); // Get the predefined filter values based on the name
+        return options.find(option => option.value === value); // Return the matching option if found
+    }
+    return null; // Return null if the column does not use predefined filter values
+  }
+
+  copyToClipboardStart(event: MouseEvent) {
+    if(this.copyCellDataToClipboardTimeSecs>0) {
+      const cellContent = (event.target as HTMLElement).innerText;
+      this.copyCellDataTimer = setTimeout(() => {
+        navigator.clipboard.writeText(cellContent).then(() => {
+          this.notification.clearToasts();
+          this.notification.showToast("info", "CELL CONTENT COPIED", "The cell content has been copied to your clipboard.");
+        }).catch(err => {
+          this.notification.clearToasts();
+          this.notification.showToast("error", "CELL CONTENT COPIED", `The cell content failed to copy to your clipboard with error: ${err}`);
+        });
+      }, this.copyCellDataToClipboardTimeSecs*1000 );
+    }
+  }
+
+  copyToClipboardCancel(){
+    if(this.copyCellDataToClipboardTimeSecs>0) {
+      clearTimeout(this.copyCellDataTimer);
+    }
+  }
+
+  getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal): string {
+    switch (dataAlignHorizontal) {
+      case DataAlignHorizontal.Left:
+        return 'left';
+      case DataAlignHorizontal.Center:
+        return 'center';
+      case DataAlignHorizontal.Right:
+        return 'right';
+      default:
+        return 'center';
+    }
+  }
+
+  getDataAlignVerticalAsText(dataAlignVertical: DataAlignVertical): string {
+    switch (dataAlignVertical) {
+      case DataAlignVertical.Top:
+        return 'top';
+      case DataAlignVertical.Middle:
+        return 'middle';
+      case DataAlignVertical.Bottom:
+        return 'bottom';
+      default:
+        return 'middle';
+    }
+  }
+
+  highlightText(cellValue: any, colMetadata: ColumnMetadata, globalSearchText: string | null): SafeHtml {
+    return this.tableService.highlightText(cellValue, colMetadata, globalSearchText);
+  }
+
+  /**
+   * Formats a date value to a specific string format. Provided date will be assumed to be in UTC
+   *
+   * @param {any} value - The date value to be formatted.
+   * @returns {string} - The formatted date string in 'dd-MMM-yyyy HH:mm:ss' format followed by the timezone, or empty string if the provided value is invalid or undefined.
+   * 
+   * @example
+   * // Example date value
+   * const dateValue: Date = new Date();
+   * 
+   * // Use formatDate to get the formatted date string
+   * const formattedDate: string = formatDate(dateValue);
+   * 
+   * // Output might be: '18-Jun-2024 14:30:00 GMT+0000'
+   */
+  formatDate(value: any): string{
+    let formattedDate = undefined; // By default, formattedDate will be undefined
+    if(value){ // If value is not undefined
+      formattedDate = this.datePipe.transform(value, this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
+    }
+    return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
+  }
+
+  isRowSelected(rowID: any): boolean {
+    return this.selectedRows.includes(rowID);
+  }
+
+  onRowSelectChange(event: any, rowID: any): void {
+    if (event.checked) { // Add the selected item
+        this.selectedRows.push(rowID);
+    } else { // Remove the selected item
+        this.selectedRows = this.selectedRows.filter(selectedId => selectedId !== rowID);
+    }
+    this.selectedRowsChange.emit({
+      rowID: rowID,
+      selected: event.checked
+    });
   }
 }

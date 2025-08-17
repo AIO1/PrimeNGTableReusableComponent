@@ -14,6 +14,10 @@ import { HttpService } from './core/services/http.service';
 import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 import { SpinnerInterceptor } from './core/interceptors/spinner.interceptor';
 
+import { DatePipe, registerLocaleData } from '@angular/common';
+import es from '@angular/common/locales/es';
+registerLocaleData(es);
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync(),
@@ -41,6 +45,7 @@ export const appConfig: ApplicationConfig = {
     },
     MessageService,
     SharedService,
+    DatePipe,
     { provide: ECSPrimengTableNotificationService, useClass: NotificationService },
     { provide: ECSPrimengTableHttpService, useClass: HttpService },
   ]
