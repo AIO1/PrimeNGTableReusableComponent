@@ -272,22 +272,87 @@ export class ECSPrimengTable implements OnInit {
     }*/
   }
 
-  clearFilters(a: any, b?: any, c?: any): void {
-
+  clearFilters(dt: Table, force: boolean = false, onlyGlobalFilter: boolean = false): void{
+    let hasToClear = this.hasToClearFilters(dt, this.globalSearchText, force);
+    if(hasToClear){
+      if(!onlyGlobalFilter){
+        this.predifinedFiltersSelectedValuesCollection = {};
+        for (const key in dt.filters) {
+          if (dt.filters.hasOwnProperty(key)) {
+            const filters = dt.filters[key];
+            if (Array.isArray(filters)) {
+              filters.forEach(filter => {
+                filter.value = null;  // Establecer el valor a null
+              });
+            } else {
+              filters.value = null; // Establecer el valor a null
+            }
+          }
+        }
+        let filters = {...this.dt.filters};
+        dt.columns?.forEach(
+          element => {
+            dt.filter(null, element.field, element.matchMode)
+          }
+        );
+        this.dt.filters = filters;
+      }
+      this.globalSearchText = null;
+      dt.filterGlobal('','');
+    }
   }
 
   showColumnModal(): void {
 
   }
 
-  clearSorts(dt: any): void {
+  clearSorts(dt: Table, force: boolean = false): void{
+    let hasToClear = this.hasToClearSorts(dt, force);
+    if(hasToClear){
+      dt.multiSortMeta = [];
+      dt.sortMultiple();
+    }
+  }
+  hasToClearSorts(dt: Table, force: boolean = false): boolean{
+    let hasToClear: boolean = false;
+    const hasSorts = (dt.multiSortMeta && dt.multiSortMeta.length > 0);
+    if(force || hasSorts){
+      hasToClear = true;
+    }
+    return hasToClear;
+  }
+  hasToClearFilters(dt: Table, globalSearchText: string|null, force:boolean = false): boolean{
+    let hasToClear: boolean = false;
+    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(dt.filters)
+    const hasFilters = this.hasFilters(filtersWithoutGlobalAndSelectedRows);
+    const hasGlobalFilter = (globalSearchText && globalSearchText.trim() !== "");
+    if(force || hasFilters || hasGlobalFilter){
+      hasToClear = true;
+    }
+    return hasToClear;
+  }
 
-  }
-  hasToClearSorts(dt: any): boolean {
-    return false;
-  }
-  hasToClearFilters(dt: any, globalSearchText: any): boolean {
-    return false;
+  /**
+   * Determines whether there are active filters based on the provided filter rules.
+   *
+   * @param {any} filterRules An object representing filter rules for each column.
+   *   The keys are column names, and the values are arrays of filter rules.
+   *   Each filter rule has the following properties:
+   *     - `field`: The field or property name of the column.
+   *     - `value`: The filter value entered by the user.
+   *     - Other properties depending on the type of filter (e.g., `matchMode` for string filters).
+   * @returns {boolean} `true` if at least one active filter is found, otherwise `false`.
+   */
+  private hasFilters(filterRules: any): boolean {
+    for (const columnName of Object.keys(filterRules)) { // Iterate over each column name in the filter rules
+        const columnFilters = filterRules[columnName]; // Get the filter rules for the current column
+        for (const filterRule of columnFilters) { // Iterate over each filter rule for the current column
+            if (filterRule.value !== null && filterRule.value !== "") { // Check if the filter value is not null or an empty string
+                return true; // At least one active filter found
+            }
+        }
+    }
+    return false; // No active filters found
   }
   openExcelReport(): void {
 
