@@ -1,0 +1,29 @@
+@if (option?.icon) {
+  <i [class]="option.icon"
+     [style]="'vertical-align: middle; margin-right: 0.5rem; color: '+(option.iconColor || '') +';' +(option.iconStyle || '')"></i>
+}
+@if (!option?.iconBlob && option?.iconBlobSourceEndpoint) {
+  <p-skeleton size="28px"
+              style="vertical-align: middle; margin-right: 0.5rem;"/>
+}
+@if (option?.iconBlob) {
+  <img alt="iconBlob"
+       [src]="getBlobIconAsUrl(option.iconBlob)"
+       height="28"
+       style="vertical-align: middle; margin-right: 0.5rem;"/>
+}
+@if (option?.iconURL) {
+  <img alt="iconFromURL"
+       [src]="option.iconURL"
+       height="28"
+       style="vertical-align: middle; margin-right: 0.5rem;"/>
+}
+@if (option?.displayTag === true) {
+  <p-tag [style]="option.tagStyle"
+         style="vertical-align: middle; margin-right: 0.5rem;">
+    {{ option.name }}
+  </p-tag>
+}
+@if (option?.displayName === true) {
+  <span style="margin-left: 0.25rem; margin-top: 0.25rem;">{{ option.name }}</span>
+}

@@ -20,4 +20,16 @@ export class HttpService extends ECSPrimengTableHttpService {
   ): Observable<HttpResponse<T>> {
     return this.sharedService.handleHttpGetRequest(servicePoint, httpOptions, showSpinner, customErrorHandler, showAPIError, responseType);
   }
+
+  handleHttpPostRequest<T>(
+    servicePoint: string,
+    data: any,
+    httpOptions: HttpHeaders | null = null,
+    showSpinner: boolean = true,
+    customErrorHandler: ((error: any) => Observable<any>) | null = null,
+    showAPIError: boolean = false,
+    responseType: 'json' | 'blob' = 'json'
+  ): Observable<HttpResponse<T>> {
+    return this.sharedService.handleHttpPostRequest(servicePoint, data, httpOptions, showSpinner, customErrorHandler, showAPIError, responseType);
+  }
 }

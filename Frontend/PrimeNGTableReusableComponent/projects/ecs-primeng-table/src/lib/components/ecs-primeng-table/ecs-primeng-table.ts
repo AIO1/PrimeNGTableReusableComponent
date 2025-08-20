@@ -1,28 +1,33 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 // PrimeNG imports
-import { Table, TableModule } from 'primeng/table';
+import { Table, TableLazyLoadEvent, TableModule, TablePageEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { SkeletonModule } from 'primeng/skeleton';
-import { TagModule } from 'primeng/tag';
 import { CheckboxModule } from 'primeng/checkbox';
+import { PaginatorModule } from 'primeng/paginator';
 
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
 
-import { ActionButton, ColumnMetadata, PredifinedFilter, TableConfiguration } from '../../interfaces';
+import { ActionButton, ColumnMetadata, PredifinedFilter, TableConfiguration, TablePagedResponse, TableQueryRequest } from '../../interfaces';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { FormsModule } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
 import { FilterMetadata } from 'primeng/api';
-import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { SafeHtml } from '@angular/platform-browser';
 import { ECSPrimengTableNotificationService } from '../../services';
+import { highlightText } from '../../utils/highlight-text';
+import { TableCell } from '../table-cell/table-cell';
+import { dataAlignHorizontalAsText, dataAlignVerticalAsText, frozenColumnAlignAsText } from '../../utils';
+import { TablePredifinedFilters } from '../table-predifined-filters/table-predifined-filters';
+import { TableActionButton } from '../action-button/table-action-button';
+import { TableActionColumn } from '../table-action-column/table-action-column';
 
 
 @Component({
@@ -37,20 +42,22 @@ import { ECSPrimengTableNotificationService } from '../../services';
     IconFieldModule,
     InputIconModule,
     MultiSelectModule,
-    SkeletonModule,
-    TagModule,
-    CheckboxModule
+    CheckboxModule,
+    PaginatorModule,
+    TableCell,
+    TablePredifinedFilters,
+    TableActionButton,
+    TableActionColumn
   ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
-  styles: ''
+  styleUrl: './ecs-primeng-table.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class ECSPrimengTable implements OnInit {
   constructor(
     private tableService: ECSPrimengTableService,
-    private sanitizer: DomSanitizer,
-    private notification: ECSPrimengTableNotificationService,
-    private datePipe: DatePipe,
+    private notification: ECSPrimengTableNotificationService
   ) {}
   @Input() data: any[] = []; // The array of data to be displayed
   @Input() columnsToShow: ColumnMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
@@ -60,6 +67,7 @@ export class ECSPrimengTable implements OnInit {
   @Input() globalSearchPlaceholder: string = "Search keyword"; // The placeholder text to show if global search is enabled
   @Input() columnEditorEnabled: boolean = true; // If the user can modify the columns thorugh the column editor
   @Input() urlColumnsSource!: string; // The source URL to get data from columns
+  @Input() urlDataSource!:string; // The URL to fetch data from
   @Input() reportSourceURL: string | null = null;
   @Input() predifinedFiltersCollection: { [key: string]: PredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
   @Input() predifinedFiltersNoSelectionPlaceholder: string = "Any value"; // A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters
@@ -78,12 +86,15 @@ export class ECSPrimengTable implements OnInit {
   @Input() actionsColumnResizable: boolean = false; // If the action column can be resized by the user
   @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
   @Input() rowselectorColumnResizable: boolean = false;
+  @Input() noDataFoundText: string = "No data found for the current filter criteria."; // The text to be shown when no data has been returned
+  @Input() showClearSortAndFilters: boolean = true;
   @Output() selectedRowsChange = new EventEmitter<{
     rowID: any,
     selected: boolean
   }>(); // Emitter that returns the column selected and if it was selected or unselected
   
   selectedRows: any[] = []; // An array to keep all the selected rows
+  @ViewChild(TableActionColumn, { static: false }) actionColumnTpl!: TableActionColumn;
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   showRefreshData=true;
   scrollHeight: string = "0px"; // Used to get the table height
@@ -111,23 +122,23 @@ export class ECSPrimengTable implements OnInit {
   columnsSelected: ColumnMetadata[] = [];
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
   private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
-  
+  tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
+  private initialConfigurationFetched: boolean = false;
   ngOnInit(): void {
     this.fetchTableConfiguration();
   }
 
   fetchTableConfiguration(): void {
     this.tableService.fetchTableConfiguration(this.urlColumnsSource).subscribe({
-      next: (response: HttpResponse<TableConfiguration>) => this.handleTableColumnsResponse(response.body!),
+      next: (response: HttpResponse<TableConfiguration>) => {
+        this.handleTableConfigurationResponse(response.body!);
+        this.fetchTableData(this.tableLazyLoadEventInformation);
+      },
       error: (err) => this.tableService.handleTableError(err, 'Columns Error')
     });
   }
 
-  fetchTableData(): void {
-    
-  }
-
-  private handleTableColumnsResponse(body: TableConfiguration): void {
+  private handleTableConfigurationResponse(body: TableConfiguration): void {
     this.allowedRowsPerPage = body.allowedItemsPerPage; // Update the number of rows allowed per page
     this.currentRowsPerPage = Math.min(...this.allowedRowsPerPage); // Update the current rows per page to use the minimum value of allowed rows per page by default
     this.columns = body.columnsInfo; // Update columns with fetched data
@@ -138,10 +149,127 @@ export class ECSPrimengTable implements OnInit {
     this.dateTimezone = body.dateTimezone;
     this.dateCulture = body.dateCulture;
     this.currentPage = 0;
+    this.initialConfigurationFetched = true;
+  }
+  refreshData(event: any){
+    this.fetchTableData(this.tableLazyLoadEventInformation);
+  }
+  fetchTableData(event: TableLazyLoadEvent): void {
+    if (!this.initialConfigurationFetched) {
+      return;
+    }
+    this.tableLazyLoadEventInformation = event; // Store the event information for later use
+    if (event.rows != null && event.rows !== undefined) {
+      this.currentRowsPerPage = event.rows;
+    }
+    if (event.first != null && event.first !== undefined && event.rows != null && event.rows !== undefined) {
+      this.currentPage = event.first / event.rows;
+    }
+    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
+    filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
+    const requestData: TableQueryRequest = {
+      page: this.currentPage, // Set the current page number
+      pageSize: this.currentRowsPerPage, // Set the number of rows per page
+      sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
+      filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
+      globalFilter: this.globalSearchText, // Set the global filter text
+      columns: /*(tableView && tableView.columnsShown && tableView.columnsShown.length > 0) 
+        ? tableView.columnsShown.map(col => col.field)
+        :*/ this.columnsToShow.map(col => col.field), // Set the columns to show
+      dateFormat: this.dateFormat,
+      dateTimezone: this.dateTimezone,
+      dateCulture: this.dateCulture
+    };
+    this.tableService.fetchTableData(this.urlDataSource, requestData).subscribe({
+      next: (response: HttpResponse<TablePagedResponse>) => this.handleTableDataResponse(response.body!),
+      error: (err) => this.tableService.handleTableError(err, 'Columns Error')
+    });
   }
 
-  updateData(event: any): void {
+  private modifyFiltersWithoutGlobalAndSelectedRows(filters: any, overrideOption: number = -1): any {
+    if (this.globalSearchText === "") { // If the global search text is an empty string
+      this.globalSearchText = null; // Set it to null
+    }
+    let filtersWithoutGlobalAndSelectedRows = { ...filters }; // Create a copy of filters to delete the global.
+    if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('global')) { // If there is an entry with the global filter
+      delete filtersWithoutGlobalAndSelectedRows['global']; // Remove the global filter
+    }
+    this.selectorRowFilterBuilder(filtersWithoutGlobalAndSelectedRows, overrideOption);
+    return filtersWithoutGlobalAndSelectedRows; // Return the filters without global array
+  }
 
+  private selectorRowFilterBuilder(filtersWithoutGlobalAndSelectedRows: any, overrideOption: number = -1){
+    if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('selector')) {
+      const selectorFilter = filtersWithoutGlobalAndSelectedRows['selector'][0];
+      let filterType: boolean | null = null;
+      if(overrideOption<0 || overrideOption>2){
+        filterType = selectorFilter.value;
+      } else {
+        switch (overrideOption){
+          case 0: // All
+            filterType = null;
+            break;
+          case 1: // Only selected rows
+            filterType = true;
+            break;
+          case 2: // Only NOT selected
+            filterType = false;
+            break;
+        }
+      }
+      if (!filtersWithoutGlobalAndSelectedRows.hasOwnProperty('rowID')) {
+          filtersWithoutGlobalAndSelectedRows['rowID'] = [
+              {
+                  "value": null,
+                  "matchMode": "in",
+                  "operator": "or"
+              }
+          ];
+      }
+      const idFilter = filtersWithoutGlobalAndSelectedRows['rowID'][0];
+      if (filterType === true) {
+          idFilter.matchMode = "in";
+          idFilter.value = this.selectedRows;
+      } else if (filterType === false) {
+          idFilter.operator = "and"
+          idFilter.matchMode = "notIn";
+          idFilter.value = this.selectedRows;
+      } else if (filterType === null) {
+          idFilter.value = null;
+          idFilter.matchMode = "in";
+      }
+    }
+  }
+
+  revertDateTimeZoneFilters(inputFilter: any){
+    this.columnsToShow.forEach((column) => {
+      if (column.dataType === DataType.Date) { // If its date type
+        if (inputFilter.hasOwnProperty(column.field)) {
+          const originalDate = inputFilter[column.field][0].value;
+          if(originalDate !== null && originalDate instanceof Date){
+            const utcDate = new Date(Date.UTC(originalDate.getFullYear(), originalDate.getMonth(), originalDate.getDate()))
+            inputFilter[column.field][0].value=utcDate;
+          }
+        }
+      }
+    });
+    return inputFilter;
+  }
+
+  handleTableDataResponse(body: TablePagedResponse): void{
+    this.data = body.data; // Update the table data
+    this.totalRecords = body.totalRecords; // Update the total number of records
+    this.totalRecordsNotFiltered = body.totalRecordsNotFiltered; // Update the total records not filtered
+    this.currentPage = body.page; // Update the current page
+    /*if(tableView && tableView.columnsShown && tableView.columnsShown.length > 0) {
+      this.columnsSelected = tableView.columnsShown
+        .map(data => this.columns.find((col: any) => col.field === data.field))
+        .filter((col): col is IprimengColumnsMetadata => col !== undefined)
+        .filter(col => !this.columnsNonSelectable.includes(col));
+      this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
+      this.updateColumnsSpecialProperties(tableView.columnsShown);
+      this.dt.restoreColumnWidths();
+    }*/
   }
 
   clearFilters(a: any, b?: any, c?: any): void {
@@ -187,14 +315,7 @@ export class ECSPrimengTable implements OnInit {
   }
 
   getFrozenColumnAlignAsText(frozenColumnAlign: FrozenColumnAlign): string {
-    switch (frozenColumnAlign) {
-      case FrozenColumnAlign.Left:
-        return 'left';
-      case FrozenColumnAlign.Right:
-        return 'right';
-      default:
-        return 'left';
-    }
+    return frozenColumnAlignAsText(frozenColumnAlign);
   }
 
   getDataTypeAsText(dataType: DataType): string {
@@ -249,50 +370,8 @@ export class ECSPrimengTable implements OnInit {
     return `${numbItemsSelected} ${this.predifinedFiltersCollectionSelectedValuesText}`; // Return the number of selected items concatenated with the predefined text
   }
 
-  /**
-   * Converts a blob from the database to a safe URL that can be used to display an image.
-   *
-   * This function takes a `Blob` object, converts it to a base64 encoded string, and returns a `SafeUrl` 
-   * that can be used in an HTML template to display the image securely. The `SafeUrl` ensures that 
-   * Angular's security mechanisms are bypassed correctly, preventing potential security risks.
-   *
-   * @param {Blob} blob - The blob object representing the image data from the database.
-   * @returns {SafeUrl} A safe URL that can be used to display the image in an HTML template.
-   * 
-   * @example
-   * // Example usage in a component
-   * const imageBlob = new Blob([binaryData], { type: 'image/jpeg' });
-   * const imageUrl = this.getBlobIconAsUrl(imageBlob);
-   * 
-   * // In your HTML template
-   * <img [src]="imageUrl" alt="Image">
-   */
-  getBlobIconAsUrl(blob: Blob): SafeUrl {
-    let objectURL = `data:image/jpeg;base64,${blob}`; // Create a base64 encoded string from the blob data
-    return this.sanitizer.bypassSecurityTrustUrl(objectURL); // Bypass Angular's security mechanisms to create a SafeUrl
-  }
-
-  /**
-   * Handles click events on action buttons in a row of data.
-   * 
-   * @param {function} action - The action function to be executed when the button is clicked. It should accept one parameter, which is the row data.
-   * @param {any} [rowData=null] - The data of the row corresponding to the clicked button. Defaults to null.
-   * 
-   * @returns {void}
-   * 
-   * @example
-   * // Define an action for a button
-   * const deleteAction = (rowData) => {
-   *   console.log(`Delete row with id: ${rowData.rowID}`);
-   * };
-   * 
-   * // Use handleButtonsClick with row data
-   * handleButtonsClick(deleteAction, { rowID: 1, name: 'John Doe' });
-   */
   handleButtonsClick(action: (rowData: any) => void, rowData: any = null): void {
-    if (action) { // If the button has an assigned action
-      action(rowData); // Perform the action
-    }
+    this.tableService.handleButtonsClick(action, rowData);
   }
 
   /**
@@ -332,57 +411,15 @@ export class ECSPrimengTable implements OnInit {
     }
   }
 
-  getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal): string {
-    switch (dataAlignHorizontal) {
-      case DataAlignHorizontal.Left:
-        return 'left';
-      case DataAlignHorizontal.Center:
-        return 'center';
-      case DataAlignHorizontal.Right:
-        return 'right';
-      default:
-        return 'center';
-    }
+  getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal){
+    dataAlignHorizontalAsText(dataAlignHorizontal);
   }
-
-  getDataAlignVerticalAsText(dataAlignVertical: DataAlignVertical): string {
-    switch (dataAlignVertical) {
-      case DataAlignVertical.Top:
-        return 'top';
-      case DataAlignVertical.Middle:
-        return 'middle';
-      case DataAlignVertical.Bottom:
-        return 'bottom';
-      default:
-        return 'middle';
-    }
+  getDataAlignVerticalAsText(dataAlignVertical: DataAlignVertical){
+    dataAlignVerticalAsText(dataAlignVertical);
   }
 
   highlightText(cellValue: any, colMetadata: ColumnMetadata, globalSearchText: string | null): SafeHtml {
-    return this.tableService.highlightText(cellValue, colMetadata, globalSearchText);
-  }
-
-  /**
-   * Formats a date value to a specific string format. Provided date will be assumed to be in UTC
-   *
-   * @param {any} value - The date value to be formatted.
-   * @returns {string} - The formatted date string in 'dd-MMM-yyyy HH:mm:ss' format followed by the timezone, or empty string if the provided value is invalid or undefined.
-   * 
-   * @example
-   * // Example date value
-   * const dateValue: Date = new Date();
-   * 
-   * // Use formatDate to get the formatted date string
-   * const formattedDate: string = formatDate(dateValue);
-   * 
-   * // Output might be: '18-Jun-2024 14:30:00 GMT+0000'
-   */
-  formatDate(value: any): string{
-    let formattedDate = undefined; // By default, formattedDate will be undefined
-    if(value){ // If value is not undefined
-      formattedDate = this.datePipe.transform(value, this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
-    }
-    return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
+    return highlightText(cellValue, colMetadata, globalSearchText);
   }
 
   isRowSelected(rowID: any): boolean {
@@ -399,5 +436,10 @@ export class ECSPrimengTable implements OnInit {
       rowID: rowID,
       selected: event.checked
     });
+  }
+
+  pageChange(event: TablePageEvent): void {
+    this.currentPage = event.rows ? event.first / event.rows : 0;
+    this.currentRowsPerPage = event.rows;
   }
 }

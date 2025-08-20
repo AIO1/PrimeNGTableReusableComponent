@@ -1,0 +1,35 @@
+<!-- TEMPLATE FOR THE ACTIONS HEADER COLUMN -->
+<ng-template #actionColumnHeaderTemplate>
+  @if (rowActionButtons.length > 0) {
+    <th 
+      [ngStyle]="{
+        'max-width': actionsColumnWidth + 'px',
+        'min-width': actionsColumnWidth + 'px',
+        'width': actionsColumnWidth + 'px'
+      }"
+      pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable"
+      pFrozenColumn [frozen]="actionsColumnFrozen"
+      [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight)" id="actions-header"
+      [attr.scope]="'col'" style="text-align: center;">
+      {{ actionColumnName }}
+    </th>
+  }
+</ng-template>
+
+<!-- TEMPLATE FOR THE ACTIONS ROW COLUMN -->
+<ng-template #actionColumnTemplate let-rowData="rowData">
+  @if (rowActionButtons.length > 0) {
+    <td 
+      [ngStyle]="{
+        'max-width': actionsColumnWidth + 'px',
+        'min-width': actionsColumnWidth + 'px',
+        'width': actionsColumnWidth + 'px'
+      }"
+      style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="actionsColumnFrozen"
+      [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight)">
+      @for (button of rowActionButtons; track button) {
+        <ecs-table-action-button [button]="button" [rowData]="rowData" (clicked)="handleButtonsClick($event, rowData)"/>
+      }
+    </td>
+  }
+</ng-template>

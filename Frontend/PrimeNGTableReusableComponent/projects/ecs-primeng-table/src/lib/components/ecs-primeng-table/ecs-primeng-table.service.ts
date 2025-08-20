@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
-import { ColumnMetadata, TableConfiguration } from '../../interfaces';
+import { ColumnMetadata, TableConfiguration, TablePagedResponse } from '../../interfaces';
 import { DataType, FrozenColumnAlign } from '../../enums';
 import { SafeHtml } from '@angular/platform-browser';
+import { TableQueryRequest } from '../../interfaces/table-query-request.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,9 @@ export class ECSPrimengTableService {
   
   fetchTableConfiguration(url: string): Observable<HttpResponse<TableConfiguration>>{
       return this.http.handleHttpGetRequest<TableConfiguration>(url);
+  }
+  fetchTableData(url: string, postData: TableQueryRequest): Observable<HttpResponse<TablePagedResponse>>{
+      return this.http.handleHttpPostRequest<TablePagedResponse>(url, postData);
   }
   
   handleTableError(
@@ -32,6 +36,29 @@ export class ECSPrimengTableService {
     const frozenRightColumns = colsToOrder.filter(col => col.frozenColumnAlign === FrozenColumnAlign.Right);
     const nonFrozenColumns = colsToOrder.filter(col => col.frozenColumnAlign === FrozenColumnAlign.Noone);
     return [...frozenLeftColumns, ...nonFrozenColumns, ...frozenRightColumns];
+  }
+
+  /**
+   * Handles click events on action buttons in a row of data.
+   * 
+   * @param {function} action - The action function to be executed when the button is clicked. It should accept one parameter, which is the row data.
+   * @param {any} [rowData=null] - The data of the row corresponding to the clicked button. Defaults to null.
+   * 
+   * @returns {void}
+   * 
+   * @example
+   * // Define an action for a button
+   * const deleteAction = (rowData) => {
+   *   console.log(`Delete row with id: ${rowData.rowID}`);
+   * };
+   * 
+   * // Use handleButtonsClick with row data
+   * handleButtonsClick(deleteAction, { rowID: 1, name: 'John Doe' });
+   */
+  handleButtonsClick(action: (rowData: any) => void, rowData: any = null): void {
+    if (action) { // If the button has an assigned action
+      action(rowData); // Perform the action
+    }
   }
 
     /**

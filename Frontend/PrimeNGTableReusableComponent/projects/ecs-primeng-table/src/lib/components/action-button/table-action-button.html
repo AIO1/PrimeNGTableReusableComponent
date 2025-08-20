@@ -1,0 +1,10 @@
+<p-button
+  [disabled]="isDisabled()"
+  [pTooltip]="button.tooltip || ''"
+  [tooltipDisabled]="!button.tooltip || button.tooltip.length === 0"
+  [showDelay]="700"
+  tooltipPosition="top"
+  [styleClass]="button.color || 'p-button-outlined'"
+  [icon]="button.icon || ''"
+  [label]="button.label || ''"
+  (onClick)="handleClick()"/>

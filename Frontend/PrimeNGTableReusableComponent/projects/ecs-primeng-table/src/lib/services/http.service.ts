@@ -13,4 +13,14 @@ export abstract class ECSPrimengTableHttpService {
     showAPIError?: boolean,
     responseType?: 'json' | 'blob'
   ): Observable<HttpResponse<T>>;
+
+  abstract handleHttpPostRequest<T>(
+    servicePoint: string,
+    data: any,
+    httpOptions?: HttpHeaders | null,
+    showSpinner?: boolean,
+    customErrorHandler?: ((error: any) => Observable<any>) | null,
+    showAPIError?: boolean,
+    responseType?: 'json' | 'blob'
+  ): Observable<HttpResponse<T>>;
 }
