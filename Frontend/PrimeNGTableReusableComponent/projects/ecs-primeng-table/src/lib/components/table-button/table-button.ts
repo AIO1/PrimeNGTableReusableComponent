@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.service';
@@ -12,7 +12,8 @@ import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.s
     TooltipModule
   ],
   standalone: true,
-  templateUrl: './table-button.html'
+  templateUrl: './table-button.html',
+  styleUrl: './table-button.scss'
 })
 export class TableButton {
   constructor(
@@ -20,6 +21,8 @@ export class TableButton {
   ) {}
   @Input() button: any;
   @Input() rowData: any;
+  @Input() isActionButton: boolean = false;
+  @Input() isLastActionButton: boolean = false;
 
   @Output() clicked = new EventEmitter<any>();
 

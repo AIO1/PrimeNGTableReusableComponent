@@ -8,7 +8,33 @@
     [paginator]="true" [first]="currentPage * currentRowsPerPage" [rows]="currentRowsPerPage" [totalRecords]="totalRecords"
     [rowsPerPageOptions]="allowedRowsPerPage" [showCurrentPageReport]="false" (onPage)="pageChange($event)"
     [lazy]="true" (onLazyLoad)="fetchTableData($event)">
-    <ecs-table-action-column #actionColumn [rowActionButtons]="rowActionButtons" style="display: none;"/><!--QUITAR-->
+
+    <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
+    <ng-template #actionColumnHeaderTemplate>
+        @if (rowActionButtons.length > 0) {
+            <th [ngStyle]="{'max-width': actionsColumnWidth + 'px','min-width': actionsColumnWidth + 'px','width': actionsColumnWidth + 'px'}"
+                pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable" pFrozenColumn [frozen]="actionsColumnFrozen"
+                [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)" id="actions-header"
+                [attr.scope]="'col'" style="text-align: center;">
+                {{ actionColumnName }}
+            </th>
+        }
+    </ng-template>
+
+    <!--TEMPLATE FOR THE ACTIONS ROW COLUMN-->
+    <ng-template #actionColumnTemplate let-rowData="rowData">
+        @if (rowActionButtons.length > 0) {
+            <td 
+                [ngStyle]="{'max-width': actionsColumnWidth + 'px','min-width': actionsColumnWidth + 'px','width': actionsColumnWidth + 'px'}"
+                style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="actionsColumnFrozen"
+                [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+                @for (button of rowActionButtons; track button; let last = $last) {
+                    <ecs-table-button [button]="button" [rowData]="rowData" [isActionButton]="true" [isLastActionButton]="last" (clicked)="handleButtonsClick($event, rowData)"/>
+                }
+            </td>
+        }
+    </ng-template>
+
     <!-- TEMPLATE FOR THE ROW SELECTOR HEADER COLUMN -->
     <ng-template #rowSelectorColumnHeaderTemplate>
         <th 
@@ -144,8 +170,8 @@
     <!-- LOGIC FOR DRAWING TABLE HEADERS -->
     <ng-template #header let-columns>
         <tr>
-            @if (actionColumnTpl && !actionsColumnAligmentRight) {
-                <ng-container [ngTemplateOutlet]="actionColumnTpl.headerTpl"></ng-container>
+            @if (!actionsColumnAligmentRight) {
+                <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
             }
             @if (rowSelectorColumnActive && !rowSelectorColumnAligmentRight) {
                 <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
@@ -208,8 +234,8 @@
             @if (rowSelectorColumnActive && rowSelectorColumnAligmentRight) {
                 <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
             }
-            @if (actionColumnTpl && actionsColumnAligmentRight) {
-                <ng-container [ngTemplateOutlet]="actionColumnTpl.headerTpl"></ng-container>
+            @if (actionsColumnAligmentRight) {
+                <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
             }
         </tr>
     </ng-template>
@@ -217,8 +243,8 @@
     <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
     <ng-template #body let-rowData let-columns="columns"> 
         <tr>
-            @if (actionColumnTpl && !actionsColumnAligmentRight) {
-                <ng-container [ngTemplateOutlet]="actionColumnTpl.rowTpl" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
+            @if (!actionsColumnAligmentRight) {
+                <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
             }
             @if (rowSelectorColumnActive && !rowSelectorColumnAligmentRight) {
                 <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
@@ -235,8 +261,8 @@
             @if (rowSelectorColumnActive && rowSelectorColumnAligmentRight) {
                 <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
             }
-            @if (actionColumnTpl && actionsColumnAligmentRight) {
-                <ng-container [ngTemplateOutlet]="actionColumnTpl.rowTpl" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
+            @if (actionsColumnAligmentRight) {
+                <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
             }
         </tr>
     </ng-template>

@@ -4,7 +4,9 @@
   [tooltipDisabled]="!button.tooltip || button.tooltip.length === 0"
   [showDelay]="700"
   tooltipPosition="top"
-  [styleClass]="button.color || 'p-button-outlined'"
+  [styleClass]="(button.color || 'p-button-outlined') + (isActionButton ? ' custom-small-btn' : '')"
   [icon]="button.icon || ''"
   [label]="button.label || ''"
+  [size]="isActionButton ? 'small': undefined"
+  [ngStyle]="isActionButton && !isLastActionButton ? {'margin-right':'10px'} : {}"
   (onClick)="handleClick()"/>

@@ -24,7 +24,6 @@ import { ECSPrimengTableNotificationService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
 import { TablePredifinedFilters } from '../table-predifined-filters/table-predifined-filters';
 import { TableButton } from '../table-button/table-button';
-import { TableActionColumn } from '../table-action-column/table-action-column';
 
 @Component({
   selector: 'ecs-primeng-table',
@@ -42,8 +41,7 @@ import { TableActionColumn } from '../table-action-column/table-action-column';
     PaginatorModule,
     TableCell,
     TablePredifinedFilters,
-    TableButton,
-    TableActionColumn
+    TableButton
   ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
@@ -90,7 +88,6 @@ export class ECSPrimengTable implements OnInit {
   }>(); // Emitter that returns the column selected and if it was selected or unselected
   
   selectedRows: any[] = []; // An array to keep all the selected rows
-  @ViewChild(TableActionColumn, { static: false }) actionColumnTpl!: TableActionColumn;
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   showRefreshData=true;
   scrollHeight: string = "0px"; // Used to get the table height
