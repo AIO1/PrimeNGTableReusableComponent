@@ -7,6 +7,7 @@
     [columns]="columnsToShow" [value]="data" dataKey="rowID" 
     [paginator]="true" [first]="currentPage * currentRowsPerPage" [rows]="currentRowsPerPage" [totalRecords]="totalRecords"
     [rowsPerPageOptions]="allowedRowsPerPage" [showCurrentPageReport]="false" (onPage)="pageChange($event)"
+    [metaKeySelection]="true" selectionMode="single" [(selection)]="rowSelection" (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect($event)"
     [lazy]="true" (onLazyLoad)="fetchTableData($event)">
 
     <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
@@ -35,25 +36,21 @@
         }
     </ng-template>
 
-    <!-- TEMPLATE FOR THE ROW SELECTOR HEADER COLUMN -->
+    <!-- TEMPLATE FOR THE ROW CHECKBOX SELECTOR HEADER COLUMN -->
     <ng-template #rowSelectorColumnHeaderTemplate>
         <th 
-            [ngStyle]="{
-            'max-width': rowSelectorColumnWidth + 'px',
-            'min-width': rowSelectorColumnWidth + 'px',
-            'width': rowSelectorColumnWidth + 'px'
-            }"
+            [ngStyle]="{'max-width': rowSelectorColumnWidth + 'px','min-width': rowSelectorColumnWidth + 'px','width': rowSelectorColumnWidth + 'px'}"
             id="rowSelector-header"  [attr.scope]="'col'" pResizableColumn [pResizableColumnDisabled]="!rowselectorColumnResizable" pFrozenColumn 
             [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)"
-            style="text-align: center;">
+            style="text-align: center; vertical-align: middle;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     {{ rowSelectorColumName }}
-                    <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"></p-columnFilter>
+                    <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"/>
                 </div>
         </th>
     </ng-template>
 
-    <!--TEMPLATE FOR THE ROW SELECTOR ROW COLUMN-->
+    <!--TEMPLATE FOR THE ROW CHECKBOX SELECTOR COLUMN-->
     <ng-template #rowSelectorColumnTemplate let-rowData="rowData">
         <td 
         [ngStyle]="{
@@ -65,8 +62,8 @@
         [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
         <p-checkbox 
             [binary]="true"
-            [ngModel]="isRowSelected(rowData.rowID)"
-            (onChange)="onRowSelectChange($event, rowData.rowID)"/>
+            [ngModel]="isRowSelectedCheckbox(rowData.rowID)"
+            (onChange)="onRowSelectChekboxChange($event, rowData.rowID)"/>
         </td>
     </ng-template>
 
@@ -242,7 +239,7 @@
 
     <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
     <ng-template #body let-rowData let-columns="columns"> 
-        <tr>
+        <tr [pSelectableRow]="rowData">
             @if (!actionsColumnAligmentRight) {
                 <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
             }

@@ -1,9 +1,28 @@
-<ecs-primeng-table
+<ecs-primeng-table #dt
+    [isActive]="false"
     urlColumnsSource="Main/TestGetCols"
     urlDataSource="Main/TestGetData"
     [computeScrollHeight]="false"
-    reportSourceURL="abc"
+    reportSourceURL="Main/GenerateExcel"
+    [predifinedFiltersCollection]="predifinedFiltersCollection"
     [headerActionButtons]="headerActionButtons"
     [rowActionButtons]="rowActionButtons"
     [actionsColumnFrozen]="true"
+    [rowSelectorColumnActive]="true"
+    [rowSelectorColumnAligmentRight]="false"
+    [rowSelectorColumnWidth]="125"
+    [actionsColumnWidth]="110"
+    (rowSelect)="rowSelect($event)"
+    (rowUnselect)="rowUnselect($event)"
 />
+
+
+<!--<ecs-primeng-table #dt
+    (selectedRowsChange)="rowSelect($event)"
+    [computeScrollHeight]="true"
+    reportSourceURL="Main/GenerateExcel"
+    [tableViewSaveAs]="enumTableViewSaveMode.databaseStorage"
+    viewsGetSourceURL="Main/GetViews"
+    viewsSaveSourceURL="Main/SaveViews"
+    tableViewSaveKey="TEST">
+</ecs-primeng-table>-->

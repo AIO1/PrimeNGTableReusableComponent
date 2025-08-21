@@ -5,12 +5,14 @@ import { TooltipModule } from 'primeng/tooltip';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, highlightText } from '../../utils';
 import { IColumnMetadata, IPredifinedFilter } from '../../interfaces';
 import { SafeHtml } from '@angular/platform-browser';
+import { TablePredifinedFilters } from "../table-predifined-filters/table-predifined-filters";
 @Component({
   selector: 'ecs-table-cell',
   imports: [
     CommonModule,
-    TooltipModule
-  ],
+    TooltipModule,
+    TablePredifinedFilters
+],
   standalone: true,
   templateUrl: './table-cell.html'
 })

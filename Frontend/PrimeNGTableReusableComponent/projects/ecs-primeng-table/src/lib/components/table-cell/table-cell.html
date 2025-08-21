@@ -1,7 +1,13 @@
+<!--
+[ngStyle]="{
+            'display': 'flex',
+            'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
+            'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
+        }">
+-->
 @if (value !== null) {
   @if (col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0) {
     <div [ngStyle]="{
-            'display': 'flex',
             'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
             'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
         }">
@@ -11,7 +17,7 @@
           [tooltipDisabled]="!col.dataTooltipShow"
           [showDelay]="700"
           tooltipPosition="top">
-          <ng-container [ngTemplateOutlet]="col.predifinedFilterTemplate" [ngTemplateOutletContext]="{ option: option, col: col, rowData: rowData }"></ng-container>
+          <ecs-table-predifined-filters [option]="option" [col]="col"/>
         </div>
       }
     </div>

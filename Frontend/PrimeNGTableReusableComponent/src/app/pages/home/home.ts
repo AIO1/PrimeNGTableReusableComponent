@@ -1,6 +1,7 @@
-import { Component, ViewChild } from '@angular/core';
-import { ITableButton, ECSPrimengTable } from 'ecs-primeng-table';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ITableButton, ECSPrimengTable, IPredifinedFilter } from 'ecs-primeng-table';
 import { SharedService } from '../../core/services/shared.service';
+import { IEmploymentStatus } from './employment-status.interface';
 
 @Component({
   selector: 'ecs-home',
@@ -11,9 +12,10 @@ import { SharedService } from '../../core/services/shared.service';
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })
-export class Home {
+export class Home implements OnInit {
   constructor(private sharedService: SharedService){}
   @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
+
   headerActionButtons: ITableButton[] = [
     {
       icon: 'pi pi-file',
@@ -44,4 +46,41 @@ export class Home {
       }
     }
   ];
+
+  employmentStatusPredifinedFilter: IPredifinedFilter[] = []; // Contains the data for the possible employment statuses
+  predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {
+    'employmentStatusPredifinedFilter': this.employmentStatusPredifinedFilter
+  };
+
+  ngOnInit(): void {
+    this.getEmploymentStatus(); // Retrieve the possible employment status
+  }
+  private getEmploymentStatus(){
+    this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
+      next: (responseData: IEmploymentStatus[]) => {
+        responseData.forEach((data) => {
+          this.employmentStatusPredifinedFilter.push({
+            value: data.statusName,
+            name: data.statusName,
+            displayTag: true,
+            tagStyle: {
+              background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
+            }
+          })
+        });
+        this.dt.updateData();
+      },
+      error: err => {
+        this.sharedService.dataFecthError("ERROR IN GET EMPLOYMENT STATUS", err);
+      }
+    });
+  }
+  rowSelect(event: any){
+    this.sharedService.clearToasts();
+    this.sharedService.showToast("info","SELECTED A ROW",`Selected row with ID ${event.rowID}`);
+  }
+  rowUnselect(event: any){
+    this.sharedService.clearToasts();
+    this.sharedService.showToast("info","UNSELECTED A ROW",`Unselected row with ID ${event.rowID}`);
+  }
 }

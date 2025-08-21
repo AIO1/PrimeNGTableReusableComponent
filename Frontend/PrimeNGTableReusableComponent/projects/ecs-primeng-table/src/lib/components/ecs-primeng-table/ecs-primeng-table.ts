@@ -5,7 +5,7 @@ import { HttpResponse } from '@angular/common/http';
 import { SafeHtml } from '@angular/platform-browser';
 
 // PrimeNG imports
-import { Table, TableLazyLoadEvent, TableModule, TablePageEvent } from 'primeng/table';
+import { Table, TableLazyLoadEvent, TableModule, TablePageEvent, TableRowSelectEvent, TableRowUnSelectEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
@@ -53,6 +53,7 @@ export class ECSPrimengTable implements OnInit {
     private tableService: ECSPrimengTableService,
     private notification: ECSPrimengTableNotificationService
   ) {}
+  @Input() isActive: boolean = true;
   @Input() data: any[] = []; // The array of data to be displayed
   @Input() columnsToShow: IColumnMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
   @Input() computeScrollHeight: boolean = true; // If true, the table will try not to grow more than the total height of the window vertically
@@ -72,7 +73,7 @@ export class ECSPrimengTable implements OnInit {
   @Input() actionsColumnAligmentRight: boolean = true; // If actions column is put at the right end of the table (or false if its at the left)
   @Input() actionsColumnWidth: number = 150; // The amount in pixels for the size of the actions column
   @Input() actionsColumnFrozen: boolean = true; // If the actions column should be frozen
-  @Input() rowSelectorColumnActive: boolean = false; // By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
+  @Input() rowSelectorColumnActive: boolean = false; // By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRowsCheckbox.
   @Input() rowSelectorColumName: string = "Selected"; // The title of the row selection column. By default is "Selected"
   @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
   @Input() rowSelectorColumnWidth: number = 150; // The amount in pixels for the size of the selector column
@@ -82,12 +83,20 @@ export class ECSPrimengTable implements OnInit {
   @Input() rowselectorColumnResizable: boolean = false;
   @Input() noDataFoundText: string = "No data found for the current filter criteria."; // The text to be shown when no data has been returned
   @Input() showClearSortAndFilters: boolean = true;
-  @Output() selectedRowsChange = new EventEmitter<{
+  @Output() rowSelectCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean
   }>(); // Emitter that returns the column selected and if it was selected or unselected
+  @Output() rowSelect = new EventEmitter<{
+    rowID: any,
+    rowData: any
+  }>
+  @Output() rowUnselect = new EventEmitter<{
+    rowID: any,
+    rowData: any
+  }>
   
-  selectedRows: any[] = []; // An array to keep all the selected rows
+  selectedRowsCheckbox: any[] = []; // An array to keep all the selected rows
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   showRefreshData=true;
   scrollHeight: string = "0px"; // Used to get the table height
@@ -100,6 +109,7 @@ export class ECSPrimengTable implements OnInit {
   FrozenColumnAlign = FrozenColumnAlign;
   TableViewSaveMode = TableViewSaveMode;
 
+  rowSelection: any;
   currentPage: number = 0; // The current page we are at
   currentRowsPerPage: number = 0; // The current rows per page selected
   allowedRowsPerPage: number[] = []; // The different values of rows per page allowed
@@ -121,7 +131,26 @@ export class ECSPrimengTable implements OnInit {
     this.fetchTableConfiguration();
   }
 
+  /**
+   * Used to update the data of a table externally outside the component. Use this method instead of 'updateData' to force the data updata of a table
+   *
+   * @param {(optionalData?: any) => void} [continueAction] - Optional action to execute after data retrieval if it succeeded.
+   * @param {boolean} [uponContinueActionEndModalHttp=false] - Optional flag to set the loading indicator to inactive after data retrieval.
+   */
+  updateData(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false): void {
+    this.isActive = true; // Indicate that the table is now enabled to perform actions
+    if (!this.initialConfigurationFetched) {
+      this.fetchTableConfiguration();
+    } else {
+      this.fetchTableData(this.tableLazyLoadEventInformation);
+    }
+    //this.updateData(this.tableLazyLoadEventInformation, continueAction, uponContinueActionEndModalHttp); // Force the data of the table to be updated
+  }
+
   fetchTableConfiguration(): void {
+    if(!this.isActive){
+      return;
+    }
     this.tableService.fetchTableConfiguration(this.urlColumnsSource).subscribe({
       next: (response: HttpResponse<ITableConfiguration>) => {
         this.handleTableConfigurationResponse(response.body!);
@@ -148,6 +177,9 @@ export class ECSPrimengTable implements OnInit {
     this.fetchTableData(this.tableLazyLoadEventInformation);
   }
   fetchTableData(event: TableLazyLoadEvent): void {
+    if(!this.isActive){
+      return;
+    }
     if (!this.initialConfigurationFetched) {
       return;
     }
@@ -222,11 +254,11 @@ export class ECSPrimengTable implements OnInit {
       const idFilter = filtersWithoutGlobalAndSelectedRows['rowID'][0];
       if (filterType === true) {
           idFilter.matchMode = "in";
-          idFilter.value = this.selectedRows;
+          idFilter.value = this.selectedRowsCheckbox;
       } else if (filterType === false) {
           idFilter.operator = "and"
           idFilter.matchMode = "notIn";
-          idFilter.value = this.selectedRows;
+          idFilter.value = this.selectedRowsCheckbox;
       } else if (filterType === null) {
           idFilter.value = null;
           idFilter.matchMode = "in";
@@ -456,22 +488,33 @@ export class ECSPrimengTable implements OnInit {
     return highlightText(cellValue, colMetadata, globalSearchText);
   }
 
-  isRowSelected(rowID: any): boolean {
-    return this.selectedRows.includes(rowID);
+  isRowSelectedCheckbox(rowID: any): boolean {
+    return this.selectedRowsCheckbox.includes(rowID);
   }
 
-  onRowSelectChange(event: any, rowID: any): void {
+  onRowSelectChekboxChange(event: any, rowID: any): void {
     if (event.checked) { // Add the selected item
-        this.selectedRows.push(rowID);
+        this.selectedRowsCheckbox.push(rowID);
     } else { // Remove the selected item
-        this.selectedRows = this.selectedRows.filter(selectedId => selectedId !== rowID);
+        this.selectedRowsCheckbox = this.selectedRowsCheckbox.filter(selectedId => selectedId !== rowID);
     }
-    this.selectedRowsChange.emit({
+    this.rowSelectCheckboxChange.emit({
       rowID: rowID,
       selected: event.checked
     });
   }
-
+  onRowSelect(event: TableRowSelectEvent<any>): void{
+    this.rowSelect.emit({
+      rowID: event.data.rowID,
+      rowData: event.data
+    });
+  }
+  onRowUnselect(event: TableRowUnSelectEvent<any>): void{
+    this.rowUnselect.emit({
+      rowID: event.data.rowID,
+      rowData: event.data
+    });
+  }
   pageChange(event: TablePageEvent): void {
     this.currentPage = event.rows ? event.first / event.rows : 0;
     this.currentRowsPerPage = event.rows ? event.rows : 0;
