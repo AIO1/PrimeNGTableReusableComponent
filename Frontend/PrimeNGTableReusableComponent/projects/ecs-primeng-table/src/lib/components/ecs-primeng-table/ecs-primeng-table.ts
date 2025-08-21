@@ -1,5 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpResponse } from '@angular/common/http';
+import { SafeHtml } from '@angular/platform-browser';
 
 // PrimeNG imports
 import { Table, TableLazyLoadEvent, TableModule, TablePageEvent } from 'primeng/table';
@@ -11,24 +14,17 @@ import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { CheckboxModule } from 'primeng/checkbox';
 import { PaginatorModule } from 'primeng/paginator';
-
-import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
-
-import { ActionButton, ColumnMetadata, PredifinedFilter, TableConfiguration, TablePagedResponse, TableQueryRequest } from '../../interfaces';
+import { FilterMetadata } from 'primeng/api';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
-import { FormsModule } from '@angular/forms';
-import { HttpResponse } from '@angular/common/http';
-import { FilterMetadata } from 'primeng/api';
-import { SafeHtml } from '@angular/platform-browser';
+import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
+import { ITableButton, IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest } from '../../interfaces';
+import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText, highlightText } from '../../utils';
 import { ECSPrimengTableNotificationService } from '../../services';
-import { highlightText } from '../../utils/highlight-text';
 import { TableCell } from '../table-cell/table-cell';
-import { dataAlignHorizontalAsText, dataAlignVerticalAsText, frozenColumnAlignAsText } from '../../utils';
 import { TablePredifinedFilters } from '../table-predifined-filters/table-predifined-filters';
-import { TableActionButton } from '../action-button/table-action-button';
+import { TableButton } from '../table-button/table-button';
 import { TableActionColumn } from '../table-action-column/table-action-column';
-
 
 @Component({
   selector: 'ecs-primeng-table',
@@ -46,7 +42,7 @@ import { TableActionColumn } from '../table-action-column/table-action-column';
     PaginatorModule,
     TableCell,
     TablePredifinedFilters,
-    TableActionButton,
+    TableButton,
     TableActionColumn
   ],
   standalone: true,
@@ -60,7 +56,7 @@ export class ECSPrimengTable implements OnInit {
     private notification: ECSPrimengTableNotificationService
   ) {}
   @Input() data: any[] = []; // The array of data to be displayed
-  @Input() columnsToShow: ColumnMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
+  @Input() columnsToShow: IColumnMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
   @Input() computeScrollHeight: boolean = true; // If true, the table will try not to grow more than the total height of the window vertically
   @Input() globalSearchEnabled: boolean = true; // Used to enable or disable the global search (by default enabled)
   @Input() globalSearchMaxLength: number = 50; // The maximun number of characters that can be input in the global filter
@@ -69,11 +65,11 @@ export class ECSPrimengTable implements OnInit {
   @Input() urlColumnsSource!: string; // The source URL to get data from columns
   @Input() urlDataSource!:string; // The URL to fetch data from
   @Input() reportSourceURL: string | null = null;
-  @Input() predifinedFiltersCollection: { [key: string]: PredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
+  @Input() predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
   @Input() predifinedFiltersNoSelectionPlaceholder: string = "Any value"; // A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters
   @Input() predifinedFiltersCollectionSelectedValuesText: string = "items selected"; // A text to display in the predifined filters dropdown footer indicating the number of items that have been selected
-  @Input() rowActionButtons: ActionButton[] = []; // A list that contains all buttons that will appear in the actions column
-  @Input() headerActionButtons: ActionButton[] = []; // A list that contains all buttons that will appear in the right side of the header of the table
+  @Input() rowActionButtons: ITableButton[] = []; // A list that contains all buttons that will appear in the actions column
+  @Input() headerActionButtons: ITableButton[] = []; // A list that contains all buttons that will appear in the right side of the header of the table
   @Input() copyCellDataToClipboardTimeSecs: number = 0.5; // The amount of time since mouse down in a cell for its content to be copied to the clipboard. If you want to disable this functionality, put it to a value less than or equal to 0.
   @Input() actionsColumnAligmentRight: boolean = true; // If actions column is put at the right end of the table (or false if its at the left)
   @Input() actionsColumnWidth: number = 150; // The amount in pixels for the size of the actions column
@@ -117,9 +113,9 @@ export class ECSPrimengTable implements OnInit {
   dateTimezone: string = "+00:00";
   dateCulture: string = "en-US";
 
-  columns: ColumnMetadata[] = [];
-  columnsCantBeHidden: ColumnMetadata[] = [];
-  columnsSelected: ColumnMetadata[] = [];
+  columns: IColumnMetadata[] = [];
+  columnsCantBeHidden: IColumnMetadata[] = [];
+  columnsSelected: IColumnMetadata[] = [];
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
   private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
   tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
@@ -130,7 +126,7 @@ export class ECSPrimengTable implements OnInit {
 
   fetchTableConfiguration(): void {
     this.tableService.fetchTableConfiguration(this.urlColumnsSource).subscribe({
-      next: (response: HttpResponse<TableConfiguration>) => {
+      next: (response: HttpResponse<ITableConfiguration>) => {
         this.handleTableConfigurationResponse(response.body!);
         this.fetchTableData(this.tableLazyLoadEventInformation);
       },
@@ -138,7 +134,7 @@ export class ECSPrimengTable implements OnInit {
     });
   }
 
-  private handleTableConfigurationResponse(body: TableConfiguration): void {
+  private handleTableConfigurationResponse(body: ITableConfiguration): void {
     this.allowedRowsPerPage = body.allowedItemsPerPage; // Update the number of rows allowed per page
     this.currentRowsPerPage = Math.min(...this.allowedRowsPerPage); // Update the current rows per page to use the minimum value of allowed rows per page by default
     this.columns = body.columnsInfo; // Update columns with fetched data
@@ -167,7 +163,7 @@ export class ECSPrimengTable implements OnInit {
     }
     let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
     filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
-    const requestData: TableQueryRequest = {
+    const requestData: ITableQueryRequest = {
       page: this.currentPage, // Set the current page number
       pageSize: this.currentRowsPerPage, // Set the number of rows per page
       sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
@@ -181,7 +177,7 @@ export class ECSPrimengTable implements OnInit {
       dateCulture: this.dateCulture
     };
     this.tableService.fetchTableData(this.urlDataSource, requestData).subscribe({
-      next: (response: HttpResponse<TablePagedResponse>) => this.handleTableDataResponse(response.body!),
+      next: (response: HttpResponse<ITablePagedResponse>) => this.handleTableDataResponse(response.body!),
       error: (err) => this.tableService.handleTableError(err, 'Columns Error')
     });
   }
@@ -256,7 +252,7 @@ export class ECSPrimengTable implements OnInit {
     return inputFilter;
   }
 
-  handleTableDataResponse(body: TablePagedResponse): void{
+  handleTableDataResponse(body: ITablePagedResponse): void{
     this.data = body.data; // Update the table data
     this.totalRecords = body.totalRecords; // Update the total number of records
     this.totalRecordsNotFiltered = body.totalRecordsNotFiltered; // Update the total records not filtered
@@ -359,23 +355,10 @@ export class ECSPrimengTable implements OnInit {
   }
 
   getColumnStyle(col: any, headerCols: boolean = false): Record<string, string> {
-    let styles: Record<string, string> = {};
-    if(!headerCols){
-      styles = {
-          'white-space': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
-          'word-wrap': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
-          'word-break': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
-      };
-    }
-    if (col.initialWidth > 0) {
-        styles['max-width'] = col.initialWidth + 'px';
-        styles['min-width'] = col.initialWidth + 'px';
-        styles['width'] = col.initialWidth + 'px';
-    }
-    return styles;
+    return this.tableService.getColumnStyle(col, headerCols);
   }
 
-  getPredifinedFilterValues(columnKeyName: string): PredifinedFilter[] {
+  getPredifinedFilterValues(columnKeyName: string): IPredifinedFilter[] {
     return this.predifinedFiltersCollection[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
   }
 
@@ -384,18 +367,7 @@ export class ECSPrimengTable implements OnInit {
   }
 
   getDataTypeAsText(dataType: DataType): string {
-    switch (dataType) {
-      case DataType.Text:
-        return 'text';
-      case DataType.Numeric:
-        return 'numeric';
-      case DataType.Boolean:
-        return 'boolean';
-      case DataType.Date:
-        return 'date';
-      default:
-        return 'text';
-    }
+    return dataTypeAsText(dataType);
   }
 
   /**
@@ -404,7 +376,7 @@ export class ECSPrimengTable implements OnInit {
    * @param {string} filterName - The name of the filter to be updated.
    * @param {IPrimengPredifinedFilter[]} selectedValues - An array of selected predefined filter values.
    */
-  onPredifinedFilterChange(filterName: string, selectedValues: PredifinedFilter[]): void {
+  onPredifinedFilterChange(filterName: string, selectedValues: IPredifinedFilter[]): void {
     const filters = { ...this.dt.filters }; // Create a shallow copy of the current filters to avoid mutating the original filters directly
     if (Array.isArray(filters[filterName])) { // Check if the filter for the given filterName is an array
         (filters[filterName] as FilterMetadata[]).forEach(criteria => { // If it is an array, iterate over each filter criteria
@@ -447,7 +419,7 @@ export class ECSPrimengTable implements OnInit {
    * @param {any} value - The value to be matched against the predefined filter values.
    * @returns {any} The matching predefined filter value if found, otherwise null.
    */
-  getPredfinedFilterMatch(colMetadata: ColumnMetadata, value: any): any {
+  getPredfinedFilterMatch(colMetadata: IColumnMetadata, value: any): any {
     if (colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0) { // Check if the column uses predefined filter values
         const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName); // Get the predefined filter values based on the name
         return options.find(option => option.value === value); // Return the matching option if found
@@ -477,13 +449,13 @@ export class ECSPrimengTable implements OnInit {
   }
 
   getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal){
-    dataAlignHorizontalAsText(dataAlignHorizontal);
+    return dataAlignHorizontalAsText(dataAlignHorizontal);
   }
   getDataAlignVerticalAsText(dataAlignVertical: DataAlignVertical){
-    dataAlignVerticalAsText(dataAlignVertical);
+    return dataAlignVerticalAsText(dataAlignVertical);
   }
 
-  highlightText(cellValue: any, colMetadata: ColumnMetadata, globalSearchText: string | null): SafeHtml {
+  highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {
     return highlightText(cellValue, colMetadata, globalSearchText);
   }
 
@@ -505,6 +477,6 @@ export class ECSPrimengTable implements OnInit {
 
   pageChange(event: TablePageEvent): void {
     this.currentPage = event.rows ? event.first / event.rows : 0;
-    this.currentRowsPerPage = event.rows;
+    this.currentRowsPerPage = event.rows ? event.rows : 0;
   }
 }

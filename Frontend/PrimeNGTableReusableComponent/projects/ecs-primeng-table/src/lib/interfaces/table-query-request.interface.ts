@@ -1,7 +1,7 @@
 /**
  * Interface representing the request structure for PrimeNG post requests.
  */
-export interface TableQueryRequest {
+export interface ITableQueryRequest {
     /** Gets or sets the current page number.*/
     page: number;
   

@@ -1,5 +1,5 @@
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
-export interface ColumnMetadata {
+export interface IColumnMetadata {
     field: string;
     header: string;
     dataType: DataType;

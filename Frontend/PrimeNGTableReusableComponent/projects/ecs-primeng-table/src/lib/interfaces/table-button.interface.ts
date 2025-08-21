@@ -1,7 +1,7 @@
 /**
  * Interface representing the configuration for action buttons in a PrimeNG table.
  */
-export interface ActionButton {
+export interface ITableButton {
     /** 
      * Gets or sets the icon to be displayed on the button.
      * The value should be a string representing the PrimeIcons class name.

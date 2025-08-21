@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { ActionButton, ECSPrimengTable } from 'ecs-primeng-table';
+import { ITableButton, ECSPrimengTable } from 'ecs-primeng-table';
 import { SharedService } from '../../core/services/shared.service';
 
 @Component({
@@ -14,7 +14,7 @@ import { SharedService } from '../../core/services/shared.service';
 export class Home {
   constructor(private sharedService: SharedService){}
   @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
-  headerActionButtons: ActionButton[] = [
+  headerActionButtons: ITableButton[] = [
     {
       icon: 'pi pi-file',
       color: 'p-button-success',
@@ -26,7 +26,7 @@ export class Home {
       tooltip: "Create new record"
     }
   ];
-  rowActionButtons: ActionButton[] = [
+  rowActionButtons: ITableButton[] = [
     {
       icon: 'pi pi-trash',
       tooltip: 'Delete record',

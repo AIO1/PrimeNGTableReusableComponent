@@ -1,5 +1,5 @@
 import { SafeHtml } from "@angular/platform-browser";
-import { ColumnMetadata } from "../interfaces";
+import { IColumnMetadata } from "../interfaces";
 import { DataType } from "../enums";
 
 /**
@@ -23,7 +23,7 @@ import { DataType } from "../enums";
  * // Use highlightText to get SafeHtml with highlighted text
  * const highlightedHtml: SafeHtml = highlightText(cellValue, colMetadata, globalSearchText);
  */
-export function highlightText(cellValue: any, colMetadata: ColumnMetadata, globalSearchText: string | null): SafeHtml {
+export function highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {
 if (colMetadata.dataType !== DataType.Boolean && globalSearchText !== null) { // Check if the column data type is not boolean and global search text is not null
     const valueToUse = String(cellValue); // Convert cell value to string
     if (colMetadata.canBeGlobalFiltered) { // Check if the column can be globally filtered

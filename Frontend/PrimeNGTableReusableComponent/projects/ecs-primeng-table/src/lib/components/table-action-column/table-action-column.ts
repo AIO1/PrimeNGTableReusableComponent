@@ -3,7 +3,7 @@ import { FrozenColumnAlign } from '../../enums';
 import { frozenColumnAlignAsText } from '../../utils';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
-import { TableActionButton } from '../action-button/table-action-button';
+import { TableButton } from '../table-button/table-button';
 import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.service';
 
 @Component({
@@ -11,7 +11,7 @@ import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.s
   imports: [
     CommonModule,
     TableModule,
-    TableActionButton
+    TableButton
   ],
   standalone: true,
   templateUrl: './table-action-column.html'

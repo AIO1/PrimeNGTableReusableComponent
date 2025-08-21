@@ -1,6 +1,6 @@
-import { ColumnMetadata } from "../interfaces";
-export interface TableConfiguration {
-    columnsInfo: ColumnMetadata[];
+import { IColumnMetadata } from "../interfaces";
+export interface ITableConfiguration {
+    columnsInfo: IColumnMetadata[];
     allowedItemsPerPage: number[];
     dateFormat: string;
     dateTimezone: string;

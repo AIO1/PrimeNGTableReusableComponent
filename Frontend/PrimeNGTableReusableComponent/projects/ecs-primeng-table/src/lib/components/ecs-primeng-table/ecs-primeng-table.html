@@ -133,7 +133,7 @@
                 @if (headerActionButtons.length > 0) {
                     <td style="display: flex; justify-content: center; align-items: center;">
                         @for (button of headerActionButtons; track $index) {
-                            <ecs-table-action-button [button]="button" [rowData]="null" (clicked)="handleButtonsClick($event, null)"/>
+                            <ecs-table-button [button]="button" [rowData]="null" (clicked)="handleButtonsClick($event, null)"/>
                         }
                     </td>
                 }

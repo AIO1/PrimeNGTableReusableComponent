@@ -3,7 +3,7 @@ import { DataAlignHorizontal, DataAlignVertical, DataType } from '../../enums';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TooltipModule } from 'primeng/tooltip';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, highlightText } from '../../utils';
-import { ColumnMetadata, PredifinedFilter } from '../../interfaces';
+import { IColumnMetadata, IPredifinedFilter } from '../../interfaces';
 import { SafeHtml } from '@angular/platform-browser';
 @Component({
   selector: 'ecs-table-cell',
@@ -18,10 +18,10 @@ export class TableCell {
   constructor(
     private datePipe: DatePipe
   ) {}
-  @Input() col: any; // aquí pondrías tu tipo ColumnMetadata
+  @Input() col: any;
   @Input() rowData: any;
   @Input() globalSearchText: string | null = null;
-  @Input() predifinedFiltersCollection: { [key: string]: PredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
+  @Input() predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
   @Input() dateFormat: string = "dd-MMM-yyyy HH:mm:ss zzzz";
   @Input() dateTimezone: string = "+00:00";
   @Input() dateCulture: string = "en-US";
@@ -78,18 +78,18 @@ export class TableCell {
    * @param {any} value - The value to be matched against the predefined filter values.
    * @returns {any} The matching predefined filter value if found, otherwise null.
    */
-  getPredfinedFilterMatch(colMetadata: ColumnMetadata, value: any): any {
+  getPredfinedFilterMatch(colMetadata: IColumnMetadata, value: any): any {
     if (colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0) { // Check if the column uses predefined filter values
         const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName); // Get the predefined filter values based on the name
         return options.find(option => option.value === value); // Return the matching option if found
     }
     return null; // Return null if the column does not use predefined filter values
   }
-  getPredifinedFilterValues(columnKeyName: string): PredifinedFilter[] {
+  getPredifinedFilterValues(columnKeyName: string): IPredifinedFilter[] {
     return this.predifinedFiltersCollection[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
   }
 
-    highlightText(cellValue: any, colMetadata: ColumnMetadata, globalSearchText: string | null): SafeHtml {
+    highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {
         return highlightText(cellValue, colMetadata, globalSearchText);
     }
 }

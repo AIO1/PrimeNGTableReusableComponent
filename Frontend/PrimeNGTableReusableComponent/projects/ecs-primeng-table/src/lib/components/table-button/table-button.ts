@@ -5,16 +5,16 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.service';
 
 @Component({
-  selector: 'ecs-table-action-button',
+  selector: 'ecs-table-button',
   imports: [
     CommonModule,
     ButtonModule,
     TooltipModule
   ],
   standalone: true,
-  templateUrl: './table-action-button.html'
+  templateUrl: './table-button.html'
 })
-export class TableActionButton {
+export class TableButton {
   constructor(
     private tableService: ECSPrimengTableService
   ) {}

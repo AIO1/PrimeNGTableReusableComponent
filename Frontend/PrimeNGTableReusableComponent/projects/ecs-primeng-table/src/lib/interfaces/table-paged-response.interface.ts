@@ -1,7 +1,7 @@
 /**
  * Interface representing the return structure for PrimeNG post requests when gathering data to represent in a table.
  */
-export interface TablePagedResponse {
+export interface ITablePagedResponse {
     /** The current page number.*/
     page: number;
 

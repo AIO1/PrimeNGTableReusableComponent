@@ -28,7 +28,7 @@
       style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="actionsColumnFrozen"
       [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight)">
       @for (button of rowActionButtons; track button) {
-        <ecs-table-action-button [button]="button" [rowData]="rowData" (clicked)="handleButtonsClick($event, rowData)"/>
+        <ecs-table-button [button]="button" [rowData]="rowData" (clicked)="handleButtonsClick($event, rowData)"/>
       }
     </td>
   }
