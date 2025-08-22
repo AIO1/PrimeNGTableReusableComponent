@@ -24,6 +24,7 @@ import { TableCell } from '../table-cell/table-cell';
 import { TablePredifinedFilters } from '../table-predifined-filters/table-predifined-filters';
 import { TableButton } from '../table-button/table-button';
 import { ColumnSelector } from "../column-selector/column-selector";
+import { ExportExcel } from '../export-excel/export-excel';
 
 @Component({
   selector: 'ecs-primeng-table',
@@ -42,7 +43,8 @@ import { ColumnSelector } from "../column-selector/column-selector";
     TableCell,
     TablePredifinedFilters,
     TableButton,
-    ColumnSelector
+    ColumnSelector,
+    ExportExcel
 ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
@@ -97,6 +99,7 @@ export class ECSPrimengTable implements OnInit {
     rowData: any
   }>
   
+  showExportModal: boolean = false;
   showColumnSelector: boolean = false;
   selectedRowsCheckbox: any[] = []; // An array to keep all the selected rows
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
@@ -378,9 +381,6 @@ export class ECSPrimengTable implements OnInit {
         }
     }
     return false; // No active filters found
-  }
-  openExcelReport(): void {
-
   }
 
   getColumnStyle(col: any, headerCols: boolean = false): Record<string, string> {

@@ -1,1 +1,48 @@
-<p>export-excel works!</p>
+<!--EXCEL EXPORT MODAL DIALOG-->
+<p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false"
+    [closable]="false" [closeOnEscape]="false" [maximizable]="false" [style]="{'min-width': '70vw', 'max-width': '70vw'}">
+    <ng-template pTemplate="header">
+        <div>
+            <span class="p-dialog-title">Export data to Excel</span>
+        </div>
+    </ng-template>
+    <p>Select the configuration to apply on export to Excel</p>
+    <!--<p><b><label for="reportTitle">Report title</label></b></p>
+    <p><input pInputText id="reportTitle" [(ngModel)]="reportTitle" [disabled]="!reportTitleAllowUserEdit" maxlength="100" pattern="^[A-Za-z0-9_-][A-Za-z0-9 _-]*$"/></p>
+-->
+    <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 1rem; align-items: center;">
+        <div style="justify-self: end;">
+            Export columns
+        </div>
+        <div style="justify-self: start;">
+            <p-selectButton [(ngModel)]="option_exportColumns_selected" [options]="option_exportColumns" optionLabel="label" optionValue="value" allowEmpty="false"/>
+        </div>
+
+        <div style="justify-self: end;">
+            Filters to apply
+        </div>
+        <div style="justify-self: start;">
+            <p-selectButton [(ngModel)]="option_applyCurrentFilters_selected" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" allowEmpty="false"/>
+        </div>
+
+        <div style="justify-self: end;">
+            Sorts to apply
+        </div>
+        <div style="justify-self: start;">
+            <p-selectButton [(ngModel)]="option_applyCurrentSorts_selected" [options]="option_applyCurrentSorts" optionLabel="label" optionValue="value" allowEmpty="false"/>
+        </div>
+
+        @if(rowCheckboxSelectorActive){
+            <div style="justify-self: end;">
+                Selected rows
+            </div>
+            <div style="justify-self: start;">
+                <p-selectButton [(ngModel)]="option_selectedRowsExport_selected" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" allowEmpty="false"/>
+            </div>
+        }
+    </div>
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="closeModal()" label="Cancel export" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="getExcelReport()" label="Export" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+    </ng-template>
+</p-dialog>

@@ -142,7 +142,7 @@
 
                 <!--EXPORT DATA-->
                 @if (reportSourceURL && reportSourceURL.trim().length > 0) {
-                    <p-button icon="pi pi-file-excel" (onClick)="openExcelReport()"
+                    <p-button icon="pi pi-file-excel" (onClick)="showExportModal=true"
                         pTooltip="Export to Excel" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                 }
 
@@ -182,8 +182,10 @@
                     style="text-align: center;"
                     [id]="col.field + '-header'" [attr.scope]="'col'">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <span>{{ col.header }}</span>
-                        <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="margin-right: 15px;">
+                            <span>{{ col.header }}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
                             @if (col.canBeSorted) {
                                 <p-sortIcon [field]="col.field"></p-sortIcon>
                             }
@@ -277,3 +279,4 @@
     </ng-template>
 </p-table>
 <ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
+<ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" (visibleChange)="showExportModal=false"/>
