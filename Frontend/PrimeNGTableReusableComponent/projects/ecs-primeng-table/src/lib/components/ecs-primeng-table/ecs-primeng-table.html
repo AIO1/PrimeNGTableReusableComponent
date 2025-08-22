@@ -7,7 +7,7 @@
     [columns]="columnsToShow" [value]="data" dataKey="rowID" 
     [paginator]="true" [first]="currentPage * currentRowsPerPage" [rows]="currentRowsPerPage" [totalRecords]="totalRecords"
     [rowsPerPageOptions]="allowedRowsPerPage" [showCurrentPageReport]="false" (onPage)="pageChange($event)"
-    [metaKeySelection]="true" selectionMode="single" [(selection)]="rowSelection" (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect($event)"
+    [metaKeySelection]="true" selectionMode="single" [(selection)]="rowSelection" (onRowSelect)="rowSelect($event)" (onRowUnselect)="rowUnselect($event)"
     [lazy]="true" (onLazyLoad)="fetchTableData($event)">
 
     <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
@@ -62,8 +62,8 @@
         [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
         <p-checkbox 
             [binary]="true"
-            [ngModel]="isRowSelectedCheckbox(rowData.rowID)"
-            (onChange)="onRowSelectChekboxChange($event, rowData.rowID)"/>
+            [ngModel]="isRowCheckboxSelected(rowData.rowID)"
+            (onChange)="onRowChekboxChange($event, rowData.rowID)"/>
         </td>
     </ng-template>
 
@@ -74,7 +74,7 @@
             <div style="display: flex; align-items: center; gap: 10px;">
                 <!--CHOOSE COLUMNS TO SHOW-->
                 @if (columnEditorEnabled) {
-                    <p-button icon="pi pi-pen-to-square" (onClick)="showColumnModal()" pTooltip="Modify columns"
+                    <p-button icon="pi pi-pen-to-square" (onClick)="columnSelectorShow()" pTooltip="Modify columns"
                         [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                 }
                 <!--CLEAR SORTS AND FILTERS-->
@@ -276,3 +276,4 @@
         Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records
     </ng-template>
 </p-table>
+<ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>

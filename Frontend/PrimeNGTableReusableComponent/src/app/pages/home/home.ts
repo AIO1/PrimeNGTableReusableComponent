@@ -75,11 +75,11 @@ export class Home implements OnInit {
       }
     });
   }
-  rowSelect(event: any){
+  onRowSelect(event: any){
     this.sharedService.clearToasts();
     this.sharedService.showToast("info","SELECTED A ROW",`Selected row with ID ${event.rowID}`);
   }
-  rowUnselect(event: any){
+  onRowUnselect(event: any){
     this.sharedService.clearToasts();
     this.sharedService.showToast("info","UNSELECTED A ROW",`Unselected row with ID ${event.rowID}`);
   }

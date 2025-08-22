@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
-import { SafeHtml } from '@angular/platform-browser';
 
 // PrimeNG imports
 import { Table, TableLazyLoadEvent, TableModule, TablePageEvent, TableRowSelectEvent, TableRowUnSelectEvent } from 'primeng/table';
@@ -19,11 +18,12 @@ import { FilterMetadata } from 'primeng/api';
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
 import { ITableButton, IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest } from '../../interfaces';
-import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText, highlightText } from '../../utils';
+import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText } from '../../utils';
 import { ECSPrimengTableNotificationService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
 import { TablePredifinedFilters } from '../table-predifined-filters/table-predifined-filters';
 import { TableButton } from '../table-button/table-button';
+import { ColumnSelector } from "../column-selector/column-selector";
 
 @Component({
   selector: 'ecs-primeng-table',
@@ -41,8 +41,9 @@ import { TableButton } from '../table-button/table-button';
     PaginatorModule,
     TableCell,
     TablePredifinedFilters,
-    TableButton
-  ],
+    TableButton,
+    ColumnSelector
+],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
   styleUrl: './ecs-primeng-table.scss',
@@ -83,19 +84,20 @@ export class ECSPrimengTable implements OnInit {
   @Input() rowselectorColumnResizable: boolean = false;
   @Input() noDataFoundText: string = "No data found for the current filter criteria."; // The text to be shown when no data has been returned
   @Input() showClearSortAndFilters: boolean = true;
-  @Output() rowSelectCheckboxChange = new EventEmitter<{
+  @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean
   }>(); // Emitter that returns the column selected and if it was selected or unselected
-  @Output() rowSelect = new EventEmitter<{
+  @Output() onRowSelect = new EventEmitter<{
     rowID: any,
     rowData: any
   }>
-  @Output() rowUnselect = new EventEmitter<{
+  @Output() onRowUnselect = new EventEmitter<{
     rowID: any,
     rowData: any
   }>
   
+  showColumnSelector: boolean = false;
   selectedRowsCheckbox: any[] = []; // An array to keep all the selected rows
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   showRefreshData=true;
@@ -123,6 +125,8 @@ export class ECSPrimengTable implements OnInit {
   columns: IColumnMetadata[] = [];
   columnsCantBeHidden: IColumnMetadata[] = [];
   columnsSelected: IColumnMetadata[] = [];
+  columnModalData: any[] = []; 
+  filteredColumnData: any[] = []; 
   predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
   private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
   tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
@@ -290,8 +294,8 @@ export class ECSPrimengTable implements OnInit {
       this.columnsSelected = tableView.columnsShown
         .map(data => this.columns.find((col: any) => col.field === data.field))
         .filter((col): col is IprimengColumnsMetadata => col !== undefined)
-        .filter(col => !this.columnsNonSelectable.includes(col));
-      this.columnsToShow= this.orderColumnsWithFrozens(this.columnsNonSelectable.concat(this.columnsSelected));
+        .filter(col => !this.columnsCantBeHidden.includes(col));
+      this.columnsToShow= this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
       this.updateColumnsSpecialProperties(tableView.columnsShown);
       this.dt.restoreColumnWidths();
     }*/
@@ -325,10 +329,6 @@ export class ECSPrimengTable implements OnInit {
       this.globalSearchText = null;
       dt.filterGlobal('','');
     }
-  }
-
-  showColumnModal(): void {
-
   }
 
   clearSorts(dt: Table, force: boolean = false): void{
@@ -484,33 +484,29 @@ export class ECSPrimengTable implements OnInit {
     return dataAlignVerticalAsText(dataAlignVertical);
   }
 
-  highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {
-    return highlightText(cellValue, colMetadata, globalSearchText);
-  }
-
-  isRowSelectedCheckbox(rowID: any): boolean {
+  isRowCheckboxSelected(rowID: any): boolean {
     return this.selectedRowsCheckbox.includes(rowID);
   }
 
-  onRowSelectChekboxChange(event: any, rowID: any): void {
+  onRowChekboxChange(event: any, rowID: any): void {
     if (event.checked) { // Add the selected item
         this.selectedRowsCheckbox.push(rowID);
     } else { // Remove the selected item
         this.selectedRowsCheckbox = this.selectedRowsCheckbox.filter(selectedId => selectedId !== rowID);
     }
-    this.rowSelectCheckboxChange.emit({
+    this.onRowCheckboxChange.emit({
       rowID: rowID,
       selected: event.checked
     });
   }
-  onRowSelect(event: TableRowSelectEvent<any>): void{
-    this.rowSelect.emit({
+  rowSelect(event: TableRowSelectEvent<any>): void{
+    this.onRowSelect.emit({
       rowID: event.data.rowID,
       rowData: event.data
     });
   }
-  onRowUnselect(event: TableRowUnSelectEvent<any>): void{
-    this.rowUnselect.emit({
+  rowUnselect(event: TableRowUnSelectEvent<any>): void{
+    this.onRowUnselect.emit({
       rowID: event.data.rowID,
       rowData: event.data
     });
@@ -518,5 +514,101 @@ export class ECSPrimengTable implements OnInit {
   pageChange(event: TablePageEvent): void {
     this.currentPage = event.rows ? event.first / event.rows : 0;
     this.currentRowsPerPage = event.rows ? event.rows : 0;
+  }
+
+  columnSelectorShow(){
+    let tempData = this.columns.map(column => {
+      const isSelected = this.columnsSelected.some(selectedColumn => selectedColumn.field === column.field) || this.columnsCantBeHidden.some(selectedColumn => selectedColumn.field === column.field);
+      const isSelectDisabled =  this.columnsCantBeHidden.some(selectedColumn => selectedColumn.field === column.field);
+      return {
+        field: column.field,
+        header: column.header,
+        selected: isSelected,
+        selectDisabled: isSelectDisabled,
+        cellOverflowBehaviour: column.cellOverflowBehaviour,
+        cellOverflowBehaviourDisabled: !column.cellOverflowBehaviourAllowUserEdit,
+        dataAlignHorizontal: column.dataAlignHorizontal,
+        dataAlignHorizontalDisabled: !column.dataAlignHorizontalAllowUserEdit,
+        dataAlignVertical: column.dataAlignVertical,
+        dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit
+      };
+    });
+    tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
+      const fieldA = a.header.toUpperCase();
+      const fieldB = b.header.toUpperCase();
+      return fieldA.localeCompare(fieldB);
+    });
+    this.columnModalData = [...tempData];
+    this.filteredColumnData = this.columnModalData;
+    this.showColumnSelector=true;
+  }
+
+  applyColumnModalChanges(selectedColumns: IColumnMetadata[]) {
+    const existingColumns = this.dt.columns!;
+    const columnsToKeep = new Set<string>();
+
+    this.columnsCantBeHidden.forEach(col => columnsToKeep.add(col.field));
+    selectedColumns.forEach(col => columnsToKeep.add(col.field));
+
+    const finalColumns: IColumnMetadata[] = [];
+    existingColumns.forEach(col => {
+      if (columnsToKeep.has(col.field)) {
+        finalColumns.push(col);
+      }
+    });
+
+    selectedColumns.forEach(col => {
+      const matchingColumn = this.columns.find(c => c.field === col.field);
+      if (matchingColumn && !finalColumns.find(c => c.field === matchingColumn.field)) {
+        finalColumns.push(matchingColumn);
+      }
+    });
+
+    let prevColsToShow = this.columnsToShow;
+    this.columnsToShow = this.tableService.orderColumnsWithFrozens(finalColumns);
+
+    let sameColumnsAsBefore =
+      prevColsToShow.length === this.columnsToShow.length &&
+      prevColsToShow.every((prevCol, index) => prevCol.field === this.columnsToShow[index].field);
+
+    this.columnsSelected = this.columnsToShow.filter(
+      column => !this.columnsCantBeHidden.some(nonSelectable => nonSelectable.field === column.field)
+    );
+
+    this.updateColumnsSpecialProperties(this.columnModalData);
+
+    if (!sameColumnsAsBefore) {
+      this.isActive = false;
+      this.clearSorts(this.dt, true);
+      setTimeout(() => {
+        this.isActive = true;
+        this.clearSorts(this.dt, true);
+      }, 1);
+    }
+  }
+
+  private updateColumnsSpecialProperties(columnsSource: any[]){
+    const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsCantBeHidden];
+    const columnModalDataMap = new Map(columnsSource.map((item: any) => [item.field, { 
+        cellOverflowBehaviour: item.cellOverflowBehaviour, 
+        dataAlignHorizontal: item.dataAlignHorizontal,
+        dataAlignVertical: item.dataAlignVertical,
+        width: item.width
+    }]));
+    const updatedFields = new Set(); // To track updated fields
+    allColumns.forEach((columnList) => {
+        columnList.forEach((col: any) => {
+            if (columnModalDataMap.has(col.field) && !updatedFields.has(col.field)) {
+                const columnData = columnModalDataMap.get(col.field);
+                if (columnData) {
+                    col.cellOverflowBehaviour = columnData.cellOverflowBehaviour;
+                    col.dataAlignHorizontal = columnData.dataAlignHorizontal;
+                    col.dataAlignVertical = columnData.dataAlignVertical;
+                    col.width = columnData.width;
+                    updatedFields.add(col.field);
+                }
+            }
+        });
+    });
   }
 }
