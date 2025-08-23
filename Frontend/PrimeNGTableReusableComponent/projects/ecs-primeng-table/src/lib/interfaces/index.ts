@@ -1,4 +1,5 @@
 export * from "./table-button.interface";
+export * from "./excel-export-request.interface";
 export * from "./columns-metadata.interface";
 export * from "./predifined-filter.interface"
 export * from "./table-configuration.interface";

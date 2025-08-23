@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpResponse } from '@angular/common/http';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
-import { IColumnMetadata, ITableConfiguration, ITablePagedResponse } from '../../interfaces';
-import { CellOverflowBehaviour, DataType, FrozenColumnAlign } from '../../enums';
-import { SafeHtml } from '@angular/platform-browser';
+import { IColumnMetadata, IExcelExportRequest, ITableConfiguration, ITablePagedResponse } from '../../interfaces';
+import { CellOverflowBehaviour, FrozenColumnAlign } from '../../enums';
 import { ITableQueryRequest } from '../../interfaces/table-query-request.interface';
 
 @Injectable({
@@ -22,7 +21,23 @@ export class ECSPrimengTableService {
   fetchTableData(url: string, postData: ITableQueryRequest): Observable<HttpResponse<ITablePagedResponse>>{
       return this.http.handleHttpPostRequest<ITablePagedResponse>(url, postData);
   }
-  
+  fetchExcelReport(url: string, postData: IExcelExportRequest): Observable<HttpResponse<Blob>>{
+    let httpOptions = new HttpHeaders({
+      'accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Type': 'application/json'
+    });
+    return this.http.handleHttpPostRequest<Blob>(url, postData, httpOptions, true, null, true, 'blob');
+  }
+
+  downloadFile(data: Blob, fileName: string, contentType: string) {
+    const blob = new Blob([data], { type: contentType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
   handleTableError(
     error: any,
     customTitle: string = 'Data Loading Error'

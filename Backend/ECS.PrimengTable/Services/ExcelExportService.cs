@@ -28,10 +28,18 @@ namespace ECS.PrimengTable.Services {
                         .Select(column => column.Field)
                         .ToList();
                 }
-                var propertyAccessors = inputData.Columns!
+                /*var propertyAccessors = inputData.Columns!
                     .ToDictionary(
                         column => column,
                         column => (Func<object, object?>)((item) => item.GetType().GetProperty(column)?.GetValue(item))
+                    );*/
+                var propertyAccessors = inputData.Columns!
+                    .ToDictionary(
+                        column => char.ToUpperInvariant(column[0]) + column.Substring(1),
+                        column => (Func<object, object?>)((item) => {
+                            var propName = char.ToUpperInvariant(column[0]) + column.Substring(1);
+                            return item.GetType().GetProperty(propName)?.GetValue(item);
+                        })
                     );
                 long totalRecordsNotFiltered = 0; // All available records
                 long totalRecords = 0; // Number of records after applying filters
@@ -59,20 +67,20 @@ namespace ECS.PrimengTable.Services {
                         for(int row = 0; row < dataResult.Count; row++) { // Loop through each row
                             for(int col = 0; col < numberOfColumns; col++) { // Loop through each column
                                 fieldName = inputData.Columns[col];
-                                dynamic? valor = propertyAccessors[fieldName](dataResult[row]);
+                                dynamic? cellValue = propertyAccessors[fieldName](dataResult[row]);
                                 DataType dataType = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).DataType;
                                 if(row == 0 && dataType == DataType.Date) {
                                     worksheet.Column(col + 1).Style.NumberFormat.Format = "dd-mmm-yyyy hh:mm:ss";
                                 }
-                                if(valor == null) {
+                                if(cellValue == null) {
                                     worksheet.Cell(currentRow, col + 1).Value = "";
                                 } else {
                                     worksheet.Cell(currentRow, col + 1).Value = dataType switch {
-                                        DataType.Text => valor.ToString(),
-                                        DataType.Numeric => Convert.ToDouble(valor),
-                                        DataType.Date when valor is DateTime => valor,
-                                        DataType.Boolean => Convert.ToBoolean(valor),
-                                        _ => valor
+                                        DataType.Text => cellValue.ToString(),
+                                        DataType.Numeric => Convert.ToDouble(cellValue),
+                                        DataType.Date when cellValue is DateTime => cellValue,
+                                        DataType.Boolean => Convert.ToBoolean(cellValue),
+                                        _ => cellValue
                                     };
                                 }
                             }
@@ -89,7 +97,7 @@ namespace ECS.PrimengTable.Services {
                     worksheet.Row(2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; // Center horizontally the title
                     worksheet.SheetView.FreezeRows(2);
                     worksheet.Columns().AdjustToContents();
-                    using(MemoryStream memoryStream = new MemoryStream()) {
+                    using(MemoryStream memoryStream = new()) {
                         workbook.SaveAs(memoryStream);
                         memoryStream.Seek(0, SeekOrigin.Begin); // Move the pointer to the begining of the stream
                         return (true, memoryStream.ToArray(), "Excel file generated OK."); // Return the file as a byte array

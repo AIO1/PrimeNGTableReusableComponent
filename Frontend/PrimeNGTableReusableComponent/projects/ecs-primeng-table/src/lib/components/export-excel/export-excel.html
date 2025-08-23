@@ -6,11 +6,14 @@
             <span class="p-dialog-title">Export data to Excel</span>
         </div>
     </ng-template>
-    <p>Select the configuration to apply on export to Excel</p>
-    <!--<p><b><label for="reportTitle">Report title</label></b></p>
-    <p><input pInputText id="reportTitle" [(ngModel)]="reportTitle" [disabled]="!reportTitleAllowUserEdit" maxlength="100" pattern="^[A-Za-z0-9_-][A-Za-z0-9 _-]*$"/></p>
--->
     <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 1rem; align-items: center;">
+        <div style="justify-self: end;">
+            Report title
+        </div>
+        <div style="justify-self: stretch; width: 100%;">
+            <input pInputText id="reportTitle" [(ngModel)]="excelReportTitle" autocomplete="off" style="width: 100%;" [disabled]="!allowTitleUserEdit" maxlength="100"/>
+        </div>
+        
         <div style="justify-self: end;">
             Export columns
         </div>

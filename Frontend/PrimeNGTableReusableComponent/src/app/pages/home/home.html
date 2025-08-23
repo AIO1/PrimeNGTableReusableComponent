@@ -3,7 +3,7 @@
     urlColumnsSource="Main/TestGetCols"
     urlDataSource="Main/TestGetData"
     [computeScrollHeight]="false"
-    reportSourceURL="Main/GenerateExcel"
+    urlExcelReport="Main/GenerateExcel"
     [predifinedFiltersCollection]="predifinedFiltersCollection"
     [headerActionButtons]="headerActionButtons"
     [rowActionButtons]="rowActionButtons"
@@ -20,7 +20,6 @@
 <!--<ecs-primeng-table #dt
     (selectedRowsChange)="rowSelect($event)"
     [computeScrollHeight]="true"
-    reportSourceURL="Main/GenerateExcel"
     [tableViewSaveAs]="enumTableViewSaveMode.databaseStorage"
     viewsGetSourceURL="Main/GetViews"
     viewsSaveSourceURL="Main/SaveViews"

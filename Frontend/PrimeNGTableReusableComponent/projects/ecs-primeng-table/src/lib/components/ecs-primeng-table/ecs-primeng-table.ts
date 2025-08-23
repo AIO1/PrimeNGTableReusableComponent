@@ -17,7 +17,7 @@ import { FilterMetadata } from 'primeng/api';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
-import { ITableButton, IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest } from '../../interfaces';
+import { ITableButton, IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest } from '../../interfaces';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText } from '../../utils';
 import { ECSPrimengTableNotificationService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
@@ -66,7 +66,7 @@ export class ECSPrimengTable implements OnInit {
   @Input() columnEditorEnabled: boolean = true; // If the user can modify the columns thorugh the column editor
   @Input() urlColumnsSource!: string; // The source URL to get data from columns
   @Input() urlDataSource!:string; // The URL to fetch data from
-  @Input() reportSourceURL: string | null = null;
+  @Input() urlExcelReport: string | null = null;
   @Input() predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
   @Input() predifinedFiltersNoSelectionPlaceholder: string = "Any value"; // A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters
   @Input() predifinedFiltersCollectionSelectedValuesText: string = "items selected"; // A text to display in the predifined filters dropdown footer indicating the number of items that have been selected
@@ -86,6 +86,9 @@ export class ECSPrimengTable implements OnInit {
   @Input() rowselectorColumnResizable: boolean = false;
   @Input() noDataFoundText: string = "No data found for the current filter criteria."; // The text to be shown when no data has been returned
   @Input() showClearSortAndFilters: boolean = true;
+  @Input() excelReportTitleDefault: string = "Report";
+  @Input() excelReportTitleAllowUserEdit: boolean = false;
+  @Input() excelReportIncludeTimeInTitle: boolean = true;
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean
@@ -98,7 +101,8 @@ export class ECSPrimengTable implements OnInit {
     rowID: any,
     rowData: any
   }>
-  
+
+  excelReportTitle: string = "";
   showExportModal: boolean = false;
   showColumnSelector: boolean = false;
   selectedRowsCheckbox: any[] = []; // An array to keep all the selected rows
@@ -609,6 +613,43 @@ export class ECSPrimengTable implements OnInit {
                 }
             }
         });
+    });
+  }
+
+  openExcelExport(){
+    this.excelReportTitle = 
+      (!this.excelReportTitleDefault || this.excelReportTitleDefault.trim().length === 0) && !this.excelReportTitleAllowUserEdit 
+        ? 'Report' 
+        : this.excelReportTitleDefault!;
+    this.showExportModal=true;
+  }
+  generateExcelReport(event: any){
+    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters, event.selectedRows); // Create filters excluding the global filter
+    filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
+    const filtersMustBeApplied: boolean = (event.selectedRows === 1 || event.selectedRows === 2) 
+    ? true 
+    : event.applyFilters;
+    const requestData: IExcelExportRequest = {
+      page: this.currentPage, // Set the current page number
+      pageSize: this.currentRowsPerPage, // Set the number of rows per page
+      sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
+      filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
+      globalFilter: this.globalSearchText, // Set the global filter text
+      columns: this.columnsToShow.map(col => col.field), // Set the columns to show
+      dateFormat: this.dateFormat,
+      dateTimezone: this.dateTimezone,
+      dateCulture: this.dateCulture,
+      allColumns: event.allColumns,
+      applyFilters: filtersMustBeApplied,
+      applySorts: event.applySorts,
+      filename: event.filename
+    };
+    this.tableService.fetchExcelReport(this.urlExcelReport!, requestData).subscribe({
+      next: (response: HttpResponse<Blob>) => {
+        this.tableService.downloadFile(response.body!, event.filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        this.showExportModal=false;
+      },
+      error: (err) => this.tableService.handleTableError(err, 'Excel export error')
     });
   }
 }

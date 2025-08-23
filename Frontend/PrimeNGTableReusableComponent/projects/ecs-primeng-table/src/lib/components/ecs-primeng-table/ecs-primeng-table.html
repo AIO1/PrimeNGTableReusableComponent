@@ -141,8 +141,8 @@
                 }
 
                 <!--EXPORT DATA-->
-                @if (reportSourceURL && reportSourceURL.trim().length > 0) {
-                    <p-button icon="pi pi-file-excel" (onClick)="showExportModal=true"
+                @if (urlExcelReport && urlExcelReport.trim().length > 0) {
+                    <p-button icon="pi pi-file-excel" (onClick)="openExcelExport()"
                         pTooltip="Export to Excel" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                 }
 
@@ -279,4 +279,4 @@
     </ng-template>
 </p-table>
 <ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
-<ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" (visibleChange)="showExportModal=false"/>
+<ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" [excelReportTitle]="excelReportTitle" [includeTimeInTitle]="excelReportIncludeTimeInTitle" [allowTitleUserEdit]="excelReportTitleAllowUserEdit" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
