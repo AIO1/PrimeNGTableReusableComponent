@@ -8,10 +8,18 @@
     </ng-template>
     <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 1rem; align-items: center;">
         <div style="justify-self: end;">
-            Report title
+            Report filename
         </div>
         <div style="justify-self: stretch; width: 100%;">
             <input pInputText id="reportTitle" [(ngModel)]="excelReportTitle" autocomplete="off" style="width: 100%;" [disabled]="!allowTitleUserEdit" maxlength="100"/>
+        </div>
+
+        <div style="justify-self: end;">
+            <i pTooltip="Activating this option will add the current '_{year}{month}{day}_{hours}{minutes}{seconds}_UTC' at the end of your filename" tooltipPosition="top" class="pi pi-info-circle"></i>
+            Include time in report filename
+        </div>
+        <div style="justify-self: stretch; width: 100%;">
+            <p-checkbox [binary]="true" [(ngModel)]="includeTimeInTitle"/>
         </div>
         
         <div style="justify-self: end;">
@@ -22,10 +30,13 @@
         </div>
 
         <div style="justify-self: end;">
+            @if(filterSelectorDisabled()){
+                <i pTooltip="Sorts are active because you want to export selected rows following a filter criteria" tooltipPosition="top" class="pi pi-info-circle"></i>
+            }
             Filters to apply
         </div>
         <div style="justify-self: start;">
-            <p-selectButton [(ngModel)]="option_applyCurrentFilters_selected" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" allowEmpty="false"/>
+            <p-selectButton [(ngModel)]="option_applyCurrentFilters_selected" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" allowEmpty="false" [disabled]="filterSelectorDisabled()"/>
         </div>
 
         <div style="justify-self: end;">
@@ -40,7 +51,7 @@
                 Selected rows
             </div>
             <div style="justify-self: start;">
-                <p-selectButton [(ngModel)]="option_selectedRowsExport_selected" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" allowEmpty="false"/>
+                <p-selectButton [(ngModel)]="option_selectedRowsExport_selected" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" allowEmpty="false" (onChange)="onChangeExportRows($event)"/>
             </div>
         }
     </div>

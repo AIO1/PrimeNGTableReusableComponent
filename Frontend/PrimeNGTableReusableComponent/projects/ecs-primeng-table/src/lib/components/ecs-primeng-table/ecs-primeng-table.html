@@ -279,4 +279,4 @@
     </ng-template>
 </p-table>
 <ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
-<ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" [excelReportTitle]="excelReportTitle" [includeTimeInTitle]="excelReportIncludeTimeInTitle" [allowTitleUserEdit]="excelReportTitleAllowUserEdit" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
+<ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" [excelReportTitle]="excelReportTitle" [allowTitleUserEdit]="excelReportTitleAllowUserEdit" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>

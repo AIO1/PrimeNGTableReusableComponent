@@ -88,7 +88,6 @@ export class ECSPrimengTable implements OnInit {
   @Input() showClearSortAndFilters: boolean = true;
   @Input() excelReportTitleDefault: string = "Report";
   @Input() excelReportTitleAllowUserEdit: boolean = false;
-  @Input() excelReportIncludeTimeInTitle: boolean = true;
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean

@@ -2,10 +2,12 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
-import { SelectButton } from 'primeng/selectbutton';
+import { SelectButton, SelectButtonChangeEvent } from 'primeng/selectbutton';
 import { ECSPrimengTableNotificationService } from '../../services';
 import { ExportExcelService } from './export-excel.service';
 import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'ecs-export-excel',
@@ -14,7 +16,9 @@ import { InputTextModule } from 'primeng/inputtext';
     FormsModule,
     ButtonModule,
     SelectButton,
-    InputTextModule
+    InputTextModule,
+    TooltipModule,
+    CheckboxModule
   ],
   standalone: true,
   templateUrl: './export-excel.html'
@@ -23,7 +27,7 @@ export class ExportExcel implements OnChanges {
   @Input() visible: boolean = false;
   @Input() rowCheckboxSelectorActive: boolean = false;
   @Input() excelReportTitle: string = "";
-  @Input() includeTimeInTitle: boolean = true;
+  includeTimeInTitle: boolean = true;
   @Input() allowTitleUserEdit: boolean = false;
   @Output() exportToExcel = new EventEmitter<{
     allColumns: boolean,
@@ -72,6 +76,7 @@ export class ExportExcel implements OnChanges {
   }
 
   private resetValues() {
+    this.includeTimeInTitle = true;
     this.option_exportColumns_selected = false;
     this.option_applyCurrentFilters_selected = false;
     this.option_applyCurrentSorts_selected = false;
@@ -104,6 +109,16 @@ export class ExportExcel implements OnChanges {
       selectedRows: this.option_selectedRowsExport_selected,
       filename: excelReportFinalTitle
     });
+  }
+
+  filterSelectorDisabled(): boolean{
+    return this.option_selectedRowsExport_selected >= 1;
+  }
+
+  onChangeExportRows(event: SelectButtonChangeEvent): void{
+    if(event.value>=1){
+      this.option_applyCurrentFilters_selected=true;
+    }
   }
 
   closeModal(){
