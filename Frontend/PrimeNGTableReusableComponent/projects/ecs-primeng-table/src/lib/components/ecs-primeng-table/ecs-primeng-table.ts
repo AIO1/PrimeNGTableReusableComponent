@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
@@ -13,18 +13,20 @@ import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { CheckboxModule } from 'primeng/checkbox';
 import { PaginatorModule } from 'primeng/paginator';
-import { FilterMetadata } from 'primeng/api';
+import { FilterMetadata, MenuItem } from 'primeng/api';
+import { ButtonGroupModule } from 'primeng/buttongroup';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
-import { ITableButton, IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest } from '../../interfaces';
+import { ITableButton, IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest, ITableView } from '../../interfaces';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText } from '../../utils';
-import { ECSPrimengTableNotificationService } from '../../services';
+import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
 import { TablePredifinedFilters } from '../table-predifined-filters/table-predifined-filters';
 import { TableButton } from '../table-button/table-button';
 import { ColumnSelector } from "../column-selector/column-selector";
 import { ExportExcel } from '../export-excel/export-excel';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'ecs-primeng-table',
@@ -44,17 +46,19 @@ import { ExportExcel } from '../export-excel/export-excel';
     TablePredifinedFilters,
     TableButton,
     ColumnSelector,
-    ExportExcel
+    ExportExcel,
+    ButtonGroupModule
 ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
   styleUrl: './ecs-primeng-table.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class ECSPrimengTable implements OnInit {
+export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private tableService: ECSPrimengTableService,
-    private notification: ECSPrimengTableNotificationService
+    private notification: ECSPrimengTableNotificationService,
+    private resizeObserver: ResizeObserver
   ) {}
   @Input() isActive: boolean = true;
   @Input() data: any[] = []; // The array of data to be displayed
@@ -88,6 +92,11 @@ export class ECSPrimengTable implements OnInit {
   @Input() showClearSortAndFilters: boolean = true;
   @Input() excelReportTitleDefault: string = "Report";
   @Input() excelReportTitleAllowUserEdit: boolean = false;
+  @Input() tableViewSaveAs: TableViewSaveMode = TableViewSaveMode.noone; // How the table view will be saved
+  @Input() tableViewSaveKey: string = ""; // The key used to save the table views
+  @Input() viewsGetSourceURL: string = "";
+  @Input() viewsSaveSourceURL: string = "";
+  @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean
@@ -100,7 +109,9 @@ export class ECSPrimengTable implements OnInit {
     rowID: any,
     rowData: any
   }>
-
+  viewsModalShow:boolean = false;
+  tableViewCurrentSelectedAlias: string | null = null;
+  tableViewsFirstFetchDone: boolean = false;
   excelReportTitle: string = "";
   showExportModal: boolean = false;
   showColumnSelector: boolean = false;
@@ -109,6 +120,8 @@ export class ECSPrimengTable implements OnInit {
   showRefreshData=true;
   scrollHeight: string = "0px"; // Used to get the table height
   globalSearchText: string | null = null; // The text used by the global search
+  tableViewsList: ITableView[] = [];
+  tableViews_menuItems: MenuItem[] = [];
 
   DataType = DataType;
   CellOverflowBehaviour = CellOverflowBehaviour;
@@ -140,6 +153,23 @@ export class ECSPrimengTable implements OnInit {
   ngOnInit(): void {
     this.fetchTableConfiguration();
   }
+  @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
+  ngAfterViewInit() {
+  if (this.computeScrollHeight) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.calculateScrollHeight();
+      });
+      this.resizeObserver.observe(this.tableContainer.nativeElement);
+    }
+  }
+
+  calculateScrollHeight(){
+
+  }
+
+  ngOnDestroy() {
+    this.resizeObserver?.disconnect();
+  }
 
   /**
    * Used to update the data of a table externally outside the component. Use this method instead of 'updateData' to force the data updata of a table
@@ -164,7 +194,7 @@ export class ECSPrimengTable implements OnInit {
     this.tableService.fetchTableConfiguration(this.urlColumnsSource).subscribe({
       next: (response: HttpResponse<ITableConfiguration>) => {
         this.handleTableConfigurationResponse(response.body!);
-        this.fetchTableData(this.tableLazyLoadEventInformation);
+        this.fetchTableViews();
       },
       error: (err) => this.tableService.handleTableError(err, 'Columns Error')
     });
@@ -183,9 +213,49 @@ export class ECSPrimengTable implements OnInit {
     this.currentPage = 0;
     this.initialConfigurationFetched = true;
   }
+
   refreshData(event: any){
     this.fetchTableData(this.tableLazyLoadEventInformation);
   }
+
+  tableViewsEnabled(): boolean {
+    return (
+      this.tableViewSaveAs !== TableViewSaveMode.noone &&
+      this.tableViewSaveKey !== ''
+    );
+  }
+  
+  fetchTableViews(): void {
+    if(!this.tableViewsEnabled()){
+      this.fetchTableData(this.tableLazyLoadEventInformation);
+      return;
+    }
+    const tableViews = this.tableService.fetchTableViews(this.tableViewSaveAs, this.viewsGetSourceURL, this.tableViewSaveKey);
+    if (tableViews instanceof Observable) {
+      tableViews.subscribe({
+        next: (response: HttpResponse<ITableView[]>) => {
+           let parsedResult = response.body!.map((item: any) => ({
+            viewAlias: item.viewAlias,
+            viewData: JSON.parse(item.viewData)
+          }));
+          this.tableViewListProcess(parsedResult);
+        },
+        error: (err) => this.tableService.handleTableError(err, 'Views get error')
+      });
+    } else {
+        this.tableViewListProcess(tableViews);
+    }
+  }
+
+  private tableViewListProcess(tableView: ITableView[]){
+    this.tableViewsList = [...tableView];
+    if(this.tableViewsList.length > 0){
+      this.tableService.sortViews(this.tableViewsList);
+    }
+    this.tableViews_menuItems=[...this.tableService.updateViewsMenuItems(this.tableViewsList)];
+    this.fetchTableData(this.tableLazyLoadEventInformation);
+  }
+
   fetchTableData(event: TableLazyLoadEvent): void {
     if(!this.isActive){
       return;

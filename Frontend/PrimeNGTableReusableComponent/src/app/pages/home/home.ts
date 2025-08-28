@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ITableButton, ECSPrimengTable, IPredifinedFilter } from 'ecs-primeng-table';
+import { ITableButton, ECSPrimengTable, IPredifinedFilter, TableViewSaveMode } from 'ecs-primeng-table';
 import { SharedService } from '../../core/services/shared.service';
 import { IEmploymentStatus } from './employment-status.interface';
 
@@ -51,7 +51,7 @@ export class Home implements OnInit {
   predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {
     'employmentStatusPredifinedFilter': this.employmentStatusPredifinedFilter
   };
-
+  TableViewSaveMode = TableViewSaveMode;
   ngOnInit(): void {
     this.getEmploymentStatus(); // Retrieve the possible employment status
   }

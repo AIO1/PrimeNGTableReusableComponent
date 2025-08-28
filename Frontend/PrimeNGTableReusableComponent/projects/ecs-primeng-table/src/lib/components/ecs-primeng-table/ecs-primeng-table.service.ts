@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
-import { IColumnMetadata, IExcelExportRequest, ITableConfiguration, ITablePagedResponse } from '../../interfaces';
-import { CellOverflowBehaviour, FrozenColumnAlign } from '../../enums';
+import { IColumnMetadata, IExcelExportRequest, ITableConfiguration, ITablePagedResponse, ITableView } from '../../interfaces';
+import { CellOverflowBehaviour, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
 import { ITableQueryRequest } from '../../interfaces/table-query-request.interface';
+import { MenuItem } from 'primeng/api';
 
 @Injectable({
   providedIn: 'root'
@@ -77,19 +78,57 @@ export class ECSPrimengTableService {
   }
 
   getColumnStyle(col: any, headerCols: boolean = false): Record<string, string> {
-      let styles: Record<string, string> = {};
-      if(!headerCols){
-        styles = {
-            'white-space': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
-            'word-wrap': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
-            'word-break': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
-        };
-      }
-      if (col.initialWidth > 0) {
-          styles['max-width'] = col.initialWidth + 'px';
-          styles['min-width'] = col.initialWidth + 'px';
-          styles['width'] = col.initialWidth + 'px';
-      }
-      return styles;
+    let styles: Record<string, string> = {};
+    if(!headerCols){
+      styles = {
+          'white-space': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
+          'word-wrap': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'break-word' : 'normal',
+          'word-break': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'break-all' : 'normal'
+      };
+    }
+    if (col.initialWidth > 0) {
+        styles['max-width'] = col.initialWidth + 'px';
+        styles['min-width'] = col.initialWidth + 'px';
+        styles['width'] = col.initialWidth + 'px';
+    }
+    return styles;
+  }
+
+  fetchTableViews(tableViewSaveAs: TableViewSaveMode, recoverListEndpoint: string, tableViewSaveKey: string): ITableView[] | Observable<HttpResponse<ITableView[]>>{
+    let tableViewList: ITableView[] = [];
+    let tableViewNotParsed: string | null = null;
+    if(tableViewSaveKey !== "" && tableViewSaveKey !== ''){
+        switch(tableViewSaveAs){
+            case TableViewSaveMode.noone:
+                tableViewNotParsed = null;
+            break;
+            case TableViewSaveMode.sessionStorage:
+                tableViewNotParsed = sessionStorage.getItem(tableViewSaveKey);
+            break;
+            case TableViewSaveMode.localStorage:
+                tableViewNotParsed = localStorage.getItem(tableViewSaveKey);
+            break;
+            case TableViewSaveMode.databaseStorage:
+                const postData: any = {
+                    tableViewSaveKey: tableViewSaveKey
+                };
+                return this.http.handleHttpPostRequest<ITableView[]>(recoverListEndpoint,postData);
+            default:
+                this.notification.showToast("error","SAVE VIEW TYPE DOES NOT EXIST", "This type of save view does not exist.");
+        }
+    }
+    tableViewList = tableViewNotParsed ? JSON.parse(tableViewNotParsed) : [];
+    this.sortViews(tableViewList);
+    return tableViewList;
+  }
+  sortViews(tableSaveViewList: ITableView[]): void{
+      tableSaveViewList.sort((a, b) => 
+          a.viewAlias.toLowerCase().localeCompare(b.viewAlias.toLowerCase())
+      );
+  }
+  updateViewsMenuItems(tableSaveViewList: ITableView[]): MenuItem[]{
+        return tableSaveViewList.map(item => ({
+            label: item.viewAlias
+        }));
     }
 }

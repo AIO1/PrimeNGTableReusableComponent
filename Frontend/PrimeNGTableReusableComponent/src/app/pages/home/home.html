@@ -14,14 +14,15 @@
     [actionsColumnWidth]="110"
     (onRowSelect)="onRowSelect($event)"
     (onRowUnselect)="onRowUnselect($event)"
+    [tableViewSaveAs]="TableViewSaveMode.databaseStorage"
+    viewsGetSourceURL="Main/GetViews"
+    viewsSaveSourceURL="Main/SaveViews"
+    tableViewSaveKey="TEST"
 />
 
 
 <!--<ecs-primeng-table #dt
     (selectedRowsChange)="rowSelect($event)"
     [computeScrollHeight]="true"
-    [tableViewSaveAs]="enumTableViewSaveMode.databaseStorage"
-    viewsGetSourceURL="Main/GetViews"
-    viewsSaveSourceURL="Main/SaveViews"
-    tableViewSaveKey="TEST">
+    >
 </ecs-primeng-table>-->
