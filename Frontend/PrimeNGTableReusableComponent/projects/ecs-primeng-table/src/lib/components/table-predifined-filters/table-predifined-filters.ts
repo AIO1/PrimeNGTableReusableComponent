@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -7,7 +6,6 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'ecs-table-predifined-filters',
   imports: [
-    CommonModule,
     SkeletonModule,
     TagModule
   ],
@@ -44,12 +42,4 @@ export class TablePredifinedFilters {
     let objectURL = `data:image/jpeg;base64,${blob}`; // Create a base64 encoded string from the blob data
     return this.sanitizer.bypassSecurityTrustUrl(objectURL); // Bypass Angular's security mechanisms to create a SafeUrl
   }
-  getIconStyles(option: any) {
-  return {
-    'vertical-align': 'middle',
-    'margin-right': '0.5rem',
-    'color': option.iconColor || '',
-    ...option.iconStyle
-  };
-}
 }

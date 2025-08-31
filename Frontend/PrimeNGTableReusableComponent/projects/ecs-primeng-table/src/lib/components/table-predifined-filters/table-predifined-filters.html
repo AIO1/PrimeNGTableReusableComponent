@@ -1,11 +1,10 @@
 @if (option?.icon) {
-  <i [class]="option.icon" [ngStyle]="getIconStyles(option)"></i>
+  <i [class]="option.icon"
+    [style]="'vertical-align: middle; margin-right: 0.5rem; color: '+(option.iconColor || '') +';' +(option.iconStyle || '')"></i>
 }
 @if (!option?.iconBlob && option?.iconBlobSourceEndpoint) {
-  <p-skeleton size="28px" [ngStyle]="{
-    'vertical-align': 'middle',
-    'margin-right': '0.5rem'
-  }"/>
+  <p-skeleton size="28px"
+              style="vertical-align: middle; margin-right: 0.5rem;"/>
 }
 @if (option?.iconBlob) {
   <img alt="iconBlob"
@@ -21,10 +20,7 @@
 }
 @if (option?.displayTag === true) {
   <p-tag [style]="option.tagStyle"
-         [ngStyle]="{
-            'vertical-align': 'middle',
-            'margin-right': '0.5rem'
-          }">
+         style="vertical-align: middle; margin-right: 0.5rem;">
     {{ option.name }}
   </p-tag>
 }
