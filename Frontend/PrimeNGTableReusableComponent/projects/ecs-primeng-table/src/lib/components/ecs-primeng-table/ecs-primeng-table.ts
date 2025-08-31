@@ -187,7 +187,7 @@ onWindowResize = () => {
       //const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight || 50; // fallback
 
       //this.scrollHeight = `${containerHeight - headerHeight - paginatorHeight}px`;
-      console.log(this.scrollHeight)
+      //console.log(this.scrollHeight)
     }
   }
 

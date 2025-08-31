@@ -15,8 +15,10 @@
       "prefix": "ecs",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "outputPath": "dist/prime-ngtable-reusable-component",
+            "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
@@ -32,8 +34,9 @@
             "styles": [
               "src/styles.scss"
             ],
+            "scripts": [],
             "server": "src/main.server.ts",
-            "outputMode": "server",
+            "prerender": true,
             "ssr": {
               "entry": "src/server.ts"
             }
@@ -63,7 +66,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "PrimeNGTableReusableComponent:build:production"
@@ -75,10 +78,10 @@
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular/build:extract-i18n"
+          "builder": "@angular-devkit/build-angular:extract-i18n"
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "polyfills": [
               "zone.js",
@@ -99,36 +102,6 @@
         }
       }
     },
-    "primeng-table": {
-      "projectType": "library",
-      "root": "projects/primeng-table",
-      "sourceRoot": "projects/primeng-table/src",
-      "prefix": "ecs",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/primeng-table/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/primeng-table/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "tsConfig": "projects/primeng-table/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
-          }
-        }
-      }
-    },
     "ecs-primeng-table": {
       "projectType": "library",
       "root": "projects/ecs-primeng-table",
@@ -136,7 +109,10 @@
       "prefix": "ecs",
       "architect": {
         "build": {
-          "builder": "@angular/build:ng-packagr",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/ecs-primeng-table/ng-package.json"
+          },
           "configurations": {
             "production": {
               "tsConfig": "projects/ecs-primeng-table/tsconfig.lib.prod.json"
@@ -148,7 +124,7 @@
           "defaultConfiguration": "production"
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "projects/ecs-primeng-table/tsconfig.spec.json",
             "polyfills": [
