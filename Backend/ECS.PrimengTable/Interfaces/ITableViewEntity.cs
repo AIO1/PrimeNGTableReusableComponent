@@ -7,5 +7,6 @@
         string TableKey { get; set; }
         string ViewAlias { get; set; }
         string ViewData { get; set; }
+        public bool LastActive { get; set; }
     }
 }

@@ -6,7 +6,7 @@
     <div style="padding: 20px;">
         <p-table #dt_columnDialog [value]="columnModalData" [scrollable]="true" size="small" showGridlines stripedRows 
             [globalFilterFields]="['header']" scrollHeight="400px" [tableStyle]="{'min-width': '25rem'}" (onFilter)="onColumnModalFilter($event)">
-            <ng-template pTemplate="caption">
+            <ng-template #caption>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 10px">
                         <p-checkbox inputId="selectAll" [binary]="true" [ngModel]="allColumnsCheckboxActive()" (onChange)="allColumnsCheckboxClick($event)"></p-checkbox>
@@ -28,15 +28,10 @@
                                 </p-inputIcon>
                             }
                         </p-iconField>
-
-                        <!--<span class="p-input-icon-left">
-                            <i class="pi pi-search"></i>
-                            <input type="text" pInputText (input)="filterColumnModal($event)" placeholder="Search column name"/>
-                        </span>-->
                     </div>
                 </div>
             </ng-template>
-            <ng-template pTemplate="header">
+            <ng-template #header>
                 <tr>
                     <th pFrozenColumn style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">Show column</th>
                     <th pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px; text-align: center;">Column name</th>
@@ -45,7 +40,7 @@
                     <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Vertical aligment</th>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="body" let-rowData>
+            <ng-template #body let-rowData>
                 <tr>
                     <td pFrozenColumn style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">
                         <p-checkbox 
@@ -77,7 +72,7 @@
                     </td>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="emptymessage">
+            <ng-template #emptymessage>
                 <tr>
                     <td colspan="999">There are no columns</td>
                 </tr>

@@ -92,41 +92,12 @@
                 @if(tableViewsEnabled()){
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <p-buttongroup>
-                            <p-button [label]="tableViewCurrentSelectedAlias ? tableViewCurrentSelectedAlias : '--- Select a view ---'" class="viewButton"/>
-                            <p-button icon="pi pi-refresh"/>
-                            <p-button icon="pi pi-eraser"/>
+                            <p-button (click)="viewsModalShow=true;" [label]="tableViewCurrentSelectedAlias ? tableViewCurrentSelectedAlias : '--- Select a view ---'" class="viewButton"/>
+                            <p-button icon="pi pi-refresh" (click)="viewLoad(tableViewCurrentSelectedAlias!)" [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Apply view again" [showDelay]="700" tooltipPosition="top"/>
+                            <p-button icon="pi pi-eraser" [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Reset table view" [showDelay]="700" tooltipPosition="top"/><!--resetTableView()-->
                         </p-buttongroup>
                     </div>
                 }
-                <!--<div *ngIf="tableViewSaveAs !== enumTableViewSaveMode.noone && tableViewsFirstFetchDone===true && tableViewSaveKey !== ''" style="display: flex; align-items: center; gap: 10px;">
-                    <div class="p-inputgroup custom-inputgroup" 
-                        style="display: flex; align-items: center;">
-                        <div (click)="viewsModalShow=true; $event.stopPropagation();" style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
-                            <input
-                                type="text"
-                                pInputText
-                                [value]="tableViewCurrentSelectedAlias ? tableViewCurrentSelectedAlias : '--- Select a view ---'"
-                                readonly
-                                style="background-color: transparent; border: none; flex-grow: 1; pointer-events: none;"
-                                [style.font-style]="tableViewCurrentSelectedAlias ? 'normal' : 'italic'"/>
-                        </div>
-                        <div class="vertical-separator"></div>
-                        <button pButton 
-                            pTooltip="Apply view again"
-                            tooltipPosition="top"
-                            [showDelay]="700"
-                            type="button" icon="pi pi-refresh" (click)="loadTableView()"
-                            class="p-button custom-refresh-button" style="cursor: pointer; height: 100%; padding: 0;" [disabled]="!hasLoadView()">
-                        </button>
-                        <button pButton 
-                            pTooltip="Reset table view to original"
-                            tooltipPosition="top"
-                            [showDelay]="700"
-                            type="button" icon="pi pi-eraser" (click)="resetTableView()"
-                            class="p-button custom-refresh-button" style="cursor: pointer; height: 100%; padding: 0;">
-                        </button>
-                    </div>
-                </div>-->
 
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--GLOBAL FILTER-->
@@ -283,9 +254,14 @@
 
         <!-- SHOW CUSTOM RECORDS REPORT -->
         <ng-template #paginatorleft>
-            Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records
+            <div #paginatorContainer>
+                Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records
+            </div>
         </ng-template>
     </p-table>
 </div>
 <ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
 <ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" [excelReportTitle]="excelReportTitle" [allowTitleUserEdit]="excelReportTitleAllowUserEdit" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
+<ecs-views-management [visible]="viewsModalShow" [tableViews_menuItems]="tableViews_menuItems" 
+    (onViewSelect)="viewLoad($event)" (onViewCreate)="viewCreate($event)" (onViewDelete)="viewDelete($event)" (onViewEditAlias)="viewEditAlias($event)" (onViewUpdateData)="viewUpdateData($event)"
+    (visibleChange)="viewsModalShow=false"/>

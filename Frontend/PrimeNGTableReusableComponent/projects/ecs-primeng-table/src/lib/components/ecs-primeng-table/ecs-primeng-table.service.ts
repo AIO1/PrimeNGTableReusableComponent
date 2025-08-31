@@ -2,10 +2,12 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
-import { IColumnMetadata, IExcelExportRequest, ITableConfiguration, ITablePagedResponse, ITableView } from '../../interfaces';
+import { IColumnMetadata, IExcelExportRequest, ITableConfiguration, ITablePagedResponse, ITableView, ITableViewData } from '../../interfaces';
 import { CellOverflowBehaviour, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
 import { ITableQueryRequest } from '../../interfaces/table-query-request.interface';
 import { MenuItem } from 'primeng/api';
+import { Table } from 'primeng/table';
+import { DomHandler } from 'primeng/dom';
 
 @Injectable({
   providedIn: 'root'
@@ -130,5 +132,54 @@ export class ECSPrimengTableService {
         return tableSaveViewList.map(item => ({
             label: item.viewAlias
         }));
+    }
+  viewsSaveToDatabase(tableSaveViewList: ITableView[], setListEndpoint: string, tableViewSaveKey: string): Observable<HttpResponse<any>>{
+        const serializedSaveViews = tableSaveViewList.map(view => ({
+            viewAlias: view.viewAlias,
+            viewData: JSON.stringify(view.viewData),
+            lastActive: view.lastActive
+        }));
+        const postData: any = {
+            tableViewSaveKey: tableViewSaveKey,
+            views: serializedSaveViews
+        };
+        return this.http.handleHttpPostRequest<any>(setListEndpoint,postData);
+    }
+  viewGenerateData(dt: Table, globalSearchText: string | null, currentPage: number, currentRowsPerPage: number, modifyFiltersFn: (filters: any) => any): ITableViewData{
+        let colsWidth = this.computeColumnWidths(dt);
+        let tableWidth = this.computeTableWidth(dt);
+        const filtersWithoutGlobalAndSelectedRows = {...modifyFiltersFn(JSON.parse(JSON.stringify(dt.filters)))};
+        if (filtersWithoutGlobalAndSelectedRows['rowID']) {
+            filtersWithoutGlobalAndSelectedRows['rowID'][0].value = null;
+        }
+        if (filtersWithoutGlobalAndSelectedRows['selector']) {
+            filtersWithoutGlobalAndSelectedRows['selector'][0].value = null;
+        }
+        const tableView: ITableViewData = {
+          columnsShown: [...dt.columns!],
+          multiSortMeta: dt.multiSortMeta,
+          filters: {...filtersWithoutGlobalAndSelectedRows},
+          globalSearchText: globalSearchText,
+          currentPage: currentPage,
+          currentRowsPerPage: currentRowsPerPage,
+          tableWidth: tableWidth,
+          columnsWidth: colsWidth
+        }
+        return tableView;
+    }
+
+    computeColumnWidths(dt: Table): any {
+      let widths: number[] = [];
+      const headers = dt.el.nativeElement.querySelectorAll('.p-datatable-thead > tr > th');
+      headers.forEach((header: HTMLElement) => widths.push(DomHandler.getOuterWidth(header)));
+      return widths.join(',');
+    }
+
+    computeTableWidth(dt: Table): any {
+        let tableWidth = 0;
+        if (dt.columnResizeMode === 'expand') {
+            tableWidth = DomHandler.getOuterWidth(dt.tableViewChild?.nativeElement);
+        }
+        return tableWidth;
     }
 }

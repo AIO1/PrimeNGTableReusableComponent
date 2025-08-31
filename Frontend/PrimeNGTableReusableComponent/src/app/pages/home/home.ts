@@ -18,7 +18,7 @@ export class Home implements OnInit {
 
   headerActionButtons: ITableButton[] = [
     {
-      icon: 'pi pi-file',
+      icon: 'pi pi-plus',
       color: 'p-button-success',
       action: () => {
         this.sharedService.clearToasts();

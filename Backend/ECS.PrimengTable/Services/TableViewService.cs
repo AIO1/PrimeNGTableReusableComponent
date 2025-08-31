@@ -18,7 +18,8 @@ namespace ECS.PrimengTable.Services {
                 .ToListAsync();
             return data.Select(s => new ViewDataModel {
                 ViewAlias = s.ViewAlias,
-                ViewData = s.ViewData
+                ViewData = s.ViewData,
+                LastActive = s.LastActive
             }).ToList();
         }
 
@@ -48,7 +49,8 @@ namespace ECS.PrimengTable.Services {
                             Username = username,
                             TableKey = tableKey,
                             ViewAlias = view.ViewAlias,
-                            ViewData = view.ViewData
+                            ViewData = view.ViewData,
+                            LastActive = view.LastActive
                         };
                         await _context.Set<T>().AddAsync(newView);
                     }

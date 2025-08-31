@@ -82,6 +82,7 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasPrecision(0)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnName("dateUpdated");
+            entity.Property(e => e.LastActive).HasColumnName("lastActive");
             entity.Property(e => e.TableKey)
                 .HasMaxLength(255)
                 .HasColumnName("tableKey");
