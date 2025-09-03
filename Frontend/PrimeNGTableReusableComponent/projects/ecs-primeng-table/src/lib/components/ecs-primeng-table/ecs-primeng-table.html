@@ -94,7 +94,7 @@
                         <p-buttongroup>
                             <p-button (click)="viewsModalShow=true;" [label]="tableViewCurrentSelectedAlias ? tableViewCurrentSelectedAlias : '--- Select a view ---'" class="viewButton"/>
                             <p-button icon="pi pi-refresh" (click)="viewLoad(tableViewCurrentSelectedAlias!)" [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Apply view again" [showDelay]="700" tooltipPosition="top"/>
-                            <p-button icon="pi pi-eraser" [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Reset table view" [showDelay]="700" tooltipPosition="top"/><!--resetTableView()-->
+                            <p-button icon="pi pi-eraser" (click)="resetTableView()" pTooltip="Reset table view" [showDelay]="700" tooltipPosition="top"/>
                         </p-buttongroup>
                     </div>
                 }
@@ -263,5 +263,5 @@
 <ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
 <ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" [excelReportTitle]="excelReportTitle" [allowTitleUserEdit]="excelReportTitleAllowUserEdit" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
 <ecs-views-management [visible]="viewsModalShow" [tableViews_menuItems]="tableViews_menuItems" 
-    (onViewSelect)="viewLoad($event)" (onViewCreate)="viewCreate($event)" (onViewDelete)="viewDelete($event)" (onViewEditAlias)="viewEditAlias($event)" (onViewUpdateData)="viewUpdateData($event)"
+    (onViewSelect)="viewLoad($event)" (onViewCreate)="viewCreate($event)" (onViewDelete)="viewDelete($event)" (onViewEditAlias)="viewEditAlias($event)" (onViewUpdateData)="viewUpdateData($event)" (onViewUpdateActiveStartup)="viewUpdateActiveStartup($event)"
     (visibleChange)="viewsModalShow=false"/>

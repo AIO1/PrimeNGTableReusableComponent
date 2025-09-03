@@ -1,5 +1,5 @@
 export enum CellOverflowBehaviour {
     Hidden,
-    Wrap/*,
-    Ellipsis*/
+    Wrap,
+    Ellipsis
 }

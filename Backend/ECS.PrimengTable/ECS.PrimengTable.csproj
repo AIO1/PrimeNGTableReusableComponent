@@ -7,7 +7,7 @@
 		<!-- NuGet metadata -->
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>ECS.PrimeNGTable</PackageId>
-		<Version>8.0.0</Version>
+		<Version>8.0.1</Version>
 		<Authors>Alex Ibrahim Ojea</Authors>
 		<Company>Eternal CODE Studio</Company>
 		<Copyright>© 2025 Eternal CODE Studio</Copyright>

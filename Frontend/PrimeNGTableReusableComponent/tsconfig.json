@@ -39,12 +39,6 @@
       "path": "./tsconfig.spec.json"
     },
     {
-      "path": "./projects/primeng-table/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/primeng-table/tsconfig.spec.json"
-    },
-    {
       "path": "./projects/ecs-primeng-table/tsconfig.lib.json"
     },
     {

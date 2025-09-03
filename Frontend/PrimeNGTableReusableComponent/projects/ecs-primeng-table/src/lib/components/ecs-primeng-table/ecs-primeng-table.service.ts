@@ -81,6 +81,46 @@ export class ECSPrimengTableService {
 
   getColumnStyle(col: any, headerCols: boolean = false): Record<string, string> {
     let styles: Record<string, string> = {};
+    if (!headerCols) {
+      switch (col.cellOverflowBehaviour) {
+        case CellOverflowBehaviour.Wrap:
+          styles['white-space'] = 'normal';
+          styles['word-wrap'] = 'break-word';
+          styles['word-break'] = 'break-all';
+          styles['overflow'] = 'hidden';
+        break;
+
+        case CellOverflowBehaviour.Ellipsis:
+          styles['white-space'] = 'nowrap';
+          styles['overflow'] = 'hidden';
+          styles['text-overflow'] = 'ellipsis';
+          styles['width'] = '100%';
+          styles['min-width'] = '100%';
+          styles['max-width'] = '100%';
+        break;
+        /*
+          display: block;
+  width: 100%;  
+  text-align: center;
+        */
+
+        case CellOverflowBehaviour.Hidden:
+          default:
+          styles['white-space'] = 'nowrap';
+        break;
+      }
+    }
+
+    if (col.initialWidth > 0) {
+      const width = `${col.initialWidth}px`;
+      styles['width'] = width;
+      styles['min-width'] = width;
+      styles['max-width'] = width;
+    }
+
+    return styles;
+
+    /*let styles: Record<string, string> = {};
     if(!headerCols){
       styles = {
           'white-space': col.cellOverflowBehaviour === CellOverflowBehaviour.Wrap ? 'normal' : 'nowrap',
@@ -93,7 +133,7 @@ export class ECSPrimengTableService {
         styles['min-width'] = col.initialWidth + 'px';
         styles['width'] = col.initialWidth + 'px';
     }
-    return styles;
+    return styles;*/
   }
 
   fetchTableViews(tableViewSaveAs: TableViewSaveMode, recoverListEndpoint: string, tableViewSaveKey: string): ITableView[] | Observable<HttpResponse<ITableView[]>>{
@@ -130,7 +170,8 @@ export class ECSPrimengTableService {
   }
   updateViewsMenuItems(tableSaveViewList: ITableView[]): MenuItem[]{
         return tableSaveViewList.map(item => ({
-            label: item.viewAlias
+            label: item.viewAlias,
+            lastActive: item.lastActive
         }));
     }
   viewsSaveToDatabase(tableSaveViewList: ITableView[], setListEndpoint: string, tableViewSaveKey: string): Observable<HttpResponse<any>>{

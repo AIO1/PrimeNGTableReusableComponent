@@ -8,6 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { ECSPrimengTableNotificationService } from '../../services';
+import { CheckboxModule } from 'primeng/checkbox';
 @Component({
   selector: 'ecs-views-management',
   imports: [
@@ -17,7 +18,8 @@ import { ECSPrimengTableNotificationService } from '../../services';
     CommonModule,
     FormsModule,
     TooltipModule,
-    InputTextModule
+    InputTextModule,
+    CheckboxModule
   ],
   standalone: true,
   templateUrl: './views-management.html'
@@ -27,10 +29,11 @@ export class ViewsManagement {
     private notification: ECSPrimengTableNotificationService
   ) {}
   @Input() visible: boolean = false;
-  @Input() tableViews_menuItems: MenuItem[] = [];
+  @Input() tableViews_menuItems: any[] = [];
   @Output() onViewSelect = new EventEmitter<string>();
   @Output() onViewDelete = new EventEmitter<string>();
   @Output() onViewUpdateData = new EventEmitter<string>();
+  @Output() onViewUpdateActiveStartup = new EventEmitter<string>();
   @Output() onViewEditAlias = new EventEmitter<{ viewAliasOld: string; viewAliasNew: string }>();
   @Output() onViewCreate = new EventEmitter<string>();
   @Output() visibleChange = new EventEmitter<boolean>();
@@ -45,6 +48,9 @@ export class ViewsManagement {
   }
   updateView(viewAlias: string){
     this.onViewUpdateData.emit(viewAlias);
+  }
+  updateViewActiveStartup(viewAlias: string){
+    this.onViewUpdateActiveStartup.emit(viewAlias);
   }
   createView(viewAlias: string){
     const exists = this.tableViews_menuItems.some(item => item.label === viewAlias);

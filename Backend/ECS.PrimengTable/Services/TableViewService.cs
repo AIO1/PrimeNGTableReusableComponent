@@ -43,6 +43,8 @@ namespace ECS.PrimengTable.Services {
                     if(existingView != null) {
                         // Update existing
                         existingView.ViewData = view.ViewData;
+                        existingView.ViewAlias = view.ViewAlias;
+                        existingView.LastActive = view.LastActive;
                     } else {
                         // Add new
                         var newView = new T {

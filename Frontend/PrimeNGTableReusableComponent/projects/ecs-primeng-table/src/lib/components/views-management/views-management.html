@@ -15,7 +15,8 @@
             <ng-template #header>
                 <tr>
                     <th style="text-align: center;">View name</th>
-                    <th style="text-align: center; max-width: 300px; min-width: 300px; width: 300px;">Actions</th>
+                    <th style="text-align: center; max-width: 220px; min-width: 220px; width: 220px;">Load on startup</th>
+                    <th style="text-align: center; max-width: 220px; min-width: 220px; width: 220px;">Actions</th>
                 </tr>
             </ng-template>
             <ng-template #body let-rowData>
@@ -23,7 +24,10 @@
                     <td>
                         {{rowData.label}}
                     </td>
-                    <td style="max-width: 300px; min-width: 300px; width: 300px; display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <td style="text-align: center; max-width: 220px; min-width: 220px; width: 220px;">
+                        <p-checkbox [ngModel]="rowData.lastActive" [binary]="true" (onChange)="updateViewActiveStartup(rowData.label)"/>
+                    </td>
+                    <td style="max-width: 220px; min-width: 220px; width: 220px; display: flex; justify-content: center; align-items: center; height: 100%;">
                         <button pButton icon="pi pi-upload" (click)="loadView(rowData.label);" [showDelay]="700" pTooltip="Restore" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
                         <button pButton icon="pi pi-save" (click)="updateView(rowData.label);" [showDelay]="700" pTooltip="Save" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
                         <button pButton icon="pi pi-pencil" (click)="showViewEditor(rowData.label);" [showDelay]="700" pTooltip="Edit" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
