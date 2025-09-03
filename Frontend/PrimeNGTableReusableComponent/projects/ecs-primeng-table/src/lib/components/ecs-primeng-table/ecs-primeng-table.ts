@@ -391,6 +391,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     let newStatus: boolean = !this.tableViewsList[index].lastActive;
     this.tableViewsList.forEach(v => v.lastActive = false);
     this.tableViewsList[index].lastActive = newStatus;
+    this.tableViews_menuItems=[...this.tableService.updateViewsMenuItems(this.tableViewsList)];
     this.viewsSave(4);
   }
 
@@ -485,7 +486,6 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   resetTableView(){
-    this.tableViewCurrentSelectedAlias=null;
     this.fetchTableConfiguration(true);
   }
 

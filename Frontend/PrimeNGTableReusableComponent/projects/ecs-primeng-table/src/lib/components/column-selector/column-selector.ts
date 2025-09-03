@@ -11,6 +11,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputTextModule } from 'primeng/inputtext';
 import { IColumnMetadata } from '../../interfaces';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @Component({
@@ -25,7 +26,8 @@ import { IColumnMetadata } from '../../interfaces';
     FormsModule,
     InputIconModule,
     IconFieldModule,
-    InputTextModule
+    InputTextModule,
+    TooltipModule
   ],
   standalone: true,
   templateUrl: './column-selector.html'
@@ -41,19 +43,19 @@ export class ColumnSelector {
   @Output() applyChanges = new EventEmitter<IColumnMetadata[]>(); 
 
   cellOverflowBehaviourOptions = [
-    {icon: 'pi pi-minus', val: CellOverflowBehaviour.Hidden},
-    {icon: 'pi pi-equals', val: CellOverflowBehaviour.Wrap}/*,
-    {icon: 'pi pi-ellipsis-h', val: CellOverflowBehaviour.Ellipsis}*/
+    {icon: 'pi pi-minus', val: CellOverflowBehaviour.Hidden, name: "Hidden"},
+    {icon: 'pi pi-equals', val: CellOverflowBehaviour.Wrap, name: "Wrap"}/*,
+    {icon: 'pi pi-ellipsis-h', val: CellOverflowBehaviour.Ellipsis, name: "Ellipsis"}*/
   ];
   dataAlignHorizontalOptions = [
-    {icon: 'pi pi-align-left', val: DataAlignHorizontal.Left},
-    {icon: 'pi pi-align-center', val: DataAlignHorizontal.Center},
-    {icon: 'pi pi-align-right', val: DataAlignHorizontal.Right}
+    {icon: 'pi pi-align-left', val: DataAlignHorizontal.Left, name: "Left"},
+    {icon: 'pi pi-align-center', val: DataAlignHorizontal.Center, name: "Center"},
+    {icon: 'pi pi-align-right', val: DataAlignHorizontal.Right, name: "Right"}
   ];
   dataAlignVerticalOptions = [
-    {icon: 'pi pi-angle-up', val: DataAlignVertical.Top},
-    {icon: 'pi pi-align-justify', val: DataAlignVertical.Middle},
-    {icon: 'pi pi-angle-down', val: DataAlignVertical.Bottom}
+    {icon: 'pi pi-angle-up', val: DataAlignVertical.Top, name: "Top"},
+    {icon: 'pi pi-align-justify', val: DataAlignVertical.Middle, name: "Middle"},
+    {icon: 'pi pi-angle-down', val: DataAlignVertical.Bottom, name: "Bottom"}
   ];
 
   globalSearchText: string | null = null; // The text used by the global search
