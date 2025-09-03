@@ -18,4 +18,6 @@ public partial class TableView
     public string ViewAlias { get; set; } = null!;
 
     public string ViewData { get; set; } = null!;
+
+    public bool LastActive { get; set; }
 }

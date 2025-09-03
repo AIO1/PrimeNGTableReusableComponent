@@ -1,40 +1,13 @@
-﻿namespace PrimeNG.Attributes {
-    public enum EnumDataType {
-        Text,
-        Numeric,
-        Boolean,
-        Date
-    }
-    public enum EnumDataAlignHorizontal {
-        Left,
-        Center,
-        Right
-    }
-    public enum EnumDataAlignVertical {
-        Top,
-        Middle,
-        Bottom
-    }
-    public enum EnumFrozenColumnAlign {
-        Noone,
-        Left,
-        Right
-    }
-    public enum EnumCellOverflowBehaviour {
-        Hidden,
-        Wrap/*,
-        Ellipsis*/
-    }
-    /// <summary>
-    /// Custom attributes for PrimeNG tables
-    /// </summary>
+﻿using ECS.PrimengTable.Enums;
+
+namespace ECS.PrimengTable.Attributes {
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    sealed class PrimeNGAttribute : Attribute {
+    public sealed class ColumnAttributes : Attribute {
         public string Header { get; }
-        public EnumDataType DataType { get; }
-        public EnumDataAlignHorizontal DataAlignHorizontal { get; }
+        public DataType DataType { get; }
+        public DataAlignHorizontal DataAlignHorizontal { get; }
         public bool DataAlignHorizontalAllowUserEdit { get; }
-        public EnumDataAlignVertical DataAlignVertical { get; }
+        public DataAlignVertical DataAlignVertical { get; }
         public bool DataAlignVerticalAllowUserEdit { get; }
         public bool CanBeHidden { get; }
         public bool StartHidden { get; }
@@ -48,13 +21,13 @@
         public string ColumnDescription { get; }
         public bool DataTooltipShow { get; }
         public string DataTooltipCustomColumnSource { get; }
-        public EnumFrozenColumnAlign FrozenColumnAlign { get; }
-        public EnumCellOverflowBehaviour CellOverflowBehaviour { get; }
+        public FrozenColumnAlign FrozenColumnAlign { get; }
+        public CellOverflowBehaviour CellOverflowBehaviour { get; }
         public bool CellOverflowBehaviourAllowUserEdit { get; }
         public double InitialWidth { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PrimeNGAttribute"/> class.
+        /// Initializes a new instance of the <see cref="ColumnAttributes"/> class.
         /// </summary>
         /// <param name="header">The name that will be used to display this column in the table.</param>
         /// <param name="dataType">The data type that will be used for the filter ("text" by default).</param>
@@ -75,16 +48,15 @@
         /// <param name="dataTooltipShow">If <c>true</c>, data in a row when mouse hovers can be shown as tooltip. Useful for long data in a row</param>
         /// <param name="dataTooltipCustomColumnSource">A string that ig given a value, the tooltip will fetch the value from a column name that matches the provided value</param>
         /// <param name="frozenColumnAlign">An enum that indicates if the column is frozen and were it is aligned</param>
-
         /// <exception cref="ArgumentException">
         /// Thrown if an invalid dataAlign or dataType value is provided.
         /// </exception>
-        public PrimeNGAttribute(
+        public ColumnAttributes(
             string header = "",
-            EnumDataType dataType = EnumDataType.Text,
-            EnumDataAlignHorizontal dataAlignHorizontal = EnumDataAlignHorizontal.Center,
+            DataType dataType = DataType.Text,
+            DataAlignHorizontal dataAlignHorizontal = DataAlignHorizontal.Center,
             bool dataAlignHorizontalAllowUserEdit = true,
-            EnumDataAlignVertical dataAlignVertical = EnumDataAlignVertical.Middle,
+            DataAlignVertical dataAlignVertical = DataAlignVertical.Middle,
             bool dataAlignVerticalAllowUserEdit = true,
             bool canBeHidden = true,
             bool startHidden = false,
@@ -98,11 +70,10 @@
             string columnDescription = "",
             bool dataTooltipShow = true,
             string dataTooltipCustomColumnSource = "",
-            EnumFrozenColumnAlign frozenColumnAlign = EnumFrozenColumnAlign.Noone,
-            EnumCellOverflowBehaviour cellOverflowBehaviour = EnumCellOverflowBehaviour.Hidden,
+            FrozenColumnAlign frozenColumnAlign = FrozenColumnAlign.Noone,
+            CellOverflowBehaviour cellOverflowBehaviour = CellOverflowBehaviour.Hidden,
             bool cellOverflowBehaviourAllowUserEdit = true,
             double initialWidth = 0
-
         ) {
             Header = header;
             DataType = dataType;
@@ -112,20 +83,20 @@
             DataAlignVerticalAllowUserEdit = dataAlignVerticalAllowUserEdit;
             CanBeHidden = canBeHidden;
             StartHidden = startHidden && canBeHidden;
-            CanBeResized = frozenColumnAlign == EnumFrozenColumnAlign.Noone && canBeResized;
-            CanBeReordered = canBeReordered && frozenColumnAlign == EnumFrozenColumnAlign.Noone;
+            CanBeResized = frozenColumnAlign == FrozenColumnAlign.Noone && canBeResized;
+            CanBeReordered = canBeReordered && frozenColumnAlign == FrozenColumnAlign.Noone;
             CanBeSorted = canBeSorted;
             CanBeFiltered = canBeFiltered;
             FilterPredifinedValuesName = filterPredifinedValuesName;
-            CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != EnumDataType.Boolean;
+            CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != DataType.Boolean;
             SendColumnAttributes = sendColumnAttributes;
             ColumnDescription = columnDescription;
             DataTooltipShow = dataTooltipShow;
             DataTooltipCustomColumnSource = dataTooltipCustomColumnSource;
             FrozenColumnAlign = frozenColumnAlign;
-            CellOverflowBehaviour = dataType == EnumDataType.Boolean ? EnumCellOverflowBehaviour.Hidden : cellOverflowBehaviour;
-            CellOverflowBehaviourAllowUserEdit = cellOverflowBehaviourAllowUserEdit && dataType != EnumDataType.Boolean;
-            InitialWidth = initialWidth <= 0 && frozenColumnAlign != EnumFrozenColumnAlign.Noone ? 100 : initialWidth;
+            CellOverflowBehaviour = dataType == DataType.Boolean ? CellOverflowBehaviour.Hidden : cellOverflowBehaviour;
+            CellOverflowBehaviourAllowUserEdit = cellOverflowBehaviourAllowUserEdit && dataType != DataType.Boolean;
+            InitialWidth = initialWidth <= 0 && frozenColumnAlign != FrozenColumnAlign.Noone ? 100 : initialWidth;
         }
     }
 }

@@ -1,0 +1,61 @@
+<p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false"
+    [closable]="false" [closeOnEscape]="false" [maximizable]="false" [style]="{'min-width': '70vw', 'max-width': '70vw'}">
+    <ng-template pTemplate="header">
+        <div>
+            <span class="p-dialog-title">Export data to Excel</span>
+        </div>
+    </ng-template>
+    <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 1rem; align-items: center;">
+        <div style="justify-self: end;">
+            Report filename
+        </div>
+        <div style="justify-self: stretch; width: 100%;">
+            <input pInputText id="reportTitle" [(ngModel)]="excelReportTitle" autocomplete="off" style="width: 100%;" [disabled]="!allowTitleUserEdit" maxlength="100"/>
+        </div>
+
+        <div style="justify-self: end;">
+            <i pTooltip="Activating this option will add the current '_{year}{month}{day}_{hours}{minutes}{seconds}_UTC' at the end of your filename" tooltipPosition="top" class="pi pi-info-circle"></i>
+            Include time in report filename
+        </div>
+        <div style="justify-self: stretch; width: 100%;">
+            <p-checkbox [binary]="true" [(ngModel)]="includeTimeInTitle"/>
+        </div>
+        
+        <div style="justify-self: end;">
+            Export columns
+        </div>
+        <div style="justify-self: start;">
+            <p-selectButton [(ngModel)]="option_exportColumns_selected" [options]="option_exportColumns" optionLabel="label" optionValue="value" allowEmpty="false"/>
+        </div>
+
+        <div style="justify-self: end;">
+            @if(filterSelectorDisabled()){
+                <i pTooltip="Sorts are active because you want to export selected rows following a filter criteria" tooltipPosition="top" class="pi pi-info-circle"></i>
+            }
+            Filters to apply
+        </div>
+        <div style="justify-self: start;">
+            <p-selectButton [(ngModel)]="option_applyCurrentFilters_selected" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" allowEmpty="false" [disabled]="filterSelectorDisabled()"/>
+        </div>
+
+        <div style="justify-self: end;">
+            Sorts to apply
+        </div>
+        <div style="justify-self: start;">
+            <p-selectButton [(ngModel)]="option_applyCurrentSorts_selected" [options]="option_applyCurrentSorts" optionLabel="label" optionValue="value" allowEmpty="false"/>
+        </div>
+
+        @if(rowCheckboxSelectorActive){
+            <div style="justify-self: end;">
+                Selected rows
+            </div>
+            <div style="justify-self: start;">
+                <p-selectButton [(ngModel)]="option_selectedRowsExport_selected" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" allowEmpty="false" (onChange)="onChangeExportRows($event)"/>
+            </div>
+        }
+    </div>
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="closeModal()" label="Cancel export" severity="danger" [style]="{'margin-top': '20px'}"/>
+        <p-button (click)="getExcelReport()" label="Export" severity="success" [style]="{'margin-top': '20px'}"/>
+    </ng-template>
+</p-dialog>

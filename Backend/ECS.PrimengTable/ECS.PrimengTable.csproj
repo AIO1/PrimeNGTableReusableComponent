@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- NuGet metadata -->
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>ECS.PrimeNGTable</PackageId>
+		<Version>8.0.1</Version>
+		<Authors>Alex Ibrahim Ojea</Authors>
+		<Company>Eternal CODE Studio</Company>
+		<Copyright>© 2025 Eternal CODE Studio</Copyright>
+		<Description>
+			A reusable .NET backend solution for integrating PrimeNG tables with advanced filtering capabilities, where all filter logic is delegated to the database engine for maximum performance. Designed for Angular (frontend) + ASP.NET (backend) applications. SQL Server is used as the reference database, but the implementation can be adapted to other database engines with minimal changes. Includes support for Excel export (with integration with ClosedXML) and dynamic LINQ queries.
+		</Description>
+		<PackageTags>
+			primeng;datatable;angular;aspnet;aspnetcore;sqlserver;filtering;dynamic-linq;closedxml;export-excel;datatable-filters;backend;reusable-component
+		</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/AIO1/PrimeNGTableReusableComponent</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://eternalcodestudio.com/</PackageProjectUrl>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="ClosedXML" Version="[0.104.0,)" />
+		<PackageReference Include="LinqKit" Version="[1.3.0,)" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="[8.0.0,)" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="[1.6.0,)" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+</Project>

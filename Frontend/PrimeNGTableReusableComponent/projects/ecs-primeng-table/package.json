@@ -1,0 +1,38 @@
+{
+  "name": "@eternalcodestudio/primeng-table",
+  "version": "20.0.3",
+  "description": "ECS reusable Angular PrimeNG table component with advanced server-side filters. Designed to offload filtering logic to any backend API.",
+  "author": "ECS (Eternal CODE Studio)",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "primeng",
+    "table",
+    "ecs",
+    "datatable",
+    "component",
+    "ui"
+  ],
+  "peerDependencies": {
+    "@angular/common": ">=20.0.0",
+    "@angular/core": ">=20.0.0",
+    "primeng": ">=20.0.0",
+    "primeicons": ">=7.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AIO1/PrimeNGTableReusableComponent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AIO1/PrimeNGTableReusableComponent/issues"
+  },
+  "homepage": "https://eternalcodestudio.com/",
+  "sideEffects": false
+}

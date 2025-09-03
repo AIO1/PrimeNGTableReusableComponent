@@ -1,7 +1,6 @@
-@import "primeicons/primeicons.css";
-.highlighted-text {
-    background-color: yellow;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import "primeicons/primeicons.css"; // Icons from PrimeNG
+
+body {
+  font-family: 'Roboto', sans-serif;
 }
-p-toast {
-    white-space: pre-line;
-} // For all toasts (for being able to show new lines)

@@ -1,0 +1,71 @@
+<p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false"
+    [closable]="true" [closeOnEscape]="false" [maximizable]="false" [style]="{'min-width': '70vw', 'max-width': '70vw'}" (onHide)="closeModal()">
+    <ng-template pTemplate="header">
+        <div>
+            <span class="p-dialog-title">Table views</span>
+        </div>
+    </ng-template>
+    <div class="p-4 pt-0">
+        <p-table #dt_viewsDialog [value]="tableViews_menuItems" [scrollable]="true" size="small" showGridlines stripedRows scrollHeight="400px" [tableStyle]="{'min-width': '25rem'}">
+            <ng-template #caption>
+                <div style="display: flex; justify-content: flex-end; align-items: center; width: 100%;">
+                    <p-button icon="pi pi-plus" label="New view" severity="success" (click)="showViewEditor()" pTooltip="New view" tooltipPosition="top" [showDelay]="700"/>
+                </div>
+            </ng-template>
+            <ng-template #header>
+                <tr>
+                    <th style="text-align: center;">View name</th>
+                    <th style="text-align: center; max-width: 220px; min-width: 220px; width: 220px;">Load on startup</th>
+                    <th style="text-align: center; max-width: 220px; min-width: 220px; width: 220px;">Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-rowData>
+                <tr>
+                    <td>
+                        {{rowData.label}}
+                    </td>
+                    <td style="text-align: center; max-width: 220px; min-width: 220px; width: 220px;">
+                        <p-checkbox [(ngModel)]="rowData.lastActive" [binary]="true" (onChange)="updateViewActiveStartup(rowData.label)"/>
+                    </td>
+                    <td style="max-width: 220px; min-width: 220px; width: 220px; display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <button pButton icon="pi pi-upload" (click)="loadView(rowData.label);" [showDelay]="700" pTooltip="Restore" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
+                        <button pButton icon="pi pi-save" (click)="updateView(rowData.label);" [showDelay]="700" pTooltip="Save" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
+                        <button pButton icon="pi pi-pencil" (click)="showViewEditor(rowData.label);" [showDelay]="700" pTooltip="Edit" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px; margin-right: 10px;"></button>
+                        <button pButton icon="pi pi-trash" (click)="deleteView(rowData.label);" [showDelay]="700" pTooltip="Delete" tooltipPosition="top" size="small" class="p-button-sm" style="height: 28px;"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="999">There are no views</td>
+                </tr>
+            </ng-template>
+        </p-table>
+        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-top: 10px;">
+            Showing {{tableViews_menuItems ? tableViews_menuItems.length : 0}} views
+        </div>
+    </div>
+</p-dialog>
+
+<!--TABLE VIEW SAVE-->
+<p-dialog [(visible)]="viewEditorShow" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'max-width': '60vw'}">
+    <ng-template pTemplate="header">
+        <div class="inline-flex align-items-center justify-content-center gap-2">
+            <span class="white-space-nowrap"><b>{{ editingViewAlias !== '' ? 'UPDATE VIEW' : 'CREATE NEW VIEW' }}</b></span>
+        </div>
+    </ng-template>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label for="newtableviewname"><strong>View alias<span style="color: red;">*</span></strong></label>
+        <input 
+            pInputText 
+            id="newtableviewname" 
+            aria-describedby="newtableviewname-help" 
+            style="width: 400px;"
+            maxlength="30"
+            [(ngModel)]="newViewAlias"/>
+    </div>
+    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <p-button (click)="viewEditorShow = false" label="Cancel" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="createOrUpdateTableView()" [label]="editingViewAlias !== '' ? 'Update' : 'Create'" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+    </ng-template>
+</p-dialog>

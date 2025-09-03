@@ -1,0 +1,58 @@
+<!--
+[ngStyle]="{
+            'display': 'flex',
+            'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
+            'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
+        }">
+-->
+@if (value !== null) {
+  @if (col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0) {
+    <div [ngStyle]="{
+            'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
+            'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
+        }">
+      @if (getPredfinedFilterMatch(col, value); as option) {
+        <div 
+          [pTooltip]="tooltipText"
+          [tooltipDisabled]="!col.dataTooltipShow"
+          [showDelay]="700"
+          tooltipPosition="top">
+          <ecs-table-predifined-filters [option]="option" [col]="col"/>
+        </div>
+      }
+    </div>
+  } @else {
+    @switch (col.dataType) {
+      @case (DataType.Boolean) {
+        <i class="pi"
+          [pTooltip]="tooltipText"
+          [tooltipDisabled]="!col.dataTooltipShow"
+          [showDelay]="700"
+          tooltipPosition="top"
+          [style.color]="value ? 'green' : 'red'"
+          [ngClass]="{ 'pi-check-circle': value, 'pi-times-circle': !value }">
+        </i>
+      }
+      @case (DataType.Date) {
+        <div 
+          [innerHtml]="highlightText(formatDate(value), col, globalSearchText)"
+          [pTooltip]="tooltipText"
+          [tooltipDisabled]="!col.dataTooltipShow"
+          [showDelay]="700"
+          tooltipPosition="top">
+          {{ formatDate(value) }}
+        </div>
+      }
+      @default {
+        <div
+          [innerHtml]="highlightText(value, col, globalSearchText)"
+          [pTooltip]="tooltipText"
+          [tooltipDisabled]="!col.dataTooltipShow"
+          [showDelay]="700"
+          tooltipPosition="top">
+          {{ value }}
+        </div>
+      }
+    }
+  }
+}
