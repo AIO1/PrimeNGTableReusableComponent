@@ -29,8 +29,11 @@ export class ECSPrimengTableService {
       'accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Type': 'application/json'
     });
-    return this.http.handleHttpPostRequest<Blob>(url, postData, httpOptions, true, null, true, 'blob');
+    return this.http.handleHttpPostRequest<Blob>(url, postData, httpOptions, true, null, true, "blob");
   }
+  getIconBlob(url: string): Observable<HttpResponse<Blob>> {
+      return this.http.handleHttpGetRequest<Blob>(url,null,false,null,true,"blob");
+    }
 
   downloadFile(data: Blob, fileName: string, contentType: string) {
     const blob = new Blob([data], { type: contentType });

@@ -1,3 +1,4 @@
+export * from "./create-table-options";
 export * from "./data-align-horizontal-as-text";
 export * from "./data-align-vertical-as-text";
 export * from "./data-type-as-text";

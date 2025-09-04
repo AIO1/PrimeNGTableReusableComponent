@@ -3,6 +3,7 @@ export * from "./excel-export-request.interface";
 export * from "./columns-metadata.interface";
 export * from "./predifined-filter.interface"
 export * from "./table-configuration.interface";
+export * from "./table-options.interface";
 export * from "./table-paged-response.interface";
 export * from "./table-query-request.interface";
 export * from "./table-view-data.interface";

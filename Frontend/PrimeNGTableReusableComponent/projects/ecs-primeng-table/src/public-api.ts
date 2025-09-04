@@ -13,3 +13,5 @@ export * from './lib/interfaces';
 
 // SERVICES (GLOBAL)
 export * from './lib/services';
+
+export * from "./lib/utils/create-table-options";

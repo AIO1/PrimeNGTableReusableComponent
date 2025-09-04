@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ITableButton, ECSPrimengTable, IPredifinedFilter, TableViewSaveMode } from 'ecs-primeng-table';
+import { ITableButton, ECSPrimengTable, IPredifinedFilter, TableViewSaveMode, ITableOptions, DEFAULT_TABLE_OPTIONS, createTableOptions } from 'ecs-primeng-table';
 import { SharedService } from '../../core/services/shared.service';
 import { IEmploymentStatus } from './employment-status.interface';
 
@@ -48,10 +48,49 @@ export class Home implements OnInit {
   ];
 
   employmentStatusPredifinedFilter: IPredifinedFilter[] = []; // Contains the data for the possible employment statuses
-  predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {
+  predefinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {
     'employmentStatusPredifinedFilter': this.employmentStatusPredifinedFilter
   };
-  TableViewSaveMode = TableViewSaveMode;
+  tableOptions: ITableOptions = createTableOptions({
+    isActive: false,
+    urlTableConfiguration: "Main/TestGetCols",
+    urlTableData: "Main/TestGetData",
+    excelReport: {
+      ...DEFAULT_TABLE_OPTIONS.excelReport,
+      url: "Main/GenerateExcel"
+    },
+    predefinedFilters: this.predefinedFiltersCollection,
+    header: {
+      ...DEFAULT_TABLE_OPTIONS.header,
+      buttons: this.headerActionButtons
+    },
+    rows: {
+      ...DEFAULT_TABLE_OPTIONS.rows,
+      action: {
+        ...DEFAULT_TABLE_OPTIONS.rows.action,
+        buttons: this.rowActionButtons,
+        width: 110
+      },
+      checkboxSelector: {
+        ...DEFAULT_TABLE_OPTIONS.rows.checkboxSelector,
+        enabled: true,
+        width: 125
+      },
+      singleSelector: {
+        enabled: true,
+        metakey: false
+      }
+    },
+    views: {
+      ...DEFAULT_TABLE_OPTIONS.views,
+      saveMode: TableViewSaveMode.databaseStorage,
+      saveKey: "TEST",
+      urlGet: "Main/GetViews",
+      urlSave: "Main/SaveViews"
+    }
+  });
+
+  /*[computeScrollHeight]="true"*/
   ngOnInit(): void {
     this.getEmploymentStatus(); // Retrieve the possible employment status
   }

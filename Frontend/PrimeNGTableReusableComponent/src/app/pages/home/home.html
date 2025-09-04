@@ -1,25 +1,5 @@
 <div style="height: 100vh;">
-    <ecs-primeng-table #dt
-        [isActive]="false"
-        urlColumnsSource="Main/TestGetCols"
-        urlDataSource="Main/TestGetData"
-        [computeScrollHeight]="true"
-        urlExcelReport="Main/GenerateExcel"
-        [predifinedFiltersCollection]="predifinedFiltersCollection"
-        [headerActionButtons]="headerActionButtons"
-        [rowActionButtons]="rowActionButtons"
-        [actionsColumnFrozen]="true"
-        [rowSelectorColumnActive]="true"
-        [rowSelectorColumnAligmentRight]="false"
-        [rowSelectorColumnWidth]="125"
-        [actionsColumnWidth]="110"
-        (onRowSelect)="onRowSelect($event)"
-        (onRowUnselect)="onRowUnselect($event)"
-        [tableViewSaveAs]="TableViewSaveMode.databaseStorage"
-        viewsGetSourceURL="Main/GetViews"
-        viewsSaveSourceURL="Main/SaveViews"
-        tableViewSaveKey="TEST"
-    />
+    <ecs-primeng-table #dt [tableOptions]="tableOptions" (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect($event)"/>
 </div>
 
 <!--<ecs-primeng-table #dt

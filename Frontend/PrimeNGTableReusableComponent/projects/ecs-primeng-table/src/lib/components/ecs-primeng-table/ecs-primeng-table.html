@@ -4,33 +4,33 @@
         sortMode="multiple"
         [resizableColumns]="true" columnResizeMode="expand"
         [reorderableColumns]="true"
-        [scrollable]="true" [scrollHeight]="computeScrollHeight ? scrollHeight : ''"
-        [columns]="columnsToShow" [value]="data" dataKey="rowID" 
+        [scrollable]="true" [scrollHeight]="scrollHeightValue"
+        [columns]="tableOptions.columns.shown" [value]="tableOptions.data" dataKey="rowID" 
         [paginator]="true" [first]="currentPage * currentRowsPerPage" [rows]="currentRowsPerPage" [totalRecords]="totalRecords"
         [rowsPerPageOptions]="allowedRowsPerPage" [showCurrentPageReport]="false" (onPage)="pageChange($event)"
-        [metaKeySelection]="true" selectionMode="single" [(selection)]="rowSelection" (onRowSelect)="rowSelect($event)" (onRowUnselect)="rowUnselect($event)"
+        [metaKeySelection]="true" [selectionMode]="tableOptions.rows.singleSelector.enabled ? 'single' : null" [metaKeySelection]="tableOptions.rows.singleSelector.metakey" [(selection)]="rowSelection" (onRowSelect)="rowSelect($event)" (onRowUnselect)="rowUnselect($event)"
         [lazy]="true" (onLazyLoad)="fetchTableData($event)">
 
         <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
         <ng-template #actionColumnHeaderTemplate>
-            @if (rowActionButtons.length > 0) {
-                <th [ngStyle]="{'max-width': actionsColumnWidth + 'px','min-width': actionsColumnWidth + 'px','width': actionsColumnWidth + 'px'}"
-                    pResizableColumn [pResizableColumnDisabled]="!actionsColumnResizable" pFrozenColumn [frozen]="actionsColumnFrozen"
-                    [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)" id="actions-header"
+            @if (tableOptions.rows.action.buttons.length > 0) {
+                <th [ngStyle]="{'max-width': tableOptions.rows.action.width + 'px','min-width': tableOptions.rows.action.width + 'px','width': tableOptions.rows.action.width + 'px'}"
+                    pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows.action.resizable" pFrozenColumn [frozen]="tableOptions.rows.action.frozen"
+                    [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows.action.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)" id="actions-header"
                     [attr.scope]="'col'" style="text-align: center;">
-                    {{ actionColumnName }}
+                    {{ tableOptions.rows.action.header }}
                 </th>
             }
         </ng-template>
 
         <!--TEMPLATE FOR THE ACTIONS ROW COLUMN-->
         <ng-template #actionColumnTemplate let-rowData="rowData">
-            @if (rowActionButtons.length > 0) {
+            @if (tableOptions.rows.action.buttons.length > 0) {
                 <td 
-                    [ngStyle]="{'max-width': actionsColumnWidth + 'px','min-width': actionsColumnWidth + 'px','width': actionsColumnWidth + 'px'}"
-                    style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="actionsColumnFrozen"
-                    [alignFrozen]="getFrozenColumnAlignAsText(actionsColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
-                    @for (button of rowActionButtons; track button; let last = $last) {
+                    [ngStyle]="{'max-width': tableOptions.rows.action.width + 'px','min-width': tableOptions.rows.action.width + 'px','width': tableOptions.rows.action.width + 'px'}"
+                    style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="tableOptions.rows.action.frozen"
+                    [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows.action.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+                    @for (button of tableOptions.rows.action.buttons; track button; let last = $last) {
                         <ecs-table-button [button]="button" [rowData]="rowData" [isActionButton]="true" [isLastActionButton]="last" (clicked)="handleButtonsClick($event, rowData)"/>
                     }
                 </td>
@@ -40,12 +40,12 @@
         <!-- TEMPLATE FOR THE ROW CHECKBOX SELECTOR HEADER COLUMN -->
         <ng-template #rowSelectorColumnHeaderTemplate>
             <th 
-                [ngStyle]="{'max-width': rowSelectorColumnWidth + 'px','min-width': rowSelectorColumnWidth + 'px','width': rowSelectorColumnWidth + 'px'}"
-                id="rowSelector-header"  [attr.scope]="'col'" pResizableColumn [pResizableColumnDisabled]="!rowselectorColumnResizable" pFrozenColumn 
-                [frozen]="rowSelectorColumnFrozen" [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)"
+                [ngStyle]="{'max-width': tableOptions.rows.checkboxSelector.width + 'px','min-width': tableOptions.rows.checkboxSelector.width + 'px','width': tableOptions.rows.checkboxSelector.width + 'px'}"
+                id="rowSelector-header"  [attr.scope]="'col'" pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows.checkboxSelector.resizable" pFrozenColumn 
+                [frozen]="tableOptions.rows.checkboxSelector.frozen" [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows.checkboxSelector.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)"
                 style="text-align: center; vertical-align: middle;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        {{ rowSelectorColumName }}
+                        {{ tableOptions.rows.checkboxSelector.header }}
                         <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"/>
                     </div>
             </th>
@@ -54,13 +54,9 @@
         <!--TEMPLATE FOR THE ROW CHECKBOX SELECTOR COLUMN-->
         <ng-template #rowSelectorColumnTemplate let-rowData="rowData">
             <td 
-            [ngStyle]="{
-                'max-width': rowSelectorColumnWidth + 'px', 
-                'min-width': rowSelectorColumnWidth + 'px', 
-                'width': rowSelectorColumnWidth + 'px'
-            }"
-            style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="rowSelectorColumnFrozen" 
-            [alignFrozen]="getFrozenColumnAlignAsText(rowSelectorColumnAligmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+            [ngStyle]="{'max-width': tableOptions.rows.checkboxSelector.width + 'px', 'min-width': tableOptions.rows.checkboxSelector.width + 'px', 'width': tableOptions.rows.checkboxSelector.width + 'px'}"
+            style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="tableOptions.rows.checkboxSelector.frozen" 
+            [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows.checkboxSelector.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
             <p-checkbox 
                 [binary]="true"
                 [ngModel]="isRowCheckboxSelected(rowData.rowID)"
@@ -74,14 +70,16 @@
             <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--CHOOSE COLUMNS TO SHOW-->
-                    @if (columnEditorEnabled) {
+                    @if (tableOptions.columns.selectorEnabled) {
                         <p-button icon="pi pi-pen-to-square" (onClick)="columnSelectorShow()" pTooltip="Modify columns"
                             [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
                     <!--CLEAR SORTS AND FILTERS-->
-                    @if (showClearSortAndFilters) {
+                    @if (tableOptions.header.clearSortsEnabled) {
                         <p-button icon="pi pi-sort-alt-slash" (onClick)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
                             pTooltip="Clear sorts" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
+                    }
+                    @if (tableOptions.header.clearFiltersEnabled) {
                         <p-button
                             icon="pi pi-filter-slash" (onClick)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
                             pTooltip="Clear filters" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
@@ -101,14 +99,14 @@
 
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--GLOBAL FILTER-->
-                    @if (globalSearchEnabled) {
+                    @if (tableOptions.globalSearch.enabled) {
                         <p-iconField iconPosition="left" class="ml-auto" [ngClass]="{'p-input-icon-right': globalSearchText}">
                             <p-inputIcon>
                                 <i class="pi pi-search"></i>
                             </p-inputIcon>
                             <input pInputText type="text" 
                                 (input)="dt.filterGlobal($any($event.target).value, 'contains')"  autocomplete="off" 
-                                [maxlength]="globalSearchMaxLength" [placeholder]="globalSearchPlaceholder" [(ngModel)]="globalSearchText"
+                                [maxlength]="tableOptions.globalSearch.maxLength" placeholder='Search keyword' [(ngModel)]="globalSearchText"
                                 style="width: 220px;"/>
                             <!-- Right icon (only if there is text) -->
                             @if (globalSearchText) {
@@ -120,7 +118,7 @@
                     }
 
                     <!--EXPORT DATA-->
-                    @if (urlExcelReport && urlExcelReport.trim().length > 0) {
+                    @if (tableOptions.excelReport.url?.trim()) {
                         <p-button icon="pi pi-file-excel" (onClick)="openExcelExport()"
                             pTooltip="Export to Excel" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
@@ -132,9 +130,9 @@
                     }
                     
                     <!-- HEADER ACTION BUTTONS -->
-                    @if (headerActionButtons.length > 0) {
+                    @if (tableOptions.header.buttons.length > 0) {
                         <td style="display: flex; justify-content: center; align-items: center;">
-                            @for (button of headerActionButtons; track $index) {
+                            @for (button of tableOptions.header.buttons; track $index) {
                                 <ecs-table-button [button]="button" [rowData]="null" (clicked)="handleButtonsClick($event, null)"/>
                             }
                         </td>
@@ -146,10 +144,10 @@
         <!-- LOGIC FOR DRAWING TABLE HEADERS -->
         <ng-template #header let-columns>
             <tr>
-                @if (!actionsColumnAligmentRight) {
+                @if (!tableOptions.rows.action.alignmentRight) {
                     <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
                 }
-                @if (rowSelectorColumnActive && !rowSelectorColumnAligmentRight) {
+                @if (tableOptions.rows.checkboxSelector.enabled && !tableOptions.rows.checkboxSelector.alignmentRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
                 }
                 @for (col of columns; track col.header) {
@@ -179,7 +177,7 @@
                                             <ng-template #filter>
                                                 <p-multiSelect
                                                     [style]="{ minWidth: '400px' }" [(ngModel)]="predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName]"
-                                                    [options]="getPredifinedFilterValues(col.filterPredifinedValuesName)" [placeholder]="predifinedFiltersNoSelectionPlaceholder"
+                                                    [options]="getPredifinedFilterValues(col.filterPredifinedValuesName)" placeholder="Any value"
                                                     (onChange)="onPredifinedFilterChange(col.field, $event.value)" optionLabel="name">
                                                         <ng-template #selectedItems>
                                                         @if (predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName].length > 0) {
@@ -189,7 +187,7 @@
                                                                 </div>
                                                             </div>
                                                         } @else {
-                                                            <div>{{ predifinedFiltersNoSelectionPlaceholder }}</div>
+                                                            <div>Any value</div>
                                                         }
                                                         </ng-template>
                                                         <ng-template let-option pTemplate="item">
@@ -209,10 +207,10 @@
                         </div>
                     </th>
                 }
-                @if (rowSelectorColumnActive && rowSelectorColumnAligmentRight) {
+                @if (tableOptions.rows.checkboxSelector.enabled && tableOptions.rows.checkboxSelector.alignmentRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
                 }
-                @if (actionsColumnAligmentRight) {
+                @if (tableOptions.rows.action.alignmentRight) {
                     <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
                 }
             </tr>
@@ -221,10 +219,10 @@
         <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
         <ng-template #body let-rowData let-columns="columns"> 
             <tr [pSelectableRow]="rowData">
-                @if (!actionsColumnAligmentRight) {
+                @if (!tableOptions.rows.action.alignmentRight) {
                     <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
                 }
-                @if (rowSelectorColumnActive && !rowSelectorColumnAligmentRight) {
+                @if (tableOptions.rows.checkboxSelector.enabled && !tableOptions.rows.checkboxSelector.alignmentRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
                 }
                 @for (col of columns; track col.field) {
@@ -233,13 +231,13 @@
                         [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)" [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)">
                         <ecs-table-cell [col]="col" [rowData]="rowData" [globalSearchText]="globalSearchText" 
                             [dateFormat]="dateFormat" [dateTimezone]="dateTimezone" [dateCulture]="dateCulture"
-                            [predifinedFiltersCollection]="predifinedFiltersCollection"/>
+                            [predifinedFiltersCollection]="tableOptions.predefinedFilters"/>
                     </td>
                 }
-                @if (rowSelectorColumnActive && rowSelectorColumnAligmentRight) {
+                @if (tableOptions.rows.checkboxSelector.enabled && tableOptions.rows.checkboxSelector.alignmentRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
                 }
-                @if (actionsColumnAligmentRight) {
+                @if (tableOptions.rows.action.alignmentRight) {
                     <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
                 }
             </tr>
@@ -248,7 +246,7 @@
         <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS NO CONTENTS -->
         <ng-template #emptymessage>
             <tr>
-                <td colspan="999">{{noDataFoundText}}</td>
+                <td colspan="999">No data found for the current filter criteria.</td>
             </tr>
         </ng-template>
 
@@ -261,7 +259,7 @@
     </p-table>
 </div>
 <ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
-<ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="rowSelectorColumnActive" [excelReportTitle]="excelReportTitle" [allowTitleUserEdit]="excelReportTitleAllowUserEdit" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
+<ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="tableOptions.rows.checkboxSelector.enabled" [excelReportTitle]="excelReportTitle" [allowTitleUserEdit]="tableOptions.excelReport.titleAllowUserEdit" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
 <ecs-views-management [visible]="viewsModalShow" [tableViews_menuItems]="tableViews_menuItems" 
     (onViewSelect)="viewLoad($event)" (onViewCreate)="viewCreate($event)" (onViewDelete)="viewDelete($event)" (onViewEditAlias)="viewEditAlias($event)" (onViewUpdateData)="viewUpdateData($event)" (onViewUpdateActiveStartup)="viewUpdateActiveStartup($event)"
     (visibleChange)="viewsModalShow=false"/>

@@ -13,12 +13,12 @@ import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { CheckboxModule } from 'primeng/checkbox';
 import { PaginatorModule } from 'primeng/paginator';
-import { FilterMetadata, MenuItem } from 'primeng/api';
+import { FilterMetadata } from 'primeng/api';
 import { ButtonGroupModule } from 'primeng/buttongroup';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
-import { ITableButton, IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest, ITableView, ITableViewData } from '../../interfaces';
+import { IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest, ITableView, ITableViewData, ITableOptions, DEFAULT_TABLE_OPTIONS } from '../../interfaces';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText } from '../../utils';
 import { ECSPrimengTableNotificationService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
@@ -61,43 +61,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     private tableService: ECSPrimengTableService,
     private notification: ECSPrimengTableNotificationService
   ) {}
-  @Input() isActive: boolean = true;
-  @Input() data: any[] = []; // The array of data to be displayed
-  @Input() columnsToShow: IColumnMetadata[] = []; // The combination of the non-selectable columns + selected columns that must be shown
-  @Input() computeScrollHeight: boolean = true; // If true, the table will try not to grow more than the total height of the window vertically
-  @Input() globalSearchEnabled: boolean = true; // Used to enable or disable the global search (by default enabled)
-  @Input() globalSearchMaxLength: number = 50; // The maximun number of characters that can be input in the global filter
-  @Input() globalSearchPlaceholder: string = "Search keyword"; // The placeholder text to show if global search is enabled
-  @Input() columnEditorEnabled: boolean = true; // If the user can modify the columns thorugh the column editor
-  @Input() urlColumnsSource!: string; // The source URL to get data from columns
-  @Input() urlDataSource!:string; // The URL to fetch data from
-  @Input() urlExcelReport: string | null = null;
-  @Input() predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
-  @Input() predifinedFiltersNoSelectionPlaceholder: string = "Any value"; // A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters
-  @Input() predifinedFiltersCollectionSelectedValuesText: string = "items selected"; // A text to display in the predifined filters dropdown footer indicating the number of items that have been selected
-  @Input() rowActionButtons: ITableButton[] = []; // A list that contains all buttons that will appear in the actions column
-  @Input() headerActionButtons: ITableButton[] = []; // A list that contains all buttons that will appear in the right side of the header of the table
-  @Input() copyCellDataToClipboardTimeSecs: number = 0.5; // The amount of time since mouse down in a cell for its content to be copied to the clipboard. If you want to disable this functionality, put it to a value less than or equal to 0.
-  @Input() actionsColumnAligmentRight: boolean = true; // If actions column is put at the right end of the table (or false if its at the left)
-  @Input() actionsColumnWidth: number = 150; // The amount in pixels for the size of the actions column
-  @Input() actionsColumnFrozen: boolean = true; // If the actions column should be frozen
-  @Input() rowSelectorColumnActive: boolean = false; // By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRowsCheckbox.
-  @Input() rowSelectorColumName: string = "Selected"; // The title of the row selection column. By default is "Selected"
-  @Input() rowSelectorColumnAligmentRight: boolean = true; // By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
-  @Input() rowSelectorColumnWidth: number = 150; // The amount in pixels for the size of the selector column
-  @Input() rowSelectorColumnFrozen: boolean = true; // By default true. If true, the row selector column will be frozen.
-  @Input() actionsColumnResizable: boolean = false; // If the action column can be resized by the user
-  @Input() actionColumnName: string = "Actions" // The column name were the action buttons will appear
-  @Input() rowselectorColumnResizable: boolean = false;
-  @Input() noDataFoundText: string = "No data found for the current filter criteria."; // The text to be shown when no data has been returned
-  @Input() showClearSortAndFilters: boolean = true;
-  @Input() excelReportTitleDefault: string = "Report";
-  @Input() excelReportTitleAllowUserEdit: boolean = false;
-  @Input() tableViewSaveAs: TableViewSaveMode = TableViewSaveMode.noone; // How the table view will be saved
-  @Input() tableViewSaveKey: string = ""; // The key used to save the table views
-  @Input() viewsGetSourceURL: string = "";
-  @Input() viewsSaveSourceURL: string = "";
-  @Input() maxTableViews: number = 10; // The maximun number of views that can be saved
+  @Input() tableOptions: ITableOptions = DEFAULT_TABLE_OPTIONS;
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean
@@ -119,7 +83,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   selectedRowsCheckbox: any[] = []; // An array to keep all the selected rows
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
   showRefreshData=true;
-  scrollHeight: string = "0px"; // Used to get the table height
+  
   globalSearchText: string | null = null; // The text used by the global search
   tableViewsList: ITableView[] = [];
   tableViews_menuItems: any[] = [];
@@ -169,28 +133,28 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
   
   calculateScrollHeight(){
-    if (this.computeScrollHeight && this.tableContainer && this.paginatorContainer && this.headerContainer) {
-
-      /*const containerRect = this.tableContainer.nativeElement.getBoundingClientRect();
-      const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight;
-      const headerHeight = this.headerContainer.nativeElement.offsetHeight;
-
-      this.scrollHeight = `${containerRect.height - paginatorHeight - headerHeight}px`;*/
+    if (this.tableOptions.verticalScroll.fitToContainer && this.tableContainer && this.paginatorContainer && this.headerContainer) {
       const containerRect = this.tableContainer.nativeElement.getBoundingClientRect();
       const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight;
       const headerHeight = this.headerContainer.nativeElement.offsetHeight;
       const viewportHeight = window.innerHeight;
       const topOffset = containerRect.top + window.scrollY;
-      this.scrollHeight = `${(viewportHeight - topOffset - paginatorHeight - headerHeight)-60}px`;
+      this.tableOptions.verticalScroll.height = (viewportHeight - topOffset - paginatorHeight - headerHeight)-60;
 
 
 
-      /*const containerHeight = this.tableContainer.nativeElement.offsetHeight;
-      const headerHeight = this.headerContainer.nativeElement.offsetHeight;
-      const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight || 50; // fallback
-
-      this.scrollHeight = `${containerHeight - headerHeight - paginatorHeight}px`;*/
+      /* const containerRect = this.tableContainer.nativeElement.getBoundingClientRect(); // Get the bounding rectangle of the table container
+        const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight; // Get the height of the paginator container
+        const headerHeight = this.headerContainer.nativeElement.offsetHeight; // Get the height of the header container
+        const viewportHeight = window.innerHeight; // Get the height of the viewport (visible part of the window)
+        const topOffset = containerRect.top + window.scrollY; // Calculate the top offset of the table container relative to the viewport
+        this.tableOptions.verticalScroll.height = `${(viewportHeight - topOffset - paginatorHeight - headerHeight) - 45}px`; // Calculate and set the scrollable height by subtracting offsets and container heights
+      }*/
     }
+  }
+  get scrollHeightValue(): string {
+    const height = this.tableOptions.verticalScroll.height;
+    return height && height > 0 ? `${height}px` : '';
   }
 
   /**
@@ -200,7 +164,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
    * @param {boolean} [uponContinueActionEndModalHttp=false] - Optional flag to set the loading indicator to inactive after data retrieval.
    */
   updateData(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false): void {
-    this.isActive = true; // Indicate that the table is now enabled to perform actions
+    this.tableOptions.isActive = true; // Indicate that the table is now enabled to perform actions
     if (!this.initialConfigurationFetched) {
       this.fetchTableConfiguration();
     } else {
@@ -208,11 +172,14 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     }
   }
 
+  canFetchData(): boolean {
+    return this.tableOptions.isActive && this.tableOptions.urlTableConfiguration != null && this.tableOptions.urlTableData != null;
+  }
   fetchTableConfiguration(resetTableView: boolean = false): void {
-    if(!this.isActive){
+    if(!this.canFetchData()){
       return;
     }
-    this.tableService.fetchTableConfiguration(this.urlColumnsSource).subscribe({
+    this.tableService.fetchTableConfiguration(this.tableOptions.urlTableConfiguration!).subscribe({
       next: (response: HttpResponse<ITableConfiguration>) => {
         this.handleTableConfigurationResponse(response.body!, resetTableView);
       },
@@ -226,21 +193,21 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.columns = body.columnsInfo; // Update columns with fetched data
     this.columnsCantBeHidden = this.columns.filter((col: any) => !col.canBeHidden); // Filter columns that cannot be hidden
     this.columnsSelected = this.columns.filter((col: any) => !col.startHidden && col.canBeHidden); // Selected columns that are not hidden by default
-    this.columnsToShow = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
+    this.tableOptions.columns.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
     this.dateFormat = body.dateFormat;
     this.dateTimezone = body.dateTimezone;
     this.dateCulture = body.dateCulture;
     this.currentPage = 0;
     this.initialConfigurationFetched = true;
     if(resetTableView){
-      this.isActive = false
+      this.tableOptions.isActive = false
       this.clearFilters(this.dt, true);
       this.clearSorts(this.dt, true);
       this.dt.tableWidthState = this.initialTableWidth;
       this.dt.columnWidthsState = this.initialColumnWidths;
       this.dt.restoreColumnWidths()
       this.tableLazyLoadEventInformation.multiSortMeta=[];
-      this.isActive = true;
+      this.tableOptions.isActive = true;
     } else {
       setTimeout(() => {
         this.initialColumnWidths = this.tableService.computeColumnWidths(this.dt);
@@ -255,18 +222,31 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   tableViewsEnabled(): boolean {
-    return (
-      this.tableViewSaveAs !== TableViewSaveMode.noone &&
-      this.tableViewSaveKey !== ''
-    );
+    const views = this.tableOptions.views;
+    if (views.saveMode === TableViewSaveMode.noone) { // saveMode must be different from noone
+      return false;
+    }
+    if (!views.saveKey?.trim()) { // saveKey must exist and must not be empty after trim
+      return false;
+    }
+    if (views.maxViews <= 0) { // maxViews must be greater than 0
+      return false;
+    }
+    if (views.saveMode === TableViewSaveMode.databaseStorage) { // If saveMode is database, urlGet and urlSave must exist and must not be empty after trim
+      if (!views.urlGet?.trim() || !views.urlSave?.trim()) {
+        return false;
+      }
+    }
+    return true; // All checks passed, views are enabled
   }
+
   
   fetchTableViews(): void {
     if(!this.tableViewsEnabled()){
       this.fetchTableData(this.tableLazyLoadEventInformation);
       return;
     }
-    const tableViews = this.tableService.fetchTableViews(this.tableViewSaveAs, this.viewsGetSourceURL, this.tableViewSaveKey);
+    const tableViews = this.tableService.fetchTableViews(this.tableOptions.views.saveMode, this.tableOptions.views.urlGet!, this.tableOptions.views.saveKey!);
     if (tableViews instanceof Observable) {
       tableViews.subscribe({
         next: (response: HttpResponse<ITableView[]>) => {
@@ -309,15 +289,15 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
         .map(data => this.columns.find((col: any) => col.field === data.field))
         .filter((col): col is IColumnMetadata => col !== undefined)
         .filter(col => !this.columnsCantBeHidden.includes(col));
-    this.columnsToShow = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
+    this.tableOptions.columns.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
     this.currentPage = viewData.currentPage;
     this.currentRowsPerPage = viewData.currentRowsPerPage;
     this.globalSearchText = viewData.globalSearchText;
     this.tableLazyLoadEventInformation.multiSortMeta = [...(viewData.multiSortMeta ?? [])];
     this.dt.multiSortMeta = [...(viewData.multiSortMeta ?? [])];
-    this.isActive = false;
+    this.tableOptions.isActive = false;
     this.dt.sortMultiple();
-    this.isActive = true;
+    this.tableOptions.isActive = true;
     this.tableLazyLoadEventInformation.filters = {...viewData.filters};
     this.dt.filters = {...viewData.filters};
     this.dt.tableWidthState = viewData.tableWidth;
@@ -329,6 +309,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   viewCreate(viewAlias: string){
+    // TODO: QUEDA COMPROBAR QUE maxViews no nos pasemos de el y que no admita nombres repetidos
     let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
     let newView: ITableView = {
       lastActive: false,
@@ -397,15 +378,15 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
 
   viewsSave(endMessage: number): void{
     let tableView: string = JSON.stringify(this.tableViewsList);
-    switch(this.tableViewSaveAs){
+    switch(this.tableOptions.views.saveMode){
       case TableViewSaveMode.sessionStorage:
-        sessionStorage.setItem(this.tableViewSaveKey, tableView);
+        sessionStorage.setItem(this.tableOptions.views.saveKey!, tableView);
       break;
       case TableViewSaveMode.localStorage:
-        localStorage.setItem(this.tableViewSaveKey, tableView);
+        localStorage.setItem(this.tableOptions.views.saveKey!, tableView);
       break;
       case TableViewSaveMode.databaseStorage:
-        const saveObsv = this.tableService.viewsSaveToDatabase(this.tableViewsList, this.viewsSaveSourceURL, this.tableViewSaveKey);
+        const saveObsv = this.tableService.viewsSaveToDatabase(this.tableViewsList, this.tableOptions.views.urlSave!, this.tableOptions.views.saveKey!);
         saveObsv.subscribe({
           next: (response: HttpResponse<any>) => {
             this.viewsSaveEnd(endMessage);
@@ -441,7 +422,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   fetchTableData(event: TableLazyLoadEvent): void {
-    if(!this.isActive){
+    if(!this.canFetchData()){
       return;
     }
     if (!this.initialConfigurationFetched) {
@@ -462,12 +443,12 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
       filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
-      columns: this.columnsToShow.map(col => col.field), // Set the columns to show
+      columns: this.tableOptions.columns.shown.map(col => col.field), // Set the columns to show
       dateFormat: this.dateFormat,
       dateTimezone: this.dateTimezone,
       dateCulture: this.dateCulture
     };
-    this.tableService.fetchTableData(this.urlDataSource, requestData).subscribe({
+    this.tableService.fetchTableData(this.tableOptions.urlTableData!, requestData).subscribe({
       next: (response: HttpResponse<ITablePagedResponse>) => this.handleTableDataResponse(response.body!),
       error: (err) => this.tableService.handleTableError(err, 'Columns Error')
     });
@@ -533,7 +514,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   revertDateTimeZoneFilters(inputFilter: any){
-    this.columnsToShow.forEach((column) => {
+    this.tableOptions.columns.shown.forEach((column) => {
       if (column.dataType === DataType.Date) { // If its date type
         if (inputFilter.hasOwnProperty(column.field)) {
           const originalDate = inputFilter[column.field][0].value;
@@ -548,7 +529,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   handleTableDataResponse(body: ITablePagedResponse): void{
-    this.data = body.data; // Update the table data
+    this.tableOptions.data = body.data; // Update the table data
     this.totalRecords = body.totalRecords; // Update the total number of records
     this.totalRecordsNotFiltered = body.totalRecordsNotFiltered; // Update the total records not filtered
     this.currentPage = body.page; // Update the current page
@@ -638,7 +619,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   getPredifinedFilterValues(columnKeyName: string): IPredifinedFilter[] {
-    return this.predifinedFiltersCollection[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
+    return this.tableOptions.predefinedFilters[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
   }
 
   getFrozenColumnAlignAsText(frozenColumnAlign: FrozenColumnAlign): string {
@@ -683,7 +664,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     if (this.predifinedFiltersSelectedValuesCollection[columnKeyName]) { // Check if there are selected values for the specified column key
         numbItemsSelected = this.predifinedFiltersSelectedValuesCollection[columnKeyName].length; // Get the number of selected items
     }
-    return `${numbItemsSelected} ${this.predifinedFiltersCollectionSelectedValuesText}`; // Return the number of selected items concatenated with the predefined text
+    return `${numbItemsSelected} items selected`; // Return the number of selected items concatenated with the predefined text
   }
 
   handleButtonsClick(action: (rowData: any) => void, rowData: any = null): void {
@@ -707,7 +688,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   copyToClipboardStart(event: MouseEvent) {
-    if(this.copyCellDataToClipboardTimeSecs>0) {
+    if(this.tableOptions.copyToClipboardTime>0) {
       const cellContent = (event.target as HTMLElement).innerText;
       this.copyCellDataTimer = setTimeout(() => {
         navigator.clipboard.writeText(cellContent).then(() => {
@@ -717,12 +698,12 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
           this.notification.clearToasts();
           this.notification.showToast("error", "CELL CONTENT COPIED", `The cell content failed to copy to your clipboard with error: ${err}`);
         });
-      }, this.copyCellDataToClipboardTimeSecs*1000 );
+      }, this.tableOptions.copyToClipboardTime*1000 );
     }
   }
 
   copyToClipboardCancel(){
-    if(this.copyCellDataToClipboardTimeSecs>0) {
+    if(this.tableOptions.copyToClipboardTime>0) {
       clearTimeout(this.copyCellDataTimer);
     }
   }
@@ -814,31 +795,31 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       }
     });
 
-    let prevColsToShow = this.columnsToShow;
-    this.columnsToShow = this.tableService.orderColumnsWithFrozens(finalColumns);
+    let prevColsToShow = this.tableOptions.columns.shown;
+    this.tableOptions.columns.shown = this.tableService.orderColumnsWithFrozens(finalColumns);
 
     let sameColumnsAsBefore =
-      prevColsToShow.length === this.columnsToShow.length &&
-      prevColsToShow.every((prevCol, index) => prevCol.field === this.columnsToShow[index].field);
+      prevColsToShow.length === this.tableOptions.columns.shown.length &&
+      prevColsToShow.every((prevCol, index) => prevCol.field === this.tableOptions.columns.shown[index].field);
 
-    this.columnsSelected = this.columnsToShow.filter(
+    this.columnsSelected = this.tableOptions.columns.shown.filter(
       column => !this.columnsCantBeHidden.some(nonSelectable => nonSelectable.field === column.field)
     );
 
     this.updateColumnsSpecialProperties(this.columnModalData);
 
     if (!sameColumnsAsBefore) {
-      this.isActive = false;
+      this.tableOptions.isActive = false;
       this.clearSorts(this.dt, true);
       setTimeout(() => {
-        this.isActive = true;
+        this.tableOptions.isActive = true;
         this.clearSorts(this.dt, true);
       }, 1);
     }
   }
 
   private updateColumnsSpecialProperties(columnsSource: any[]){
-    const allColumns = [this.columns, this.columnsToShow, this.columnsSelected, this.columnsCantBeHidden];
+    const allColumns = [this.columns, this.tableOptions.columns.shown, this.columnsSelected, this.columnsCantBeHidden];
     const columnModalDataMap = new Map(columnsSource.map((item: any) => [item.field, { 
         cellOverflowBehaviour: item.cellOverflowBehaviour, 
         dataAlignHorizontal: item.dataAlignHorizontal,
@@ -864,12 +845,15 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
 
   openExcelExport(){
     this.excelReportTitle = 
-      (!this.excelReportTitleDefault || this.excelReportTitleDefault.trim().length === 0) && !this.excelReportTitleAllowUserEdit 
+      (!this.tableOptions.excelReport.defaultTitle || this.tableOptions.excelReport.defaultTitle.trim().length === 0) && !this.tableOptions.excelReport.titleAllowUserEdit 
         ? 'Report' 
-        : this.excelReportTitleDefault!;
+        : this.tableOptions.excelReport.defaultTitle!;
     this.showExportModal=true;
   }
   generateExcelReport(event: any){
+    if(!this.tableOptions.excelReport.url?.trim()){
+      return;
+    }
     let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters, event.selectedRows); // Create filters excluding the global filter
     filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
     const filtersMustBeApplied: boolean = (event.selectedRows === 1 || event.selectedRows === 2) 
@@ -881,7 +865,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
       filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
       globalFilter: this.globalSearchText, // Set the global filter text
-      columns: this.columnsToShow.map(col => col.field), // Set the columns to show
+      columns: this.tableOptions.columns.shown.map(col => col.field), // Set the columns to show
       dateFormat: this.dateFormat,
       dateTimezone: this.dateTimezone,
       dateCulture: this.dateCulture,
@@ -890,12 +874,37 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       applySorts: event.applySorts,
       filename: event.filename
     };
-    this.tableService.fetchExcelReport(this.urlExcelReport!, requestData).subscribe({
+    this.tableService.fetchExcelReport(this.tableOptions.excelReport.url, requestData).subscribe({
       next: (response: HttpResponse<Blob>) => {
         this.tableService.downloadFile(response.body!, event.filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         this.showExportModal=false;
       },
       error: (err) => this.tableService.handleTableError(err, 'Excel export error')
+    });
+  }
+
+  updateIconBlobsForCollections(): void {
+    Object.keys(this.tableOptions.predefinedFilters).forEach(key => {
+      const filters = this.tableOptions.predefinedFilters[key];
+      if (Array.isArray(filters)  && filters.length > 0) {
+        filters.forEach(filter => {
+          if (filter.iconBlobSourceEndpoint && !filter.iconBlob) {
+            filter.iconBlob = undefined;
+            filter.iconBlobSourceEndpointResponseError = false;
+            this.tableService.getIconBlob(filter.iconBlobSourceEndpoint).subscribe({
+              next: (response: HttpResponse<Blob>) => {
+                filter.iconBlob = response.body!;
+                this.showExportModal=false;
+              },
+              error: () => { // Handle error response
+                filter.iconBlobSourceEndpointResponseError = true;
+              }
+            });
+          }
+        });
+      }else {
+        console.warn(`Filters for key ${key} is not an array:`, filters);
+      }
     });
   }
 }
