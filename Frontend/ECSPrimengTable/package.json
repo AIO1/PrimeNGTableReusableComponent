@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:PrimeNGTableReusableComponent": "node dist/PrimeNGTableReusableComponent/server/server.mjs"
+    "serve:ssr:ECSPrimengTable": "node dist/ECSPrimengTable/server/server.mjs"
   },
   "prettier": {
     "overrides": [

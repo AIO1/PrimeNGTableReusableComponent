@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "PrimeNGTableReusableComponent": {
+    "ECSPrimengTable": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -66,10 +66,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "PrimeNGTableReusableComponent:build:production"
+              "buildTarget": "ECSPrimengTable:build:production"
             },
             "development": {
-              "buildTarget": "PrimeNGTableReusableComponent:build:development"
+              "buildTarget": "ECSPrimengTable:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -28,10 +28,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AIO1/PrimeNGTableReusableComponent.git"
+    "url": "git+https://github.com/AIO1/ECSPrimengTable"
   },
   "bugs": {
-    "url": "https://github.com/AIO1/PrimeNGTableReusableComponent/issues"
+    "url": "https://github.com/AIO1/ECSPrimengTable/issues"
   },
   "homepage": "https://eternalcodestudio.com/",
   "sideEffects": false
