@@ -23,6 +23,16 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
 /**
  * Create table options based on defaults, with optional overrides.
  */
-export function createTableOptions(overrides: Partial<ITableOptions> = {}): ITableOptions {
+/*export function createTableOptions(overrides: Partial<ITableOptions> = {}): ITableOptions {
   return deepMerge(structuredClone(DEFAULT_TABLE_OPTIONS), overrides);
+}*/
+export function createTableOptions(overrides: Partial<ITableOptions> = {}): ITableOptions {
+  const defaultsCopy = JSON.parse(JSON.stringify(DEFAULT_TABLE_OPTIONS)); // clona solo datos
+  const merged = deepMerge(defaultsCopy as any, overrides);
+
+  // reasignar funciones si existen en overrides
+  if (overrides.rows?.style) merged.rows.style = overrides.rows.style;
+  if (overrides.rows?.class) merged.rows.class = overrides.rows.class;
+
+  return merged as ITableOptions;
 }

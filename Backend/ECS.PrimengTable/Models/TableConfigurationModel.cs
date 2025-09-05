@@ -15,5 +15,7 @@
         public string DateTimezone { get; set; } = null!;
 
         public string DateCulture { get; set; } = null!;
+
+        public byte MaxViews { get; set; }
     }
 }

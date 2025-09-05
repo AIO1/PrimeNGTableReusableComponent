@@ -117,6 +117,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
   tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
   private initialConfigurationFetched: boolean = false;
+  private maxViews = 0;
   ngOnInit(): void {
     this.fetchTableConfiguration();
   }
@@ -197,6 +198,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.dateCulture = body.dateCulture;
     this.currentPage = 0;
     this.initialConfigurationFetched = true;
+    this.maxViews = body.maxViews;
     if(resetTableView){
       this.tableOptions.isActive = false
       this.clearFilters(this.dt, true);
@@ -227,7 +229,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     if (!views.saveKey?.trim()) { // saveKey must exist and must not be empty after trim
       return false;
     }
-    if (views.maxViews <= 0) { // maxViews must be greater than 0
+    if (this.maxViews <= 0) { // maxViews must be greater than 0
       return false;
     }
     if (views.saveMode === TableViewSaveMode.DatabaseStorage) { // If saveMode is database, urlGet and urlSave must exist and must not be empty after trim
@@ -307,7 +309,11 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   viewCreate(viewAlias: string){
-    // TODO: QUEDA COMPROBAR QUE maxViews no nos pasemos de el y que no admita nombres repetidos
+    console.log("length:", this.tableViewsList.length, "max:", this.maxViews);
+    if(this.tableViewsList.length >= this.maxViews){
+      this.notification.showToast("error","NO MORE VIEWS ALLOWED","You have created the maximum number of allowed views for this table");
+      return;
+    }
     let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
     let newView: ITableView = {
       lastActive: false,

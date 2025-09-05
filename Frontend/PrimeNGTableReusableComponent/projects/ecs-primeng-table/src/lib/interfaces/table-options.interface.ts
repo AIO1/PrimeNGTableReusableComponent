@@ -90,6 +90,8 @@ export interface ITableOptions {
      * Configurations related to the rows of the table.
      */
     rows: {
+        class: (rowData: any) => string | string[] | Set<string> | { [klass: string]: any };
+        style: (rowData: any) => { [klass: string]: any };
         action: {
             buttons: ITableButton[];
             header: string;
@@ -212,15 +214,6 @@ export interface ITableOptions {
          * @default null
          */
         urlSave: string | null;
-
-        /**
-         * Maximum number of views allowed for the table.
-         * 
-         * Attempts to save more views are blocked to the user.
-         * 
-         * @default 10
-         */
-        maxViews: number;
     };
 
     /**
@@ -281,6 +274,8 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         shown: []
     },
     rows: {
+        style:  () => ({}),
+        class:  () => ({}),
         action: {
             buttons: [],
             header: "Actions",
@@ -315,8 +310,7 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         saveMode: TableViewSaveMode.None,
         saveKey: null,
         urlGet: null,
-        urlSave: null,
-        maxViews: 10
+        urlSave: null
     },
     excelReport: {
         url: null,

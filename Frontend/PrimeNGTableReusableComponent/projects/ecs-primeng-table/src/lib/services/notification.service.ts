@@ -5,11 +5,7 @@ export abstract class ECSPrimengTableNotificationService {
   abstract showToast(
     severity: string,
     title: string,
-    message: string,
-    duration?: number,
-    keepToast?: boolean,
-    closable?: boolean,
-    clearPrevious?: boolean
+    message: string
   ): void;
   
   abstract clearToasts(): void;

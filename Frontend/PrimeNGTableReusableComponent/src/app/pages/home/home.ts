@@ -66,6 +66,21 @@ export class Home implements OnInit {
     },
     rows: {
       ...DEFAULT_TABLE_OPTIONS.rows,
+      style: (rowData: any) => {
+        const list = rowData?.employmentStatusNameList?.split(';').map((s: string) => s.trim()) || [];
+        if (list.includes("Full-time")) {
+          return { fontWeight: 'bold', fontStyle: 'italic' };
+        }
+        return {};
+      },
+      class: (rowData: any) => {
+        const classes = [];
+        const list = rowData?.employmentStatusNameList?.split(';').map((s: string) => s.trim()) || [];
+        if(list.includes("Unemployed")){
+          classes.push('exampleClass');
+        }
+        return classes;
+      },
       action: {
         ...DEFAULT_TABLE_OPTIONS.rows.action,
         buttons: this.rowActionButtons,

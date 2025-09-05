@@ -218,7 +218,7 @@
 
         <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
         <ng-template #body let-rowData let-columns="columns"> 
-            <tr [pSelectableRow]="rowData">
+            <tr [pSelectableRow]="rowData" [ngClass]="tableOptions.rows.class(rowData)" [ngStyle]="tableOptions.rows.style(rowData)">
                 @if (!tableOptions.rows.action.alignmentRight) {
                     <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
                 }

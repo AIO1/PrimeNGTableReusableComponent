@@ -7,10 +7,6 @@ export abstract class ECSPrimengTableHttpService {
 
   abstract handleHttpGetRequest<T>(
     servicePoint: string,
-    httpOptions?: HttpHeaders | null,
-    showSpinner?: boolean,
-    customErrorHandler?: ((error: any) => Observable<any>) | null,
-    showAPIError?: boolean,
     responseType?: 'json' | 'blob'
   ): Observable<HttpResponse<T>>;
 
@@ -18,9 +14,6 @@ export abstract class ECSPrimengTableHttpService {
     servicePoint: string,
     data: any,
     httpOptions?: HttpHeaders | null,
-    showSpinner?: boolean,
-    customErrorHandler?: ((error: any) => Observable<any>) | null,
-    showAPIError?: boolean,
     responseType?: 'json' | 'blob'
   ): Observable<HttpResponse<T>>;
 }

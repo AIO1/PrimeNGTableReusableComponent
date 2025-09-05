@@ -5,4 +5,5 @@ export interface ITableConfiguration {
     dateFormat: string;
     dateTimezone: string;
     dateCulture: string;
+    maxViews: number;
 }

@@ -10,13 +10,9 @@ export class NotificationService extends ECSPrimengTableNotificationService {
   showToast(
     severity: string,
     title: string,
-    message: string,
-    duration: number = 5000,
-    keepToast: boolean = false,
-    closable: boolean = true,
-    clearPrevious: boolean = true
+    message: string
   ): void {
-    this.sharedService.showToast(severity, title, message, duration, keepToast, closable, clearPrevious);
+    this.sharedService.showToast(severity, title, message, 5000, false, false, false);
   }
   clearToasts(): void {
     this.sharedService.clearToasts();

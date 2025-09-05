@@ -11,9 +11,10 @@ namespace ECS.PrimengTable.Services {
             string? dateFormat = null,
             string? dateTimezone = null,
             string? dateCulture = null,
+            byte maxViews = 10,
             bool convertFieldToLower = true
         ) {
-            return TableConfigurationService.GetTableConfiguration<T>(allowedItemsPerPage, dateFormat, dateTimezone, dateCulture, convertFieldToLower);
+            return TableConfigurationService.GetTableConfiguration<T>(allowedItemsPerPage, dateFormat, dateTimezone, dateCulture, maxViews, convertFieldToLower);
         }
         public static bool ValidateItemsPerPageAndCols(
             byte itemsPerPage,

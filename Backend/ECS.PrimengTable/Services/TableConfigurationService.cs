@@ -18,7 +18,7 @@ internal static class TableConfigurationService {
     /// Thrown when the <see cref="PrimeNGAttributes"/> attribute is missing for a property.
     /// The exception message includes the name of the property that is missing attributes.
     /// </exception>
-    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, bool convertFieldToLower = true) {
+    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte maxViews = 10, bool convertFieldToLower = true) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         dateFormat ??= TableConfigurationDefaults.DateFormat;
         dateTimezone ??= TableConfigurationDefaults.DateTimezone;
@@ -67,7 +67,8 @@ internal static class TableConfigurationService {
             AllowedItemsPerPage = allowedItemsPerPage,
             DateFormat = dateFormat,
             DateTimezone = dateTimezone,
-            DateCulture = dateCulture
+            DateCulture = dateCulture,
+            MaxViews = maxViews
         };
     }
 
