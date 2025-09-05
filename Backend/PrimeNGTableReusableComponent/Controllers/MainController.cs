@@ -1,6 +1,6 @@
 using Data.PrimengTableReusableComponent;
 using Microsoft.AspNetCore.Mvc;
-using PrimeNGTableReusableComponent.DTOs;
+using EcsPrimengTable.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,7 @@ using System.Globalization;
 using ECS.PrimengTable.Services;
 using ECS.PrimengTable.Models;
 
-namespace PrimeNGTableReusableComponent.Controllers {
+namespace EcsPrimengTable.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class MainController(primengTableReusableComponentContext context) : ControllerBase {

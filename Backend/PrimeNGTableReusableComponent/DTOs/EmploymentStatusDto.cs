@@ -1,4 +1,4 @@
-﻿namespace PrimeNGTableReusableComponent.DTOs {
+﻿namespace EcsPrimengTable.DTOs {
     public class EmploymentStatusDto {
         public Guid ID { get; set; }
         public string StatusName { get; set; } = null!;

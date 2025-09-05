@@ -18,7 +18,7 @@
 			primeng;datatable;angular;aspnet;aspnetcore;sqlserver;filtering;dynamic-linq;closedxml;export-excel;datatable-filters;backend;reusable-component
 		</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<RepositoryUrl>https://github.com/AIO1/PrimeNGTableReusableComponent</RepositoryUrl>
+		<RepositoryUrl>https://github.com/AIO1/ECSPrimengTable</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageProjectUrl>https://eternalcodestudio.com/</PackageProjectUrl>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
