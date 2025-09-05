@@ -1,156 +1,98 @@
-# PrimeNG Table reusable component
-A solution that shows how to use a PrimeNG table with advance filters delegating all logic to the database engine. This solution is designed to use Angular for the frontend and a .NET API (ASP.NET) for the backend. As database engine Microsoft SQL Server has been used, but other database engines should work with small modifications in the code.
-Currently it uses in the backend .NET 8, and in the frontend Angular 18 with PrimeNG 17.18.X components.
+[![NuGet Version](https://img.shields.io/nuget/v/ECS.PrimeNGTable.svg)](https://www.nuget.org/packages/ECS.PrimeNGTable/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ECS.PrimeNGTable.svg)](https://www.nuget.org/packages/ECS.PrimeNGTable/)
 
-## Table of Contents
+[![npm version](https://img.shields.io/npm/v/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
+[![npm downloads](https://img.shields.io/npm/dm/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
+# ECS PrimeNG table
+A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with advanced filters and extended functionality, delegating all query and filtering logic to the database engine. The frontend is built with Angular 20 and PrimeNG 20 components, while the backend is a .NET 8 (ASP.NET) API connected to Microsoft SQL Server, easily adaptable to other databases. This approach prevents server and frontend overload by handling filtering and paging dynamically in the database, and includes features such as column visibility, column filters, custom views, and more.
 
-- [Introduction](#introduction)
-- [1 Required software](#1-required-software)
-- [2 Setup the environment to try the demo](#2-setup-the-environment-to-try-the-demo)
-  - [2.1 Database (MSSQL)](#21-database-mssql)
-  - [2.2 Backend (API in ASP.NET)](#22-backend-api-in-aspnet)
-    - [2.2.1 Open the project](#221-open-the-project)
-    - [2.2.2 Verify packages](#222-verify-packages)
-    - [2.2.3 Update the database connection string](#223-update-the-database-connection-string)
-    - [2.2.4 Scafolding the database](#224-scafolding-the-database)
-    - [2.2.5 API first run](#225-api-first-run)
-  - [2.3 Frontend (Angular project that uses PrimeNG components)](#23-frontend-angular-project-that-uses-primeng-components)
-- [3 How to implement in existing projects](#3-how-to-implement-in-existing-projects)
-- [4 How to use the "PrimeNG Table reusable component" and what is included](#4-primeng-table-reusable-component-all-features)
-  - [4.1 Starting with a simple table](#41-starting-with-a-simple-table)
-    - [4.1.1 Creating a basic DTO / Projection](#411-creating-a-basic-dto--projection)
-    - [4.1.2 Creating the column data endpoint](#412-creating-the-column-data-endpoint)
-    - [4.1.3 Creating the table data endpoint](#413-creating-the-table-data-endpoint)
-    - [4.1.4 Implementing a new table in the frontend](#414-implementing-a-new-table-in-the-frontend)
-  - [4.2 Date formating](#42-date-formating)
-  - [4.3 Declaring header and row action buttons](#43-declaring-header-and-row-action-buttons)
-  - [4.4 Row selector](#44-row-selector)
-    - [4.4.1 Enabling and configuring the row selector](#441-enabling-and-configuring-the-row-selector)
-    - [4.4.2 Subscription to changes](#442-subscription-to-changes)
-    - [4.4.3 Accesing the table component selected rows variable](#443-accesing-the-table-component-selected-rows-variable)
-  - [4.5 Delay the table init or change the data endpoint dinamically](#45-delay-the-table-init-or-change-the-data-endpoint-dinamically)
-  - [4.6 Column sorting](#46-column-sorting)
-  - [4.7 Column filter](#47-column-filter)
-  - [4.8 Column predfined filter](#48-column-predfined-filter)
-    - [4.8.1 Column predfined filter - Simple text](#481-column-predfined-filter--simple-text)
-    - [4.8.2 Column predfined filter - Tags](#482-column-predfined-filter--tags)
-    - [4.8.3 Column predfined filter - Icons](#483-column-predfined-filter--icons)
-    - [4.8.4 Column predfined filter - Images](#484-column-predfined-filter--images)
-  - [4.9 Global filter](#49-global-filter)
-  - [4.10 Pagination and number of results](#410-pagination-and-number-of-results)
-  - [4.11 Column editor and setting up column initial properties](#411-column-editor-and-setting-up-column-initial-properties)
-  - [4.12 Column resize](#412-column-resize)
-  - [4.13 Column reorder](#413-column-reorder)
-  - [4.14 Frozen columns](#414-frozen-columns)
-  - [4.15 Column widths](#415-column-widths)
-  - [4.16 Column descriptions](#416-column-descriptions)
-  - [4.17 Cell tooltip](#417-cell-tooltip)
-  - [4.18 Copy cell content](#417-copy-cell-content)
-  - [4.19 Compute table scroll height](#419-compute-table-scroll-height)
-  - [4.20 Table views](#420-table-views)
 
 
 ## Introduction
 Hello! My name is Alex Ibrahim Ojea.
 
-This project started because I needed an efficient and reusable way to handle tables on my Angular web applications. On my own webpage of [Eternal Code Studio (ECS)](https://eternalcodestudio.com/) I wanted to create multiple projects that required the used of tables with advance filter options. PrimeNG offers a simple solution in the frontend, which is not optimal on large datasets since it forces you to bring all the data to the frontend, and this is what started my motivation to find a solution.
+This project was created to provide an efficient and reusable PrimeNG table solution for Angular applications. Unlike the default PrimeNG approach, which requires loading all data into the frontend, this implementation delegates filtering, sorting, and pagination logic directly to the database engine, making it highly performant on large datasets.
 
-This project shows how to do a full implementation of the PrimeNG table delegating all the filter logic to the database engine, and how the table can be easily reused throughout your application.
+The goal is to make it simple to integrate a powerful, flexible, and good-looking table into your applications without overloading either the frontend or the server.
 
-I hope this helps you to create very efficient and good looking tables in your web applications :)
+Some of the key features included are:
+- Dynamic pagination with lazy loading
+- Multi-column sorting
+- Advanced and predefined filters
+- Global search
+- Column resizing, reordering, toggling, and descriptions
+- Customizable cells (alignment, overflow, tooltips, copy on hover, …)
+- Conditional row styling
+- Table views for saving configurations
+- And much more!
 
-Take into account that I'm not an expert programmer, so there will be possibly some things that could be done better of how they are shown in this example project. Also, I'm not an expert in CSS, so basically this solution uses a simple design given by PrimeNG.
-
-This table component offers all the following features:
-- Pagination with lazy load were all the query is built dynamically in the backend and is then executed in the database engine bringing the minimal data needed.
-- Multiple sort.
-- Advance filter (with a list of values per column that can be given).
-- Predifined filters.
-- Global filter.
-- Column resize.
-- Column reorder.
-- Column toggle.
-- Column descriptions.
-- User cell customization (overflow behaviour, horizontal aligment and vertical aligment).
-- Table views
-- Show cell data in a tooltip.
-- Hold mouse in cell to copy data.
-
-An example image of what is seen in the front-end in this demo:
-![image](https://github.com/user-attachments/assets/c3a2483f-9a87-46d4-b3c2-1b77a438e90c)
+This is an example of the final solution:
+<img width="1899" height="978" alt="image" src="https://github.com/user-attachments/assets/d7bc4183-6895-4166-afa7-a2cd64d2abdd" />
 
 
 
 ## 1 Required software
-To run this example, the following software is needed and needs to be setup:
-- [Visual Studio Code](https://code.visualstudio.com/Download): Used for development in the frontend.
-- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/): Used for development in the backend API of ASP.NET Core. Make sure to select and install the ASP.NET component and the .NET 8 framework (should be already selected) during the installation process, since both things are needed for the API to run.
-- [Node.js](https://nodejs.org/en/download/package-manager): For being able to run in development the Angular application. It is strongly recomended that you manage your Node.js with [NVM](https://github.com/nvm-sh/nvm).
-- [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads): The database engine that will store all the data and perform all the query operations. This actually is optional since with a few modifications in the code, it should work with other database engines, but if this is your first time, it is strongly recomended that you use this database engine.
-- (Optional) [DBeaver](https://dbeaver.io/download/): Used for being able to manage the databases with a user interface. Works with a wide variety of database engines. Other database management softwares should work, but this is the one I normally use.
+To run this project, you will need:
+- [Visual Studio Code](https://code.visualstudio.com/Download) – for frontend development.
+- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) – for backend API development with ASP.NET Core. Make sure to install the **ASP.NET workload** and **.NET 8 framework**.
+- [Node.js](https://nodejs.org/en/download/package-manager) – to run the Angular application. Managing Node versions with [NVM](https://github.com/nvm-sh/nvm) is recommended.
+- [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) – the database engine used for queries. Optional, can be replaced with other engines with minor code adjustments.
+- (Optional) [DBeaver](https://dbeaver.io/download/) – A GUI for database management that works with multiple engines. You can use other tools, but this is the one I normally use.
 
 
 ## 2 Setup the environment to try the demo
 ### 2.1 Database (MSSQL)
-This example has been setup using MSSQL. Any other database engine should work with some modifications, but this example only covers the use of MSSQL.
+This example has been set up using **MSSQL**. Other database engines should work with some modifications, but this guide only covers MSSQL.
+First, create a new database named `primengtablereusablecomponent`. The database should have a schema named `dbo`. You can use a different database or schema name, but you will need to adapt the backend and database scripts accordingly.
+Once the database and schema are ready, download all the database scripts located under [this path](Database%20scripts). Execute the scripts in order (starting with `00`):
+- <ins>**00 Create EmploymentStatusCategories.sql**</ins>: Creates the table `EmploymentStatusCategories`, which contains all possible employment categories used in the predefined filter example.
+- <ins>**01 Populate EmploymentStatusCategories.sql**</ins>: Inserts initial records into the `EmploymentStatusCategories` table.
+- <ins>**02 Create TestTable.sql**</ins>: Creates the table used for testing, containing the main data displayed in the frontend.
+- <ins>**03 Populate TestTable.sql**</ins>: Inserts sample data into `TestTable`. This script can be slightly modified to generate different random data.
+- <ins>**04 FormatDateWithCulture.sql**</ins> (optional): Creates a database function used by the backend to allow global search on date columns, formatting them as text with the same mask, timezone, and locale as in the frontend.
+- <ins>**05 SaveTableViews.sql**</ins>: Creates an example table to store user-defined table views. This is only needed if you are using the database to save views instead of browser or session storage.
 
-The first step is to create a new database and name it "primengtablereusablecomponent". The newly created database should have been created with an schema named "dbo". You can use other database and schema name, but you will have to adapt the backend and database scripts afterwards for everything to work as expected.
+After executing all scripts successfully, you should have:  
+- Two populated tables (`EmploymentStatusCategories` and `TestTable`).
+- One empty table (`TableViews`).
+- One function (`FormatDateWithCulture`).
 
-Once you have created the database and its schema, you must download all the database scripts located under [this path](Database%20scripts). These scripts must be executed in order (starting at 00).
-- <ins>**00 Create EmploymentStatusCategories.sql**</ins>: Script to create the table "EmploymentStatusCategories". This table contains a list of all the possible employment categories that is later on used to shown an example of the predifined filter functionality.
-- <ins>**01 Populate EmploymentStatusCategories.sql**</ins>: Script that generates some intial records for the table "EmploymentStatusCategories".
-- <ins>**02 Create TestTable.sql**</ins>: Script that generates the table used for the test. Contains the general data that will be displayed in the frontend.
-- <ins>**03 Populate TestTable.sql**</ins>: A script that can be slightly altered and generates random data in the "TestTable".
-- <ins>**04 FormatDateWithCulture.sql**</ins>: Optional. A script that will generate a function in the database. This function is used by the backend for being able to use the global search feature in columns of type date treating them as text, an passing the same mask, timezone and locale that they would have in the front-end.
-- <ins>**05 SaveTableViews.sql**</ins>: An example table that is used to store the user views in the table.
+The following image shows the ER diagram of all the tables:
+<img width="1132" height="526" alt="image" src="https://github.com/user-attachments/assets/63762420-6204-4b10-8486-987ec8ca95eb" />
 
-Once all scripts have been executed OK, you should end up with 2 tables that are populated with data, an additional empty table (TableViews) and a function named "FormatDateWithCulture" in your database. The following image shows the ER diagram of all the tables:
-![primengtablereusablecomponent - dbo - ER diagram](https://github.com/user-attachments/assets/64edbb30-cc1d-4354-a79a-0ec7cf644c5c)
 
 
 ### 2.2 Backend (API in ASP.NET)
 > [!NOTE]  
-> You can use other .NET version with its corresponding packages and the solution should still work with no issues.
-
+> You can use other .NET versions with the corresponding packages. The solution should still work without issues.
 
 #### 2.2.1 Open the project
-Using Visual Studio 2022, open the backend solution located in [this path](Backend/PrimeNGTableReusableComponent). Make sure that you have the ASP.NET component and the .NET 8 framework. If you don't have both, you will have to use Visual Studio Installer to include whatever is missing.
+Using **Visual Studio 2022**, open the backend solution located in [this path](Backend). Make sure the **ASP.NET workload** and **.NET 8 framework** are installed. If any component is missing, use the **Visual Studio Installer** to add it.
 
-
-#### 2.2.2 Verify packages
-Once the project has opened, you must make sure that under "Dependencies > Packages" you have the following, since they are needed for this example to work:
-- <ins>**LinqKit**</ins>: Used to build the dynamic queries that are delegated to the database engine.
-- <ins>**Microsoft.EntityFrameworkCore.SqlServer**</ins>: This is needed in this example since we are using MSSQL as our database engine. If you want to use a different database engine, you will need to replace this package with the corresponding one to use your desired database engine.
-- <ins>**Microsoft.EntityFrameworkCore.Tools**</ins>: Optional but strongly recommended, since this package will allow you to easily perform scafolding of any changes that you have performed in your database tables generating (or updating) the models and context in your backend.
-- <ins>**Swashbuckle.AspNetCore**</ins>: Swagger tooling for APIs built with ASP.NET Core.
-- <ins>**Swashbuckle.AspNetCore.Annotations**</ins>: Optional but strongly recommended, since it provides custom attributes that can be applied to controllers, actions and models to enrich the generated Swagger. If you don't want to use it, you will have to uninstall the package and in the [MainController](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) you will have to delete the "using" and all lines that use "SwaggerOperation" or "SwaggerResponse".
-- <ins>**System.Linq.Dynamic.Core**</ins>: As well as with LinqKit, this package is needed to build part of the dynamic queries that are delegated to the database engine.
-
-
-#### 2.2.3 Update the database connection string
-If you have done the default MSSQL installation, and if you have configured the database as "primengtablereusablecomponent" with an schema named "dbo" and with no security, you can skip this step. Otherwise, please read all the changes that you must be taken into account.
-The next thing that you must modifiy for your backend API to work, is the database configuration. To do so, head over to the [appsettings.Development.json](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/appsettings.Development.json) file and make sure that the connection string under "DB_primengtablereusablecomponent" has the correct configuration.
-If in the "appsettings.json" you want to modify the identifier name of the connection string, remember to update it under [Program.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Program.cs).
-
-
-#### 2.2.4 Scafolding the database
+#### 2.2.2 Update the database connection string
 > [!NOTE]  
-> This is an optional step and only needs to be done if you modify the database structure, if you want to generate in another location of the backend the DBContext or the models, or if you want to use a different database engine that is not MSSQL.
-To perform a scafolding, from the "Package manager console" in Visual Studio, perform a "cd" command to the root folder of the project (were the .sln file is located).
+> If you followed the default MSSQL installation and configured the database as `primengtablereusablecomponent` with a schema named `dbo` and no authentication, you can skip this step. Otherwise, follow these instructions carefully to avoid connection issues.
+Next, update the database configuration for your backend API. Open the [appsettings.Development.json](Backend/ECSPrimengTableExample/appsettings.Development.json) file and ensure that the connection string under `"DB_primengtablereusablecomponent"` matches your setup.
+If you change the identifier name of the connection string in `appsettings.json`, remember to update it accordingly in [Program.cs](Backend/ECSPrimengTableExample/Program.cs).
 
-Once located in the folder, execute the following command (asumming your database is named primengtablereusablecomponent, you are using SQL server engine and you want to locate the DBContext and Model in the same location as in the example code):
+#### 2.2.3 Scaffolding the database
+> [!NOTE]  
+> This step is optional and only needed if you modify the database structure, want to generate the `DbContext` or models in a different location, or plan to use a database engine other than MSSQL.
+To perform scaffolding, open the **Package Manager Console** in Visual Studio and navigate (`cd`) to the root folder of the project (where the `.sln` file is located).
+Once in the project folder, run the following command (assuming your database is named `primengtablereusablecomponent`, you are using SQL Server, and you want to place the `DbContext` and models in the same locations as in the example code):
 ```sh
 dotnet ef dbcontext scaffold name=DB_primengtablereusablecomponent Microsoft.EntityFrameworkCore.SqlServer --output-dir Models --context-dir DBContext --namespace Models.PrimengTableReusableComponent --context-namespace Data.PrimengTableReusableComponent --context primengTableReusableComponentContext -f --no-onconfiguring
 ```
-These can be the normal possible changes that you should do in the above command:
-- The "name=DB_primengtablereusablecomponent" should only be modified if in your appsettings.Development.json, the connection string name has been modified.
-- If you would like to use a different database engine, you should change from the above command the part of "Microsoft.EntityFrameworkCore.SqlServer" with the appropiate package name for your database engine.
-- "--output-dir" indicates where the "Models" of your database will be generated. In the above command they will be generated under the "Models" folder (the folder will be created automatically if it doesn't exist).
-- "--context-dir" indicates where the "DBContext" will be generated. In the above it will be generated in a folder named "DBContext" (the folder will be created automatically if it doesn't exist).
-- "--namespace" and "--context-namespace" allow you to indicate the namespace of the models and the DBContext respectively.
-- "--context" will be used to put set the name of the DBContext, in this case, it will be named "primengTableReusableComponentContext".
-- "-f" will force the overwrite of the files.
-- "--no-onconfiguring" will indicate the scafolding process that we don't want to manage the connection from the DBContext. The connection is managed in this example from the "appsettings.Development.json" file through the connection strings.
+
+These are the common changes you may need to make in the command:
+- `name=DB_primengtablereusablecomponent`: Change only if you modified the connection string name in `appsettings.Development.json`.
+- `Microsoft.EntityFrameworkCore.SqlServer`: Change this to the appropriate provider package if you are using a different database engine.
+- `--output-dir`: Specifies where the models will be generated. In this example, they will be generated in the `Models` folder (created automatically if it does not exist).
+- `--context-dir`: Specifies where the `DbContext` will be generated. Here it will be created in a folder named `DBContext` (created automatically if it does not exist).
+- `--namespace` and `--context-namespace`: Set the namespaces for the models and the `DbContext`, respectively.
+- `--context`: Sets the name of the `DbContext`. In this example, it will be `primengTableReusableComponentContext`.
+- `-f`: Forces overwriting existing files.
+- `--no-onconfiguring`: Tells the scaffolding process not to configure the connection in the `DbContext`. In this example, the connection is managed through the `appsettings.Development.json` file.
 
 
 #### 2.2.5 API first run
