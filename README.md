@@ -72,12 +72,14 @@ Using **Visual Studio 2022**, open the backend solution located in [this path](B
 #### 2.2.2 Update the database connection string
 > [!NOTE]  
 > If you followed the default MSSQL installation and configured the database as `primengtablereusablecomponent` with a schema named `dbo` and no authentication, you can skip this step. Otherwise, follow these instructions carefully to avoid connection issues.
+
 Next, update the database configuration for your backend API. Open the [appsettings.Development.json](Backend/ECSPrimengTableExample/appsettings.Development.json) file and ensure that the connection string under `"DB_primengtablereusablecomponent"` matches your setup.
 If you change the identifier name of the connection string in `appsettings.json`, remember to update it accordingly in [Program.cs](Backend/ECSPrimengTableExample/Program.cs).
 
 #### 2.2.3 Scaffolding the database
 > [!NOTE]  
 > This step is optional and only needed if you modify the database structure, want to generate the `DbContext` or models in a different location, or plan to use a database engine other than MSSQL.
+
 To perform scaffolding, open the **Package Manager Console** in Visual Studio and navigate (`cd`) to the root folder of the project (where the `.sln` file is located).
 Once in the project folder, run the following command (assuming your database is named `primengtablereusablecomponent`, you are using SQL Server, and you want to place the `DbContext` and models in the same locations as in the example code):
 ```sh
