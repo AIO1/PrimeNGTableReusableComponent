@@ -1,6 +1,6 @@
 using Data.PrimengTableReusableComponent;
 using Microsoft.AspNetCore.Mvc;
-using EcsPrimengTable.DTOs;
+using ECSPrimengTableExample.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,7 @@ using System.Globalization;
 using ECS.PrimengTable.Services;
 using ECS.PrimengTable.Models;
 
-namespace EcsPrimengTable.Controllers {
+namespace ECSPrimengTableExample.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class MainController(primengTableReusableComponentContext context) : ControllerBase {
@@ -157,8 +157,8 @@ namespace EcsPrimengTable.Controllers {
             var timeZones = TimeZoneInfo.GetSystemTimeZones()
                 .Where(tz => !tz.Id.Contains("UTC"))
                 .Select(tz => new {
-                    DisplayName = tz.DisplayName,
-                    Id = tz.Id
+                    tz.DisplayName,
+                    tz.Id
                 })
                 .OrderBy(tz => tz.DisplayName)
                 .ToList();
@@ -187,7 +187,7 @@ namespace EcsPrimengTable.Controllers {
                    );
             List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
             List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
-            (bool success, byte[]? file, string errorMsg) = EcsPrimengTableService.GenerateExcelReport<TestDto>(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+            (bool success, byte[]? file, string errorMsg) = EcsPrimengTableService.GenerateExcelReport(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
             if(!success) {
                 return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
             }

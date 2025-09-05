@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECS.PrimengTable.WebAPI", "PrimeNGTableReusableComponent\ECS.PrimengTable.WebAPI.csproj", "{65686FAF-462D-43DE-AF48-F2BD81662B64}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECSPrimengTableExample", "ECSPrimengTableExample\ECSPrimengTableExample.csproj", "{65686FAF-462D-43DE-AF48-F2BD81662B64}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECS.PrimengTable", "ECS.PrimengTable\ECS.PrimengTable.csproj", "{93A8ACB0-15DE-3BE1-EFA8-A73204520310}"
 EndProject

@@ -1,7 +1,7 @@
 ﻿using ECS.PrimengTable.Attributes;
 using ECS.PrimengTable.Enums;
 
-namespace EcsPrimengTable.DTOs {
+namespace ECSPrimengTableExample.DTOs {
     public class TestDto {
         [ColumnAttributes(sendColumnAttributes: false)]
         public Guid RowID { get; set; }

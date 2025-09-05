@@ -1,4 +1,4 @@
-﻿namespace EcsPrimengTable.DTOs {
+﻿namespace ECSPrimengTableExample.DTOs {
     public class EmploymentStatusDto {
         public Guid ID { get; set; }
         public string StatusName { get; set; } = null!;
