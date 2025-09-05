@@ -53,7 +53,9 @@ export interface ITableOptions {
     header: {
         buttons: ITableButton[];
         clearSortsEnabled: boolean;
+        clearSortsIcon: string;
         clearFiltersEnabled: boolean;
+        clearFiltersIcon: string;
     };
 
     /**
@@ -167,15 +169,15 @@ export interface ITableOptions {
         /**
          * Determines how the table views are saved.
          * 
-         * - `TableViewSaveMode.noone`: Do not save any views.
-         * - `TableViewSaveMode.sessionStorage`: Save views in the browser session storage (cleared when the tab/window closes).
-         * - `TableViewSaveMode.localStorage`: Save views in the browser local storage (persistent across sessions).
-         * - `TableViewSaveMode.databaseStorage`: Save views directly in the database via the backend API. If you are using this method you will need to specify also the `urlGet`and `urlSave`
+         * - `TableViewSaveMode.None`: Do not save any views.
+         * - `TableViewSaveMode.SessionStorage`: Save views in the browser session storage (cleared when the tab/window closes).
+         * - `TableViewSaveMode.LocalStorage`: Save views in the browser local storage (persistent across sessions).
+         * - `TableViewSaveMode.DatabaseStorage`: Save views directly in the database via the backend API. If you are using this method you will need to specify also the `urlGet`and `urlSave`
          * 
          * This allows users to keep their custom column orders, filters, sorting, and other table settings
          * according to the selected storage option.
          * 
-         * @default TableViewSaveMode.noone
+         * @default TableViewSaveMode.None
          */
         saveMode: TableViewSaveMode;
         
@@ -261,9 +263,6 @@ export interface ITableOptions {
 
     copyToClipboardTime: number;
 }
-/*
-  copyCellDataToClipboardTimeSecs: number = 0.5; // The amount of time since mouse down in a cell for its content to be copied to the clipboard. If you want to disable this functionality, put it to a value less than or equal to 0.
-*/
 
 export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     isActive: true,
@@ -273,7 +272,9 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     header: {
         buttons: [],
         clearSortsEnabled: true,
-        clearFiltersEnabled: true
+        clearSortsIcon: "pi pi-sort-alt-slash",
+        clearFiltersEnabled: true,
+        clearFiltersIcon: "pi pi-filter-slash"
     },
     columns: {
         selectorEnabled: true,
@@ -311,7 +312,7 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     },
     predefinedFilters: {},
     views: {
-        saveMode: TableViewSaveMode.noone,
+        saveMode: TableViewSaveMode.None,
         saveKey: null,
         urlGet: null,
         urlSave: null,

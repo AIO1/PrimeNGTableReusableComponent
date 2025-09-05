@@ -41,6 +41,11 @@ export class TableCell {
     return this.value;
   }
 
+  getListValues(col: any, rowData: any): string[] {
+    const value = rowData[col.field];
+    return value ? value.split(';').map((v: any) => v.trim()) : [];
+  }
+
   getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal){
       dataAlignHorizontalAsText(dataAlignHorizontal);
   }
@@ -70,6 +75,17 @@ export class TableCell {
       formattedDate = this.datePipe.transform(value, this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
     }
     return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
+  }
+
+  getPredefinedFilterTooltip(colMetadata: IColumnMetadata, value: any): any {
+    if(colMetadata.dataType == DataType.List){
+      return value;
+    }
+    if(colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0){
+      const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName);
+      return options.find(x => x.value == value)?.name
+    }
+    return null;
   }
 
   /**

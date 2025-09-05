@@ -18,6 +18,9 @@ namespace PrimeNGTableReusableComponent.DTOs {
         [ColumnAttributes("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
         public string? EmploymentStatusName { get; set; }
 
+        [ColumnAttributes("Employment status list", dataType: DataType.List, dataAlignHorizontal: DataAlignHorizontal.Left, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A list of employment statuses separated by ; in the database")]
+        public string? EmploymentStatusNameList { get; set; }
+
         [ColumnAttributes("Birthdate", dataType: DataType.Date, dataAlignHorizontal: DataAlignHorizontal.Left, startHidden: true, columnDescription: "When was the user born")]
         public DateTime? Birthdate { get; set; }
 

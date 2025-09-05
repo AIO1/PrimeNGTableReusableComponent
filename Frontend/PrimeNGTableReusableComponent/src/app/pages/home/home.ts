@@ -83,7 +83,7 @@ export class Home implements OnInit {
     },
     views: {
       ...DEFAULT_TABLE_OPTIONS.views,
-      saveMode: TableViewSaveMode.databaseStorage,
+      saveMode: TableViewSaveMode.DatabaseStorage,
       saveKey: "TEST",
       urlGet: "Main/GetViews",
       urlSave: "Main/SaveViews"

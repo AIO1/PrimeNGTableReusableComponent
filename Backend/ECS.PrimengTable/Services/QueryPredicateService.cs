@@ -61,7 +61,7 @@ namespace ECS.PrimengTable.Services {
             Expression<Func<T, bool>>? predicate = null; // Initialize the predicate as null
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x"); // Create an expression parameter to represent the generic entity T
             MemberExpression property = Expression.Property(parameter, propertyName); // Get the specific property of the entity using the provided property name
-            if(filterDataType == DataType.Text || filterDataType == DataType.Numeric || filterDataType == DataType.Date) { // Check the filter data type, if it's text, numeric, or date, call method to create a filter predicate
+            if(filterDataType == DataType.Text || filterDataType == DataType.Numeric || filterDataType == DataType.Date || filterDataType == DataType.List) { // Check the filter data type, if it's text, numeric, or date, call method to create a filter predicate
                 predicate = PredicateBuilderService.CreateTextFilterPredicate<T>(property, filterValue, stringDateFormatMethod, "contains", dateFormat, dateTimezone, dateCulture);
             } else if(filterDataType != DataType.Boolean) { // If the filter data type is not text, numeric, date or boolean, throw an exception
                 throw new ArgumentException("Invalid filterDataType value", nameof(filterDataType));
@@ -88,6 +88,7 @@ namespace ECS.PrimengTable.Services {
                 DataType.Date => PredicateBuilderService.CreateDateFilterPredicate<T>(property, parameter, filterValue, matchMode),
                 DataType.Numeric => PredicateBuilderService.CreateNumericFilterPredicate<T>(property, parameter, filterValue, matchMode),
                 DataType.Boolean => PredicateBuilderService.CreateBoolFilterPredicate<T>(property, parameter, filterValue),
+                DataType.List => PredicateBuilderService.CreateListFilterPredicate<T>(property,filterValue),
                 _ => throw new ArgumentException("Invalid filterDataType value", nameof(filterDataType)),
             };
             return predicate;

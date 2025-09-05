@@ -76,12 +76,12 @@
                     }
                     <!--CLEAR SORTS AND FILTERS-->
                     @if (tableOptions.header.clearSortsEnabled) {
-                        <p-button icon="pi pi-sort-alt-slash" (onClick)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
+                        <p-button [icon]="tableOptions.header.clearSortsIcon" (onClick)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
                             pTooltip="Clear sorts" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
                     @if (tableOptions.header.clearFiltersEnabled) {
                         <p-button
-                            icon="pi pi-filter-slash" (onClick)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
+                            [icon]="tableOptions.header.clearFiltersIcon" (onClick)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
                             pTooltip="Clear filters" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
                 </div>

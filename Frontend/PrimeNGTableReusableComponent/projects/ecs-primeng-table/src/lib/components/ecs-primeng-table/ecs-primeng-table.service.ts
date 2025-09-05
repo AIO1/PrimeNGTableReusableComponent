@@ -144,16 +144,16 @@ export class ECSPrimengTableService {
     let tableViewNotParsed: string | null = null;
     if(tableViewSaveKey !== "" && tableViewSaveKey !== ''){
         switch(tableViewSaveAs){
-            case TableViewSaveMode.noone:
+            case TableViewSaveMode.None:
                 tableViewNotParsed = null;
             break;
-            case TableViewSaveMode.sessionStorage:
+            case TableViewSaveMode.SessionStorage:
                 tableViewNotParsed = sessionStorage.getItem(tableViewSaveKey);
             break;
-            case TableViewSaveMode.localStorage:
+            case TableViewSaveMode.LocalStorage:
                 tableViewNotParsed = localStorage.getItem(tableViewSaveKey);
             break;
-            case TableViewSaveMode.databaseStorage:
+            case TableViewSaveMode.DatabaseStorage:
                 const postData: any = {
                     tableViewSaveKey: tableViewSaveKey
                 };

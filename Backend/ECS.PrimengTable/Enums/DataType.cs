@@ -3,6 +3,7 @@
         Text,
         Numeric,
         Boolean,
-        Date
+        Date,
+        List
     }
 }

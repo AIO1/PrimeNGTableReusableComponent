@@ -59,6 +59,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
                             Username = u.Username,
                             Age = u.Age,
                             EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
+                            EmploymentStatusNameList = u.EmploymentStatusList,
                             Birthdate = u.Birthdate,
                             PayedTaxes = u.PayedTaxes
                         }
@@ -179,6 +180,7 @@ namespace PrimeNGTableReusableComponent.Controllers {
                            Username = u.Username,
                            Age = u.Age,
                            EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
+                           EmploymentStatusNameList = u.EmploymentStatusList,
                            Birthdate = u.Birthdate,
                            PayedTaxes = u.PayedTaxes
                        }

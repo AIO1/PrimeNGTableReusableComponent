@@ -1,32 +1,45 @@
-<!--
-[ngStyle]="{
-            'display': 'flex',
-            'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
-            'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
-        }">
--->
 @if (value !== null) {
   @if (col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0) {
     <div [ngStyle]="{
             'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
             'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
         }">
-      @if (getPredfinedFilterMatch(col, value); as option) {
-        <div 
-          [pTooltip]="tooltipText"
-          [tooltipDisabled]="!col.dataTooltipShow"
-          [showDelay]="700"
-          tooltipPosition="top">
-          <ecs-table-predifined-filters [option]="option" [col]="col"/>
-        </div>
+      @if (col.dataType === DataType.List){
+        @for (item of getListValues(col, rowData); track item) {
+          @if (getPredfinedFilterMatch(col, item); as option) {
+            <div style="display: inline-block; margin-right: 0.5rem;"
+                [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+                    ? rowData[col.dataTooltipCustomColumnSource] 
+                    : item"
+                [tooltipDisabled]="!col.dataTooltipShow"
+                [showDelay]="700"
+                tooltipPosition="top">
+                <ecs-table-predifined-filters [option]="option" [col]="col"/>
+            </div>
+          }
+        }
+      } @else {
+        @if (getPredfinedFilterMatch(col, value); as option) {
+          <div 
+            [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+              ? rowData[col.dataTooltipCustomColumnSource] 
+              : value"
+            [tooltipDisabled]="!col.dataTooltipShow"
+            [showDelay]="700"
+            tooltipPosition="top">
+            <ecs-table-predifined-filters [option]="option" [col]="col"/>
+          </div>
+        }
       }
     </div>
   } @else {
     @switch (col.dataType) {
       @case (DataType.Boolean) {
         <i class="pi"
-          [pTooltip]="tooltipText"
-          [tooltipDisabled]="!col.dataTooltipShow"
+          [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+            ? rowData[col.dataTooltipCustomColumnSource] 
+            : value"
+          [tooltipDisabled]="!col.dataTooltipShow || !col.dataTooltipCustomColumnSource || col.dataTooltipCustomColumnSource.length === 0"
           [showDelay]="700"
           tooltipPosition="top"
           [style.color]="value ? 'green' : 'red'"
@@ -36,7 +49,9 @@
       @case (DataType.Date) {
         <div 
           [innerHtml]="highlightText(formatDate(value), col, globalSearchText)"
-          [pTooltip]="tooltipText"
+          [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+            ? rowData[col.dataTooltipCustomColumnSource] 
+            : formatDate(value)"
           [tooltipDisabled]="!col.dataTooltipShow"
           [showDelay]="700"
           tooltipPosition="top">
@@ -46,7 +61,9 @@
       @default {
         <div
           [innerHtml]="highlightText(value, col, globalSearchText)"
-          [pTooltip]="tooltipText"
+          [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
+            ? rowData[col.dataTooltipCustomColumnSource] 
+            : value"
           [tooltipDisabled]="!col.dataTooltipShow"
           [showDelay]="700"
           tooltipPosition="top">

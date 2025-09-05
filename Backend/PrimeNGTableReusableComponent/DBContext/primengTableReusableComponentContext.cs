@@ -67,7 +67,11 @@ public partial class primengTableReusableComponentContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("TableSaveStates_PK");
 
-            entity.ToTable(tb => tb.HasTrigger("TableViews_tg_dateUpdated"));
+            entity.ToTable(tb =>
+                {
+                    tb.HasComment("Contains the table vies associated to different users.");
+                    tb.HasTrigger("TableViews_tg_dateUpdated");
+                });
 
             entity.HasIndex(e => new { e.Username, e.TableKey, e.ViewAlias }, "TableSaveStates_data_UNIQUE").IsUnique();
 
@@ -82,17 +86,24 @@ public partial class primengTableReusableComponentContext : DbContext
                 .HasPrecision(0)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnName("dateUpdated");
-            entity.Property(e => e.LastActive).HasColumnName("lastActive");
+            entity.Property(e => e.LastActive)
+                .HasComment("If true, the view will be loaded on table startup.")
+                .HasColumnName("lastActive");
             entity.Property(e => e.TableKey)
                 .HasMaxLength(255)
+                .HasComment("The table key.")
                 .HasColumnName("tableKey");
             entity.Property(e => e.Username)
                 .HasMaxLength(255)
+                .HasComment("The username.")
                 .HasColumnName("username");
             entity.Property(e => e.ViewAlias)
                 .HasMaxLength(50)
+                .HasComment("The alias of the view.")
                 .HasColumnName("viewAlias");
-            entity.Property(e => e.ViewData).HasColumnName("viewData");
+            entity.Property(e => e.ViewData)
+                .HasComment("The data stored about the view.")
+                .HasColumnName("viewData");
         });
 
         modelBuilder.Entity<TestTable>(entity =>
@@ -134,6 +145,10 @@ public partial class primengTableReusableComponentContext : DbContext
             entity.Property(e => e.EmploymentStatusId)
                 .HasComment("The current employment status of the user.")
                 .HasColumnName("employmentStatusID");
+            entity.Property(e => e.EmploymentStatusList)
+                .HasMaxLength(500)
+                .HasComment("A list of values separated by ;")
+                .HasColumnName("employmentStatusList");
             entity.Property(e => e.PayedTaxes)
                 .HasComment("Indicates if the user payed its taxes or not.")
                 .HasColumnName("payedTaxes");

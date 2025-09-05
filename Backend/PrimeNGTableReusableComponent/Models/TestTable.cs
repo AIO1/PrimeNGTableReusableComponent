@@ -53,5 +53,10 @@ public partial class TestTable
     /// </summary>
     public bool CanBeDeleted { get; set; }
 
+    /// <summary>
+    /// A list of values separated by ;
+    /// </summary>
+    public string? EmploymentStatusList { get; set; }
+
     public virtual EmploymentStatusCategory? EmploymentStatus { get; set; }
 }

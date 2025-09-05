@@ -2,6 +2,8 @@ import { Component, Input } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { DataType } from '../../enums';
+import { IColumnMetadata, IPredifinedFilter } from '../../interfaces';
 
 @Component({
   selector: 'ecs-table-predifined-filters',
@@ -16,10 +18,8 @@ export class TablePredifinedFilters {
   constructor(
     private sanitizer: DomSanitizer
   ) {}
-  
   @Input() option: any;
   @Input() col: any;
-
   /**
    * Converts a blob from the database to a safe URL that can be used to display an image.
    *

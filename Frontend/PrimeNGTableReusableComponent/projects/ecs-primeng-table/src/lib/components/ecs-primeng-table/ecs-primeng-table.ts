@@ -160,10 +160,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   /**
    * Used to update the data of a table externally outside the component. Use this method instead of 'updateData' to force the data updata of a table
    *
-   * @param {(optionalData?: any) => void} [continueAction] - Optional action to execute after data retrieval if it succeeded.
-   * @param {boolean} [uponContinueActionEndModalHttp=false] - Optional flag to set the loading indicator to inactive after data retrieval.
    */
-  updateData(continueAction?: (optionalData?: any) => void, uponContinueActionEndModalHttp: boolean = false): void {
+  updateData(): void {
     this.tableOptions.isActive = true; // Indicate that the table is now enabled to perform actions
     if (!this.initialConfigurationFetched) {
       this.fetchTableConfiguration();
@@ -223,7 +221,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
 
   tableViewsEnabled(): boolean {
     const views = this.tableOptions.views;
-    if (views.saveMode === TableViewSaveMode.noone) { // saveMode must be different from noone
+    if (views.saveMode === TableViewSaveMode.None) { // saveMode must be different from noone
       return false;
     }
     if (!views.saveKey?.trim()) { // saveKey must exist and must not be empty after trim
@@ -232,7 +230,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     if (views.maxViews <= 0) { // maxViews must be greater than 0
       return false;
     }
-    if (views.saveMode === TableViewSaveMode.databaseStorage) { // If saveMode is database, urlGet and urlSave must exist and must not be empty after trim
+    if (views.saveMode === TableViewSaveMode.DatabaseStorage) { // If saveMode is database, urlGet and urlSave must exist and must not be empty after trim
       if (!views.urlGet?.trim() || !views.urlSave?.trim()) {
         return false;
       }
@@ -379,13 +377,13 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   viewsSave(endMessage: number): void{
     let tableView: string = JSON.stringify(this.tableViewsList);
     switch(this.tableOptions.views.saveMode){
-      case TableViewSaveMode.sessionStorage:
+      case TableViewSaveMode.SessionStorage:
         sessionStorage.setItem(this.tableOptions.views.saveKey!, tableView);
       break;
-      case TableViewSaveMode.localStorage:
+      case TableViewSaveMode.LocalStorage:
         localStorage.setItem(this.tableOptions.views.saveKey!, tableView);
       break;
-      case TableViewSaveMode.databaseStorage:
+      case TableViewSaveMode.DatabaseStorage:
         const saveObsv = this.tableService.viewsSaveToDatabase(this.tableViewsList, this.tableOptions.views.urlSave!, this.tableOptions.views.saveKey!);
         saveObsv.subscribe({
           next: (response: HttpResponse<any>) => {

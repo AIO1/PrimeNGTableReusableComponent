@@ -1,5 +1,4 @@
--- Create table TestTable
-CREATE TABLE primengtablereusablecomponent.dbo.TestTable (
+CREATE TABLE dbo.TestTable (
 	ID uniqueidentifier DEFAULT newid() NOT NULL,
 	username nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	age tinyint NULL,
@@ -9,31 +8,21 @@ CREATE TABLE primengtablereusablecomponent.dbo.TestTable (
 	payedTaxes bit DEFAULT 0 NOT NULL,
 	employmentStatusID uniqueidentifier NULL,
 	canBeDeleted bit DEFAULT 0 NOT NULL,
-	CONSTRAINT TestTable_PK PRIMARY KEY (ID),
-	CONSTRAINT TestTable_username_UNIQUE UNIQUE (username),
-	CONSTRAINT TestTable_EmploymentStatusCategories_FK FOREIGN KEY (employmentStatusID) REFERENCES primengtablereusablecomponent.dbo.EmploymentStatusCategories(ID) ON DELETE SET NULL
+	employmentStatusList nvarchar(500) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CONSTRAINT Test1Table_PK PRIMARY KEY (ID),
+	CONSTRAINT Test1Table_username_UNIQUE UNIQUE (username),
+	CONSTRAINT TestTable_EmploymentStatusCategories_FK FOREIGN KEY (employmentStatusID) REFERENCES dbo.EmploymentStatusCategories(ID) ON DELETE SET NULL
 );
 
-
-CREATE TRIGGER [TestTable_tg_dateUpdated]
-    ON [TestTable]
-    AFTER UPDATE 
-    AS BEGIN
-       UPDATE [TestTable]
-       SET dateUpdated = getutcdate()
-       FROM INSERTED i
-       WHERE i.ID = [TestTable].ID
-    END;
-
-
 -- Extended properties
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The table used for the test.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The PK of the table.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'ID';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The username.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'username';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The age of the user.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'age';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The date the record was created.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'dateCreated';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The date the record was last updated.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'dateUpdated';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The birthdate of the user.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'birthdate';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Indicates if the user payed its taxes or not.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'payedTaxes';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The current employment status of the user.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'employmentStatusID';
-EXEC primengtablereusablecomponent.sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Used for the frontend to show a delete button.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'canBeDeleted';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The table used for the test.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The PK of the table.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'ID';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The username.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'username';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The age of the user.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'age';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The date the record was created.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'dateCreated';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The date the record was last updated.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'dateUpdated';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The birthdate of the user.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'birthdate';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Indicates if the user payed its taxes or not.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'payedTaxes';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'The current employment status of the user.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'employmentStatusID';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Used for the frontend to show a delete button.', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'canBeDeleted';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'A list of values separated by ;', @level0type=N'Schema', @level0name=N'dbo', @level1type=N'Table', @level1name=N'TestTable', @level2type=N'Column', @level2name=N'employmentStatusList';

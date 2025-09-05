@@ -1,4 +1,4 @@
-CREATE TABLE primengtablereusablecomponent.dbo.TableViews (
+CREATE TABLE dbo.TableViews (
 	ID uniqueidentifier DEFAULT newid() NOT NULL,
 	dateCreated datetime2(0) DEFAULT getutcdate() NOT NULL,
 	dateUpdated datetime2(0) DEFAULT getutcdate() NOT NULL,
@@ -9,7 +9,6 @@ CREATE TABLE primengtablereusablecomponent.dbo.TableViews (
 	CONSTRAINT TableSaveStates_PK PRIMARY KEY (ID),
 	CONSTRAINT TableSaveStates_data_UNIQUE UNIQUE (username,tableKey,viewAlias)
 );
-
 
 CREATE TRIGGER [TableViews_tg_dateUpdated]
     ON [TableViews]
