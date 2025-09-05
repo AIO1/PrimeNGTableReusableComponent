@@ -26,7 +26,7 @@ import { TablePredifinedFilters } from '../table-predifined-filters/table-predif
 import { TableButton } from '../table-button/table-button';
 import { ColumnSelector } from "../column-selector/column-selector";
 import { ExportExcel } from '../export-excel/export-excel';
-import { Observable } from 'rxjs';
+import { finalize, Observable } from 'rxjs';
 import { ViewsManagement } from "../views-management/views-management";
 
 @Component({
@@ -74,6 +74,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     rowID: any,
     rowData: any
   }>
+  @Output() onDataEndUpdate = new EventEmitter<void>();
   viewsModalShow:boolean = false;
   tableViewCurrentSelectedAlias: string | null = null;
   tableViewsFirstFetchDone: boolean = false;
@@ -452,10 +453,16 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       dateTimezone: this.dateTimezone,
       dateCulture: this.dateCulture
     };
-    this.tableService.fetchTableData(this.tableOptions.urlTableData!, requestData).subscribe({
-      next: (response: HttpResponse<ITablePagedResponse>) => this.handleTableDataResponse(response.body!),
-      error: (err) => this.tableService.handleTableError(err, 'Columns Error')
-    });
+    this.tableService.fetchTableData(this.tableOptions.urlTableData!, requestData)
+      .pipe(
+        finalize(() => {
+          this.onDataEndUpdate.emit(); // Esto siempre se ejecuta
+        })
+      )
+      .subscribe({
+        next: (response: HttpResponse<ITablePagedResponse>) => this.handleTableDataResponse(response.body!),
+        error: (err) => this.tableService.handleTableError(err, 'Columns Error')
+      });
   }
 
   private modifyFiltersWithoutGlobalAndSelectedRows(filters: any, overrideOption: number = -1): any {
