@@ -15,8 +15,8 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi
 import { SpinnerInterceptor } from './core/interceptors/spinner.interceptor';
 
 import { DatePipe, registerLocaleData } from '@angular/common';
-import es from '@angular/common/locales/es';
-registerLocaleData(es);
+import en from '@angular/common/locales/en';
+registerLocaleData(en);
 
 export const appConfig: ApplicationConfig = {
   providers: [

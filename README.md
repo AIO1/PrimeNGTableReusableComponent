@@ -41,6 +41,7 @@ To run this project, you will need:
 
 
 
+---
 ## 2 Setup the environment to try the demo
 
 
@@ -183,6 +184,7 @@ If you have reached this step, congratulations! You have successfully set up and
 
 
 
+---
 ## 3 Integrating into existing projects
 This section provides a step-by-step guide on how to integrate the **ECS PrimeNG Table** into your existing projects.
 
@@ -204,7 +206,7 @@ In addition, make sure the following required dependencies are installed:
 > [!TIP]
 > You can always check the latest dependency versions by visiting:  
 `https://www.nuget.org/packages/ECS.PrimeNGTable/<version>#dependencies-body-tab`  
-(Replace `<version>` with the specific package version you are downloading, e.g., `8.0.1`.)
+(Replace `<version>` with the specific package version you are downloading, e.g., `8.0.1`).
 
 With these dependencies in place and the package installed, your backend is ready to use the **ECS PrimeNG Table**.
 
@@ -214,10 +216,9 @@ With these dependencies in place and the package installed, your backend is read
 
 
 
-### 3.3.1 Installing the package and peer dependencies
+### 3.2.1 Installing the package and peer dependencies
 > [!NOTE]  
-> The **ECS PrimeNG Table** package is built for Angular 20 with PrimeNG 20 components.  
-> While it may work with newer versions, compatibility is not guaranteed, as PrimeNG frequently introduces breaking changes to its components.
+> The **ECS PrimeNG Table** package is built for Angular 20 with PrimeNG 20 components. While it may work with newer versions, compatibility is not guaranteed, as PrimeNG frequently introduces breaking changes to its components.
 
 If you are already working on an **Angular 20** project, you can check the frontend compiled package on NPM here:  
 [@eternalcodestudio/primeng-table on NPM](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
@@ -234,31 +235,31 @@ In addition, make sure the following required dependencies are installed in your
 - **primeng** (>=20.0.0)
 - **primeicons** (>=7.0.0)
 
-> [!NOTE]  
+> [!CAUTION]  
 > These are **peer dependencies** and are **not installed automatically**. If your project doesn't already include them, you must install them separately using NPM.
 
 
 
-### 3.3.2 Configure Angular locales
+### 3.2.2 Configure Angular locales
 The **ECS PrimeNG Table** component relies on Angular's **DatePipe** to render date cells.  
 To ensure correct formatting, you must import and register the locale(s) you plan to use in your application.
 
-Example for Spanish locale (`es`):
+Example for English locale (`en`):
 ```ts
 import { DatePipe, registerLocaleData } from '@angular/common';
-import es from '@angular/common/locales/es';
+import en from '@angular/common/locales/en';
 
-registerLocaleData(es);
+registerLocaleData(en);
 ```
-Remeber to include also `DatePipe`in your `providers`.
+Remeber to include also `DatePipe` in your `providers`.
 
-> [!NOTE]  
-> This step is required before using the table. If the locale is not correctly registered, rendering date cells may fail and prevent the table from displaying properly.  
-> You can include this configuration at the global level (e.g., `app.module.ts` or `app.config.ts`) or at a more local level, depending on your application structure.
+This step is required before using the table. If the locale is not correctly registered, rendering date cells may fail and prevent the table from displaying properly.  
+
+You can include this configuration at the global level (e.g., `app.module.ts` or `app.config.ts`) or at a more local level, depending on your application structure.
 
 
 
-### 3.3.3 Required services for ECS PrimeNG Table
+### 3.2.3 Required services for ECS PrimeNG Table
 The **ECS PrimeNG Table** package defines two abstract services that you need to implement in your project:
 - **ECSPrimengTableHttpService**: handles HTTP requests for the table (GET and POST).
 - **ECSPrimengTableNotificationService**: handles notifications (toasts) for the table.
@@ -348,6 +349,86 @@ This tells the **ECS PrimeNG Table** package to use your custom services for han
 
 
 
+---
+## 4 Functional overview
+The goal of this section is to provide a **user-level overview** of all the features included in the **ECS PrimeNG Table**. It allows you to quickly understand what the table can offer and how these functionalities can be utilized in your projects. This section provides a clear, at a glance view of everything available without diving into code.
+
+
+
+### 4.1 Planning your table
+Before diving into advanced features, it’s essential to start with the basics and carefully plan your table design. This will ensure that the table fits your users needs and your application’s requirements. Use the following questions as a guide:
+
+**Columns**
+- Which columns do I want to include in the table?
+- Should all columns be visible by default, or will some be hidden initially?
+- Are there columns that must always remain visible and cannot be hidden?
+- What horizontal and vertical alignment should each column have?
+- How should content overflow be handled in each column (e.g., wrap, truncate)?
+- Which columns should allow sorting: all, some, or none?
+- Which columns should allow filtering: all, some, or none?
+- Can users change the position of columns via drag-and-drop?
+- Are any columns going to be frozen (fixed) on the left or right side?
+
+**Rows**
+- Do any rows need conditional formatting based on the values of a specific column?
+- What actions should I allow per row? Are action buttons enabled or disabled based on certain conditions?
+- Can rows be selected (and an action performed on select)?
+- Can users select multiple rows, filter by selected rows, or perform actions on multiple selections (row checkbox selector)?
+
+**Global table features**
+- How will dates be displayed in the table?
+- Will users be able to customize the date format?
+- Will a global filter be available for the table?
+- Should the table support exporting data to Excel?
+- Will users be able to save their table configuration? If so, should it be persistent across sessions or only for the current session?
+
+Don’t worry if some of these concepts are unclear at this point, each feature will be explained individually in detail in the following sections.
+
+
+
+### 4.2 Date Formatting
+At first glance, date formatting might seem simple, but it can easily confuse end users if not carefully considered from the start.
+
+The **ECS PrimeNG table** component allows you to control how dates are displayed in each table, letting you customize:
+- **Format**: This defines how the date and time will be displayed to the user.  
+  For example, `"dd-MMM-yyyy HH:mm:ss zzzz"` means:
+  - `dd` → day of the month (01-31).
+  - `MMM` → short name of the month (Jan, Feb, etc.).
+  - `yyyy` → full year (2025).
+  - `HH:mm:ss` → hours, minutes, and seconds in 24-hour format.
+  - `zzzz` → time zone name or offset.
+- **Time zone**: This specifies the time zone that will be used to display the date/time.  
+  For example, `"+00:00"` is UTC (Coordinated Universal Time). Changing this will adjust the displayed time to the desired zone.
+- **Culture**: This determines the language and formatting conventions for the date, such as month names, day names, and the order of day/month/year. Default `"en-US"` uses English (United States) conventions. Using `"es-ES"` would show month and day names in Spanish, for example.
+
+You can configure this customization per table, with several possible approaches:
+- **Static**: Use the default values or hardcode alternative values if they suit your needs.
+- **Server-based**: Use the configuration of the server environment where your application is deployed.
+- **Per-user**: Save each user's preferred configuration, allowing users to choose how dates are displayed in their tables. This requires additional setup but provides maximum flexibility.
+
+> [!NOTE]
+> While per-table customization is possible, it is recommended to set a **global configuration** for all tables. Individual table settings are mainly useful for specific scenarios, but managing a global configuration is easier and more consistent.
+
+
+---
+## 5 Feature-to-Code mapping
+
+
+
+---
+## 6 Technical overview
+
+
+
+---
+## 7 Component reference
+
+
+---
+## 8 Editing ECS PrimeNG table and integrating locally
+
+
+---
 ## 4 "PrimeNG Table reusable component" all features
 The aim of this chapter is to explain all the things that have to be taken into account and what different functionalities are included (and how to implement them).
 
