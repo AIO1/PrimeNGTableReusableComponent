@@ -3,7 +3,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 [![npm downloads](https://img.shields.io/npm/dm/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
-# ECS PrimeNG table
+# ECS PrimeNG Table
 A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with advanced filters and extended functionality, delegating all query and filtering logic to the database engine. The frontend is built with Angular 20 and PrimeNG 20 components, while the backend is a .NET 8 (ASP.NET) API connected to Microsoft SQL Server, easily adaptable to other databases. This approach prevents server and frontend overload by handling filtering and paging dynamically in the database, and includes features such as column visibility, column filters, custom views, and more.
 
 
@@ -165,6 +165,13 @@ npm install
 
 This command will download all required dependencies for the frontend project. Once it has finished executing and if everything went OK, ensure your API is running correctly, then execute the following command in the terminal:
 ```sh
+ng build ecs-primeng-table
+```
+This command will use **ng-packagr** to build a local package in the `dist` folder, based on the contents of `projects\ecs-primeng-table` (the reusable table component).  
+
+Once the package has been successfully built, you can start the web application by running the following command in the terminal:
+
+```sh
 ng serve -o
 ```
 > [!TIP]  
@@ -176,90 +183,169 @@ If you have reached this step, congratulations! You have successfully set up and
 
 
 
-## 3 How to implement in existing projects
-
-> [!CAUTION]
-> WORK IN PROGRESS. All the information in this section could be outdated.
+## 3 Integrating into existing projects
+This section provides a step-by-step guide on how to integrate the **ECS PrimeNG Table** into your existing projects.
 
 
-This section describes step by step what you need to implement the PrimeNG Table reusable component. 
-- Database
-  - You just need to execute the script to create the [FormatDateWithCulture function](Database%20scripts/04%20FormatDateWithCulture.txt). Remember to modify the initial part were it indicates the database and schema names in the script.
-- Backend
-  - Open NuGet package manager and make sure you have all these packages:
-    - LinqKit or LinqKit.Core (it has been tested with LinqKit, but LinqKit.Core should also work).
-    - Microsoft.EntityFrameworkCore.SqlServer (If you are using MSSQL as database engine, if not, use the appropiate one depending on your target database engine)
-    - Microsoft.EntityFrameworkCore.Tools (Optional, you only need it if you want to do scafolding)
-    - Swashbuckle.AspNetCore
-    - Swashbuckle.AspNetCore.Annotations (Optional, you only need it if you want a better Swagger documentation)
-    - System.Linq.Dynamic.Core
-  - Import the [PrimeNGDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/PrimeNGDTO.cs) file to your solution (it is recommended that you place it inside a folder named "DTOs" or "DTO").
-  - Import the [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGAttribute.cs) and [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs) files to your solution (it is recommended that you place them inside a folder named "Services").
-  - You need to create a file (it is recommended to place it next to your DBContext) that looks like the file [primengTableReusableComponentContextExtension.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DBContext/primengTableReusableComponentContextExtension.cs). This exposes the database function FormatDateWithCulture to make it available in your solution. The name should be something like YourDBContextExtension (basically the same name as your DB context file and just addind an "Extension" at the end). This is done to avoid EF during the scafold process to delete the file, since it is not a modification done over the original DB context file. Please note that this action has to be done for each database context that you have in your application and care should be taken in thsi case with the namespaces and class names.
-  - From the contoller (or service) that you would like to use call the function to perform the query, you need to include a line similar to the one shown below for being able to pass the database function FormatDateWithCulture (as a MehtodInfo).
-    ```C#
-    private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), new[] { typeof(DateTime), typeof(string), typeof(string), typeof(string) })!; // Needed import for being able to perform global search on dates
-    ```
-    Also you will need to include the appropiate "Usings" at the begingin of your file.
-- Frontend
-  - You packages.json needs to have these two packages (the version can be whatever you need to work with for your Angular version):
-    - primeng
-    - primeicons
-  - Follow the setup guide of PrimeNG (you will need to make some changes to the "styles.css" and maybe to the "app.module.ts" and "angular.json").
-  - In the "app.module.ts":
-    - You need all these other additional imports:
-      ```ts
-      // PrimeNG modules (and some of angular/common) that are needed by the reusable table component
-      import { MessageService } from 'primeng/api';
-      import { ToastModule } from 'primeng/toast';
-      import { TableModule } from 'primeng/table';
-      import { InputTextModule } from 'primeng/inputtext';
-      import { ButtonModule } from 'primeng/button';
-      import { MultiSelectModule } from 'primeng/multiselect';
-      import { PaginatorModule } from 'primeng/paginator';
-      import { TagModule } from 'primeng/tag';
-      import { RippleModule } from 'primeng/ripple';
-      import { TooltipModule } from 'primeng/tooltip';
-	  import { InputGroupModule } from 'primeng/inputgroup';
-	  import { CheckboxModule } from 'primeng/checkbox';
-      import { DatePipe, registerLocaleData } from '@angular/common';
-      
-      import es from '@angular/common/locales/es'; // Needed for scenarios were you would like to manage different locales from "en", like "es-ES"
-      registerLocaleData(es);
-      ```
-      The "registerLocaleData", "import es from '@angular/common/locales/es'" and "registerLocaleData(es)" are optional. Its an example to show you how to import locales different from the default en-US used by datepipe.
-    - You will need to modify the "@NgModule" imports to add all the PrimeNG components that are needed by the "PrimeNG Table reusable component":
-      ```ts
-      imports: [
-        BrowserModule, // You should already have this one
-        ...
-        ToastModule,
-        TableModule,
-        InputTextModule,
-        ButtonModule,
-        MultiSelectModule,
-        PaginatorModule,
-        TagModule,
-        RippleModule,
-        TooltipModule,
-		InputGroupModule,
-		CheckboxModule
-      ]
-      ```
-    - In the "@NgModule" providers, you will need to add the following:
-      ```ts
-      providers: [
-        MessageService,
-        DatePipe
-      ]
-      ```
-  - Import the [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) to your solution (later on you can modify the code to include its content somewhere else you prefer).
-  - Import to your solution all interface files located in the example project under [Frontend/primengtablereusablecomponent/src/app/interfaces/primeng](Frontend/primengtablereusablecomponent/src/app/interfaces/primeng). You might need to fix the imports depending on were you import them in your solution.
-  - Import to your solution both files that are located in the example project under [Frontend/primengtablereusablecomponent/src/app/services/shared](Frontend/primengtablereusablecomponent/src/app/services/shared). You might need to fix the imports depending on were you import them in your solution. The "shared.service.ts" could be later on modified in your project so that all references that are currently being used from it, use your own service solutions (maybe you are managing in a different way your HTTP requests or your toast messsages).
-  - Import to your solution both files that are located in the example project under [Frontend/primengtablereusablecomponent/src/app/components/primeng-table](Frontend/primengtablereusablecomponent/src/app/components/primeng-table) You might need to fix the imports depending on were you import them in your solution.
-  - In the "app.module.ts", you will need to add the import of the [PrimengTableComponent](Frontend/primengtablereusablecomponent/src/app/components/primeng-table/primeng-table.component.ts) as well as adding it in the "app.module.ts" > "@NgModule" > "declarations".
 
-With all these steps done, you should have succesfully imported all required files and perform all the changes in an existing project that are required for being able to use the "PrimeNG Table reusable component".
+### 3.1 Backend requirements
+> [!NOTE]  
+> The **ECS PrimeNG Table** package is built for .NET 8, but it should also work seamlessly with newer .NET versions.
+
+If you are already working on a **.NET 8 project (or higher)**, you will need to install the backend compiled package from NuGet (we recommend downloading the latest version):  
+[ECS.PrimeNGTable on NuGet](https://www.nuget.org/packages/ECS.PrimeNGTable)
+
+In addition, make sure the following required dependencies are installed:
+- **ClosedXML** (>= 0.104.0)
+- **LinqKit** (>= 1.3.0)
+- **Microsoft.EntityFrameworkCore** (>= 8.0.0)
+- **System.Linq.Dynamic.Core** (>= 1.6.0)
+
+> [!TIP]
+> You can always check the latest dependency versions by visiting:  
+`https://www.nuget.org/packages/ECS.PrimeNGTable/<version>#dependencies-body-tab`  
+(Replace `<version>` with the specific package version you are downloading, e.g., `8.0.1`.)
+
+With these dependencies in place and the package installed, your backend is ready to use the **ECS PrimeNG Table**.
+
+
+
+### 3.2 Frontend requirements
+
+
+
+### 3.3.1 Installing the package and peer dependencies
+> [!NOTE]  
+> The **ECS PrimeNG Table** package is built for Angular 20 with PrimeNG 20 components.  
+> While it may work with newer versions, compatibility is not guaranteed, as PrimeNG frequently introduces breaking changes to its components.
+
+If you are already working on an **Angular 20** project, you can check the frontend compiled package on NPM here:  
+[@eternalcodestudio/primeng-table on NPM](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
+
+To install the package, open a terminal in the root folder of your project and run the following command (we recommend installing the latest version):
+
+```sh
+npm install @eternalcodestudio/primeng-table
+```
+
+In addition, make sure the following required dependencies are installed in your project:
+- **@angular/common** (>=20.0.0)
+- **@angular/core** (>=20.0.0)
+- **primeng** (>=20.0.0)
+- **primeicons** (>=7.0.0)
+
+> [!NOTE]  
+> These are **peer dependencies** and are **not installed automatically**. If your project doesn't already include them, you must install them separately using NPM.
+
+
+
+### 3.3.2 Configure Angular locales
+The **ECS PrimeNG Table** component relies on Angular's **DatePipe** to render date cells.  
+To ensure correct formatting, you must import and register the locale(s) you plan to use in your application.
+
+Example for Spanish locale (`es`):
+```ts
+import { DatePipe, registerLocaleData } from '@angular/common';
+import es from '@angular/common/locales/es';
+
+registerLocaleData(es);
+```
+Remeber to include also `DatePipe`in your `providers`.
+
+> [!NOTE]  
+> This step is required before using the table. If the locale is not correctly registered, rendering date cells may fail and prevent the table from displaying properly.  
+> You can include this configuration at the global level (e.g., `app.module.ts` or `app.config.ts`) or at a more local level, depending on your application structure.
+
+
+
+### 3.3.3 Required services for ECS PrimeNG Table
+The **ECS PrimeNG Table** package defines two abstract services that you need to implement in your project:
+- **ECSPrimengTableHttpService**: handles HTTP requests for the table (GET and POST).
+- **ECSPrimengTableNotificationService**: handles notifications (toasts) for the table.
+
+These services are abstract, meaning the package does not know how you want to handle HTTP requests or notifications in your project. You need to create your own implementations.
+
+
+
+#### Example: HTTP service
+In your project, create a class that extends `ECSPrimengTableHttpService` and implements its abstract methods.  
+
+In this example, the implementation uses the main services provided by `SharedService`.
+```ts
+import { Injectable } from '@angular/core';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ECSPrimengTableHttpService } from '@eternalcodestudio/primeng-table';
+import { SharedService } from './shared.service';
+
+@Injectable({ providedIn: 'root' })
+export class HttpService extends ECSPrimengTableHttpService {
+  constructor(private sharedService: SharedService) {
+    super();
+  }
+
+  handleHttpGetRequest<T>(
+    servicePoint: string,
+    responseType: 'json' | 'blob' = 'json'
+  ): Observable<HttpResponse<T>> {
+    return this.sharedService.handleHttpGetRequest(servicePoint, null, true, null, false, responseType);
+  }
+
+  handleHttpPostRequest<T>(
+    servicePoint: string,
+    data: any,
+    httpOptions: HttpHeaders | null = null,
+    responseType: 'json' | 'blob' = 'json'
+  ): Observable<HttpResponse<T>> {
+    return this.sharedService.handleHttpPostRequest(servicePoint, data, httpOptions, true, null, false, responseType);
+  }
+}
+```
+
+
+
+#### Example: Notification service
+Similarly, you need to create a class that extends `ECSPrimengTableNotificationService` and implements its abstract methods.
+
+In this example, the implementation relies on the main services provided by `SharedService`.
+```ts
+import { Injectable } from '@angular/core';
+import { ECSPrimengTableNotificationService } from '@eternalcodestudio/primeng-table';
+import { SharedService } from './shared.service';
+
+@Injectable({ providedIn: 'root' })
+export class NotificationService extends ECSPrimengTableNotificationService {
+  constructor(private sharedService: SharedService) {
+    super();
+  }
+
+  showToast(severity: string, title: string, message: string): void {
+    this.sharedService.showToast(severity, title, message, 5000, false, false, false);
+  }
+
+  clearToasts(): void {
+    this.sharedService.clearToasts();
+  }
+}
+```
+
+
+
+#### Registering the services
+Finally, register your implementations in your dependency injection system (for example, in `app.config.ts`):
+```ts
+import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '@eternalcodestudio/primeng-table';
+export const appConfig: ApplicationConfig = {
+  providers: [
+    ...
+    { provide: ECSPrimengTableNotificationService, useClass: NotificationService },
+    { provide: ECSPrimengTableHttpService, useClass: HttpService },
+    ...
+  ]
+}
+```
+This tells the **ECS PrimeNG Table** package to use your custom services for handling HTTP requests and notifications.
+
 
 
 ## 4 "PrimeNG Table reusable component" all features
