@@ -477,11 +477,12 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     return filtersWithoutGlobalAndSelectedRows; // Return the filters without global array
   }
 
-  resetTableView(){
+  resetTableView(): void {
+    this.tableViewCurrentSelectedAlias = '';
     this.fetchTableConfiguration(true);
   }
 
-  private selectorRowFilterBuilder(filtersWithoutGlobalAndSelectedRows: any, overrideOption: number = -1){
+  private selectorRowFilterBuilder(filtersWithoutGlobalAndSelectedRows: any, overrideOption: number = -1): void {
     if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('selector')) {
       const selectorFilter = filtersWithoutGlobalAndSelectedRows['selector'][0];
       let filterType: boolean | null = null;
