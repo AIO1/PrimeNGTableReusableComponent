@@ -431,11 +431,11 @@ Columns can be configured to define how cell data is displayed and treated. The 
 
 
 #### 4.3.2 Visibility
-By default, all columns are visible. However, showing too many columns at once may overwhelm users, so you may want to hide some of them initially. This can be configured in the table setup.  
+By default, all columns are visible. However, showing too many columns at once may overwhelm users, so you may want to hide some of them initially. This can be configured in the table setup.
 
-The table includes a built-in **column properties menu** (enabled by default), which allows users to show or hide columns at any time without needing to reload or reconfigure the table. This menu is accessible directly from the table interface and provides a simple checklist of all available columns. (Explained in more detail in later sections.)  
+The table includes a built-in **column properties menu** (enabled by default), which allows users to show or hide columns at any time without needing to reload or reconfigure the table. This menu is accessible directly from the table interface and provides a simple checklist of all available columns. (Explained in more detail in later sections.)
 
-You can also restrict visibility changes for specific columns. For example, some columns can be marked as **always visible**, preventing users from hiding them.  
+You can also restrict visibility changes for specific columns. For example, some columns can be marked as **always visible**, preventing users from hiding them.
 
 Additionally, developers can define **utility columns** that remain hidden from the user interface. These columns (such as row IDs or internal references) are not only invisible to the end user but also excluded from the column properties menu, ensuring they remain hidden while still being available for internal logic or processes.
 
@@ -443,37 +443,37 @@ Additionally, developers can define **utility columns** that remain hidden from 
 
 
 #### 4.3.3 Horizontal and vertical alignment
-Each column can be configured to control how the data inside its cells is aligned, both horizontally and vertically.  
+Each column can be configured to control how the data inside its cells is aligned, both horizontally and vertically.
 
-**Horizontal alignment options:**  
-- **Left**: Aligns the content to the left side of the cell. Commonly used for text values.  
-- **Center**: Centers the content in the cell. Default option.  
-- **Right**: Aligns the content to the right side of the cell. Typically used for numeric data.  
+**Horizontal alignment options:**
+- **Left**: Aligns the content to the left side of the cell. Commonly used for text values.
+- **Center**: Centers the content in the cell. Default option.
+- **Right**: Aligns the content to the right side of the cell. Typically used for numeric data.
 
-**Vertical alignment options:**  
-- **Top**: Aligns the content to the top of the cell.  
-- **Middle**: Centers the content vertically. Default option.  
-- **Bottom**: Aligns the content to the bottom of the cell.  
+**Vertical alignment options:**
+- **Top**: Aligns the content to the top of the cell.
+- **Middle**: Centers the content vertically. Default option.
+- **Bottom**: Aligns the content to the bottom of the cell.
 
-By default, columns are set to **center** horizontally and **middle** vertically.  
+By default, columns are set to **center** horizontally and **middle** vertically.
 
-Users can change the alignment of any column using a dedicated column properties menu (explained in later sections). You can restrict this behavior in two ways:  
-- **Restrict per column**: Prevent users from changing the horizontal and/or vertical alignment for specific columns.  
-- **Disable globally**: Turn off the entire Column Properties menu so users cannot adjust alignment or any other column settings.  
+Users can change the alignment of any column using a dedicated column properties menu (explained in later sections). You can restrict this behavior in two ways:
+- **Restrict per column**: Prevent users from changing the horizontal and/or vertical alignment for specific columns.
+- **Disable globally**: Turn off the entire Column Properties menu so users cannot adjust alignment or any other column settings.
 
 
 
 #### 4.3.4 Overflow Behaviour
 When the content of a cell exceeds the available space, the **overflow behaviour** determines how the data is displayed. The available options are:
 
-- **Hidden**: Extra content is clipped and not displayed. This avoids breaking the table layout but may hide part of the information.  
-- **Wrap**: The content automatically continues on a new line within the same cell, ensuring all data is visible but potentially increasing the row height.  
+- **Hidden**: Extra content is clipped and not displayed. This avoids breaking the table layout but may hide part of the information.
+- **Wrap**: The content automatically continues on a new line within the same cell, ensuring all data is visible but potentially increasing the row height.
 
-By default, the overflow behaviour for all columns is set to **Hidden**.  
+By default, the overflow behaviour for all columns is set to **Hidden**.
 
-Users can adjust the overflow behaviour of each column through the **column properties menu** (explained in later sections). This feature can be controlled in two ways:  
-- **Restrict per column**: Prevent users from changing the overflow behaviour for specific columns.  
-- **Disable globally**: Turn off the entire column properties menu so users cannot modify overflow behaviour or any other column settings.  
+Users can adjust the overflow behaviour of each column through the **column properties menu** (explained in later sections). This feature can be controlled in two ways:
+- **Restrict per column**: Prevent users from changing the overflow behaviour for specific columns.
+- **Disable globally**: Turn off the entire column properties menu so users cannot modify overflow behaviour or any other column settings.
 
 
 
@@ -483,17 +483,20 @@ By default, the table includes a **column properties button** located at the top
 This menu can be **disabled globally** if you do not want users to make any modifications to column properties or visibility.
 
 When enabled, clicking the button opens a modal window that provides the following features:
-- **Column list**: Displays all available columns in the table (excluding **utility columns**).  
-- **Search bar**: A global search input to filter columns by name. Columns are listed alphabetically (A–Z).  
+- **Column list**: Displays all available columns in the table (excluding **utility columns**).
+- **Search bar**: A global search input to filter columns by name. Columns are listed alphabetically (A–Z).
 - **Editable properties** (if not locked for the column):
-  - Visibility (show/hide columns).  
-  - Horizontal alignment.  
-  - Vertical alignment.  
-  - Cell overflow behaviour.  
+  - Visibility (show/hide columns).
+  - Horizontal alignment.
+  - Vertical alignment.
+  - Cell overflow behaviour.
 
 At the bottom-right of the modal, users can either **Cancel** or **Apply** their changes:
-- If visibility changes are applied, the table will **refresh data** and reset filters and sorting.  
-- If only formatting changes (alignment or overflow) are applied, the table will **preserve filters and sorting** without refreshing data.  
+- If visibility changes are applied, the table will **refresh data** and reset filters and sorting.
+- If only formatting changes (alignment or overflow) are applied, the table will **preserve filters and sorting** without refreshing data.
+
+<img width="205" height="132" alt="image" src="https://github.com/user-attachments/assets/dcd3bbf3-585d-4a9a-adb6-490b8b419578" />
+<img width="1232" height="527" alt="image" src="https://github.com/user-attachments/assets/b6831580-ea14-4b33-81f9-587a7563fee6" />
 
 
 
