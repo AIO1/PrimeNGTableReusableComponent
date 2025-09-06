@@ -376,6 +376,7 @@ Before diving into advanced features, it’s essential to start with the basics 
 - Can users select multiple rows, filter by selected rows, or perform actions on multiple selections (row checkbox selector)?
 
 **Global table features**
+- Are there any table-level actions needed, such as creating records?
 - How will dates be displayed in the table?
 - Will users be able to customize the date format?
 - Will a global filter be available for the table?
@@ -386,7 +387,7 @@ Don’t worry if some of these concepts are unclear at this point, each feature 
 
 
 
-### 4.2 Date Formatting
+### 4.2 Date formatting
 At first glance, date formatting might seem simple, but it can easily confuse end users if not carefully considered from the start.
 
 The **ECS PrimeNG table** component allows you to control how dates are displayed in each table, letting you customize:
@@ -408,6 +409,85 @@ You can configure this customization per table, with several possible approaches
 
 > [!NOTE]
 > While per-table customization is possible, it is recommended to set a **global configuration** for all tables. Individual table settings are mainly useful for specific scenarios, but managing a global configuration is easier and more consistent.
+
+
+
+### 4.3 Column configurations
+The **ECS PrimeNG Table** allows you to define a variety of settings that control how each column behaves when displayed to users and what they are allowed to do with them.
+
+
+
+#### 4.3.1 Data type
+Columns can be configured to define how cell data is displayed and treated. The **ECS PrimeNG Table** supports five main data types, and choosing the appropriate type is important, as it also affects the filtering options available (column filtering is explained in later sections):
+- **Text**: For data that should be treated as plain text.
+- **Numeric**: For numerical values.
+- **Boolean**: For yes/no (true/false) values.
+- **Date**: For date values. The display format is controlled via the date formatting configuration described in previous sections.
+- **List**: A specialized text variant designed for columns containing data separated by `";"`. This type is mainly intended for predefined filters. If not configured, the raw text will simply be displayed (predefined filters are explained in later sections).
+
+> [!NOTE]  
+> All data types support null (empty) values, allowing cells to remain blank if no data is available.
+
+
+
+#### 4.3.2 Visibility
+By default, all columns are visible. However, showing too many columns at once may overwhelm users, so you may want to hide some of them initially. This can be configured in the table setup, and users can later toggle column visibility through a dedicated menu if you enable it (explained in later sections).
+
+You can also restrict visibility changes for specific columns. For example, some columns can be marked as **always visible**, preventing users from hiding them.
+
+Additionally, developers can define **utility columns** that remain hidden from the user interface. These columns (such as row IDs or internal references) are not only invisible to the end user but also excluded from the column visibility menu, ensuring they remain hidden while still being available for internal logic or processes.
+
+
+
+#### 4.3.3 Vertical and horizontal aligment
+
+
+
+#### 4.3.4 Modify properties menu
+
+
+
+#### 4.3.6 Resize
+
+
+
+#### 4.3.7 Reorder
+
+
+#### 4.3.8 Frozen
+
+
+
+#### 4.3.9 Descriptions
+
+
+
+
+
+#### 4.3.10 Sorting
+By default, all columns are sortable. You can disable sorting on specific columns if you do not want users to sort them.
+
+**How sorting works:**
+- Click a column header once to sort in **ascending order**.
+- Click the same header a second time to sort in **descending order**.
+- Click a third time to **sort ascending again**.
+
+If a different column is clicked while another column is already sorted, the new column will be sorted in ascending order, and the previous column will have its sorting cleared.
+
+The table supports **multi-column sorting**: users can hold the **Ctrl** key while clicking multiple column headers to sort by several columns simultaneously.
+
+You can also define a **default sorting** for one or more columns when the user has not applied any sorting.
+
+In the **top-left corner of the table**, there is a button to **clear all sorting** applied by the user. This button is enabled only when at least one user-applied sorting is active.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+</p>
+
+> [!NOTE]
+> If no columns allow sorting, you may hide this button. However, it is **not recommended** to hide it if some columns are sortable, as this could confuse users by preventing them from resetting the sorting.
+
+
+#### 4.3.7 Filtering
 
 
 ---
